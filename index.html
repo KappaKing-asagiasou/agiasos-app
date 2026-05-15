@@ -296,6 +296,20 @@ tr.ry:hover td{background:#e8f4de;}tr.rn:hover td{background:#f5e4e4;}
   .nav-tab{font-size:10px;padding:3px 6px;}
 }
 
+
+/* LOGIN */
+.login-screen{position:fixed;inset:0;background:linear-gradient(160deg,#243d18 0%,#2e5020 50%,#3a5c28 100%);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0;}
+.login-box{background:linear-gradient(160deg,#faf7f0 0%,#f5f0e6 100%);border-radius:18px;padding:40px 36px;width:320px;max-width:90vw;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.35);}
+.login-logo{font-size:48px;margin-bottom:12px;}
+.login-title{font-family:'Lora',serif;font-size:20px;font-weight:500;color:#2e5020;margin-bottom:4px;}
+.login-sub{font-size:12px;color:#9c9280;margin-bottom:28px;font-style:italic;}
+.login-input{width:100%;font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 14px;border:1.5px solid #d8d0c0;border-radius:10px;background:#fff;color:#1c1a14;outline:none;text-align:center;letter-spacing:2px;margin-bottom:12px;transition:border-color .2s;}
+.login-input:focus{border-color:#5a8040;box-shadow:0 0 0 3px rgba(90,128,64,.12);}
+.login-btn{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,#2e5020 0%,#5a8040 100%);color:#fff;cursor:pointer;transition:opacity .15s;}
+.login-btn:hover{opacity:.9;}
+.login-error{font-size:12px;color:#b03030;margin-top:8px;min-height:16px;}
+.login-strip{height:4px;background:linear-gradient(90deg,#2e5020,#c8a030,#2e5020);border-radius:2px;margin-bottom:20px;}
+
 /* PRINT */
 .print-hdr{display:none;text-align:center;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--border);}
 .print-hdr h1{font-family:'Lora',serif;font-size:19px;}
@@ -1413,18 +1427,50 @@ document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key==='f'&&CPage!=='annual'){e.preventDefault();document.getElementById('searchBox').focus();}
 });
 
-refreshCatSel();
-migrateInstallments();
 
-// Show loading indicator then load from Supabase
-document.body.insertAdjacentHTML('afterbegin',
-  '<div id="loadingBar" style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#5a8040,#c8a030,#5a8040);background-size:200%;animation:shimmer 1s linear infinite;z-index:9999"></div>'
-);
-loadFromSupabase().then(()=>{
-  const lb=document.getElementById('loadingBar');
-  if(lb) lb.remove();
-  renderHome();
-});
+// ── LOGIN ─────────────────────────────────────────────
+const APP_PASS = '112280Ab.';
+const AUTH_KEY = 'agiasos_auth';
+
+function checkAuth(){
+  return sessionStorage.getItem(AUTH_KEY) === '1';
+}
+
+function doLogin(){
+  const val = document.getElementById('loginPass').value;
+  if(val === APP_PASS){
+    sessionStorage.setItem(AUTH_KEY,'1');
+    document.getElementById('loginScreen').style.display='none';
+    bootApp();
+  } else {
+    document.getElementById('loginErr').textContent = 'Λάθος κωδικός. Δοκίμασε ξανά.';
+    document.getElementById('loginPass').value='';
+    document.getElementById('loginPass').focus();
+  }
+}
+
+function bootApp(){
+  refreshCatSel();
+  migrateInstallments();
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div id="loadingBar" style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#5a8040,#c8a030,#5a8040);background-size:200%;animation:shimmer 1s linear infinite;z-index:9999"></div>'
+  );
+  loadFromSupabase().then(()=>{
+    const lb=document.getElementById('loadingBar');
+    if(lb) lb.remove();
+    renderHome();
+  });
+}
+
+// On load: check if already authenticated this session
+if(checkAuth()){
+  document.getElementById('loginScreen').style.display='none';
+  bootApp();
+} else {
+  // Show login, focus input
+  setTimeout(()=>document.getElementById('loginPass').focus(), 100);
+}
+
 </script>
 
 <!-- INSTALLMENTS MODAL -->
@@ -1460,5 +1506,19 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🫒</div>
+    <div class="login-title">Α.Σ Αγιάσου</div>
+    <div class="login-sub">Έσοδα &amp; Έξοδα · Ελαιοτριβείο</div>
+    <div class="login-strip"></div>
+    <input class="login-input" type="password" id="loginPass" placeholder="Κωδικός πρόσβασης" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Είσοδος</button>
+    <div class="login-error" id="loginErr"></div>
+  </div>
+</div>
+
 </body>
 </html>
