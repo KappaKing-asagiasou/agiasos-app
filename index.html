@@ -298,124 +298,30 @@ tr.ry:hover td{background:#e8f4de;}tr.rn:hover td{background:#f5e4e4;}
 
 
 /* LOGIN */
-.login-screen{position:fixed;inset:0;background:linear-gradient(160deg,#243d18 0%,#2e5020 50%,#3a5c28 100%);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0;}
-.login-box{background:linear-gradient(160deg,#faf7f0 0%,#f5f0e6 100%);border-radius:18px;padding:40px 36px;width:320px;max-width:90vw;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.35);}
-.login-logo{font-size:48px;margin-bottom:12px;}
-.login-title{font-family:'Lora',serif;font-size:20px;font-weight:500;color:#2e5020;margin-bottom:4px;}
-.login-sub{font-size:12px;color:#9c9280;margin-bottom:28px;font-style:italic;}
-.login-input{width:100%;font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 14px;border:1.5px solid #d8d0c0;border-radius:10px;background:#fff;color:#1c1a14;outline:none;text-align:center;letter-spacing:2px;margin-bottom:12px;transition:border-color .2s;}
-.login-input:focus{border-color:#5a8040;box-shadow:0 0 0 3px rgba(90,128,64,.12);}
-.login-btn{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,#2e5020 0%,#5a8040 100%);color:#fff;cursor:pointer;transition:opacity .15s;}
-.login-btn:hover{opacity:.9;}
-.login-error{font-size:12px;color:#b03030;margin-top:8px;min-height:16px;}
-.login-strip{height:4px;background:linear-gradient(90deg,#2e5020,#c8a030,#2e5020);border-radius:2px;margin-bottom:20px;}
-
-
-/* DARK MODE */
-[data-theme="dark"]{
-  --bg:#141612;--surface:#1e211c;--surface2:#272b22;
-  --border:#343830;--border2:#444840;
-  --text:#e2ddd0;--text2:#9a9282;--text3:#666058;
-  --olive:#80b858;--olive-mid:#5a8040;--olive-lt:#1c2c14;--olive-bg:#182610;
-  --gold:#c8a030;--gold-lt:#241e08;--gold-mid:#c8a030;
-  --red:#c85858;--red-mid:#d87070;--red-lt:#281010;
-  --amber:#c08030;--amber-lt:#281a06;
-  --wood:#a07850;--wood-lt:#1c1206;
-}
-[data-theme="dark"] body{background:#141612;background-image:none;}
-[data-theme="dark"] .olive-strip{opacity:.4;}
-[data-theme="dark"] .site-header{background:linear-gradient(160deg,#0a1206 0%,#121c0e 50%,#182414 100%);}
-[data-theme="dark"] .stat-card{background:#1e211c;border-color:#343830;}
-[data-theme="dark"] .stat-card.g{background:linear-gradient(135deg,#1e211c 0%,#1a2414 100%);}
-[data-theme="dark"] .stat-card.r{background:linear-gradient(135deg,#1e211c 0%,#241414 100%);}
-[data-theme="dark"] .stat-card.a{background:linear-gradient(135deg,#1e211c 0%,#221a08 100%);}
-[data-theme="dark"] .stat-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.3);}
-[data-theme="dark"] .profit-bar{background:linear-gradient(135deg,#1e211c 0%,#182610 100%);border-color:#343830;}
-[data-theme="dark"] .profit-bar.neg{background:linear-gradient(135deg,#1e211c 0%,#241414 100%);}
-[data-theme="dark"] .chart-card{background:#1e211c;border-color:#343830;border-top-color:var(--olive-mid);}
-[data-theme="dark"] .chart-hdr{color:var(--text2);}
-[data-theme="dark"] .page-table-card{background:#1e211c;border-color:#343830;}
-[data-theme="dark"] .table-card{background:#1e211c;border-color:#343830;}
-[data-theme="dark"] .table-header.exp{background:#221414;border-bottom:2px solid #341c1c;}
-[data-theme="dark"] .table-header.inc{background:#182610;border-bottom:2px solid #1e3018;}
-[data-theme="dark"] .page-table-header.exp{background:#221414;border-bottom-color:#341c1c;}
-[data-theme="dark"] .page-table-header.inc{background:#182610;border-bottom-color:#1e3018;}
-[data-theme="dark"] th{background:#1a1d18;color:var(--text3);border-bottom-color:#343830;}
-[data-theme="dark"] td{border-bottom-color:#2a2e26;color:var(--text);}
-[data-theme="dark"] tr.ry td{background:#182610;}
-[data-theme="dark"] tr.rn td{background:#221414;}
-[data-theme="dark"] tr.ry:hover td{background:#1c3014;}
-[data-theme="dark"] tr.rn:hover td{background:#2c1818;}
-[data-theme="dark"] tr.r0:hover td{background:#272b22;}
-[data-theme="dark"] tbody tr.r0:nth-child(even) td{background:#1a1d18;}
-[data-theme="dark"] .annual-card{background:#1e211c;border-color:#343830;}
-[data-theme="dark"] .annual-card-hdr{background:#182610;color:var(--olive);}
-[data-theme="dark"] .tbl-pager{background:#1a1d18;border-top-color:#343830;color:var(--text3);}
-[data-theme="dark"] .overlay{background:rgba(0,0,0,.7);}
-[data-theme="dark"] .modal{background:linear-gradient(160deg,#1e211c 0%,#1a1d18 100%);}
-[data-theme="dark"] .modal-title.exp{color:var(--red-mid);}
-[data-theme="dark"] .modal-title.inc{color:var(--olive);}
-[data-theme="dark"] .modal-footer{border-top-color:#343830;}
-[data-theme="dark"] .del-box,[data-theme="dark"] .cat-box,[data-theme="dark"] .pending-box,[data-theme="dark"] .backup-box,[data-theme="dark"] .inst-box{background:#1e211c;color:var(--text);border-color:#343830;}
-[data-theme="dark"] .field input,[data-theme="dark"] .field select,[data-theme="dark"] .field textarea{background:#141612;border-color:#444840;color:var(--text);}
-[data-theme="dark"] .field input:focus,[data-theme="dark"] .field select:focus,[data-theme="dark"] .field textarea:focus{background:#1a1d18;border-color:var(--olive-mid);}
-[data-theme="dark"] .backup-ta{background:#141612;color:var(--text);border-color:#444840;}
-[data-theme="dark"] .cat-item input,[data-theme="dark"] .cat-add-row input,[data-theme="dark"] .inst-add-row input{background:#141612;color:var(--text);border-color:#444840;}
-[data-theme="dark"] .inst-stat{background:#272b22;}
-[data-theme="dark"] .inst-list{border-color:#343830;}
-[data-theme="dark"] .inst-row{border-bottom-color:#343830;}
-[data-theme="dark"] .progress-bg{background:#343830;}
-[data-theme="dark"] .supplier-block{border-color:#343830;}
-[data-theme="dark"] .supplier-hdr{background:#281414;}
-[data-theme="dark"] .total-bar{background:#221a06;border-color:#443010;}
-[data-theme="dark"] .pending-alert{background:linear-gradient(135deg,#221a06 0%,#1e1604 100%);border-color:#443010;border-left-color:#906010;}
-[data-theme="dark"] .view-label h2{color:var(--text2);}
-[data-theme="dark"] .btn-ghost{color:var(--text2);}
-[data-theme="dark"] .btn-ghost:hover{background:#272b22;border-color:#444840;}
-[data-theme="dark"] .btn-muted{background:#272b22;color:var(--text2);border-color:#444840;}
-[data-theme="dark"] .btn-exp{background:linear-gradient(135deg,#281010 0%,#241818 100%);color:var(--red-mid);border-color:#441818;}
-[data-theme="dark"] .btn-exp:hover{background:#301414;}
-[data-theme="dark"] .btn-inc{background:linear-gradient(135deg,#182610 0%,#142010 100%);color:var(--olive);border-color:#2a4018;}
-[data-theme="dark"] .btn-inc:hover{background:#1e3014;}
-[data-theme="dark"] .btn-gold{background:linear-gradient(135deg,#221a06 0%,#1e1604 100%);color:var(--gold);border-color:#443010;}
-[data-theme="dark"] .pt.e{background:#272b22;border-color:#444840;color:var(--text3);}
-[data-theme="dark"] .code-badge{background:#221a06;border-color:#443010;}
-[data-theme="dark"] .inst-badge.none{background:#272b22;border-color:#444840;}
-[data-theme="dark"] .inst-badge.partial{background:#221a06;border-color:#443010;}
-[data-theme="dark"] .inst-badge.full{background:#182610;border-color:#2a4018;}
-[data-theme="dark"] .login-screen{background:linear-gradient(160deg,#0a1206 0%,#0e1a08 50%,#121e0c 100%);}
-[data-theme="dark"] .login-box{background:linear-gradient(160deg,#1e211c 0%,#1a1d18 100%);}
-[data-theme="dark"] .login-title{color:#80b858;}
-[data-theme="dark"] .login-sub{color:var(--text3);}
-[data-theme="dark"] .login-input{background:#141612;border-color:#444840;color:var(--text);}
-[data-theme="dark"] .login-btn{background:linear-gradient(135deg,#1a3010 0%,#2a5020 100%);}
-[data-theme="dark"] .login-strip{opacity:.4;}
-[data-theme="dark"] ::-webkit-scrollbar-track{background:#1e211c;}
-[data-theme="dark"] ::-webkit-scrollbar-thumb{background:#444840;}
-[data-theme="dark"] ::-webkit-scrollbar-thumb:hover{background:#666058;}
-
-
-/* ZEBRA STRIPES */
-tbody tr.r0:nth-child(even) td{background:var(--surface2);}
-[data-theme="dark"] tbody tr.r0:nth-child(even) td{background:var(--surface2);}
-
-
-/* PAGE TRANSITIONS */
-.page{animation:pageIn .2s ease;}
-@keyframes pageIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-
-
-/* MOBILE IMPROVEMENTS */
-@media(max-width:600px){
-  .nav-tab{padding:6px 10px;font-size:12px;}
-  .btn{padding:7px 12px;font-size:12.5px;}
-  .yr-btn{padding:6px 11px;font-size:14px;}
-  .month-select{padding:7px 10px;}
-  .stat-card .val{font-size:17px;}
-  .profit-val{font-size:20px;}
-  .page-table-header{flex-wrap:wrap;gap:6px;}
-}
-
+.login-screen{position:fixed;inset:0;background:linear-gradient(160deg,#0d1a07 0%,#162510 40%,#1e3018 70%,#0d1a07 100%);display:flex;align-items:stretch;z-index:9999;overflow:hidden;}
+.login-shimmer{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2e5020,#c8a030,#d4b840,#c8a030,#2e5020);background-size:200%;animation:sh 4s linear infinite;z-index:10;}
+.login-leaves{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1;}
+.login-left{flex:1.1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;position:relative;z-index:2;}
+.login-title{font-family:'Lora',serif;font-size:22px;font-weight:500;color:#e8e4d0;letter-spacing:.4px;margin-bottom:5px;text-align:center;line-height:1.4;}
+.login-sub{font-size:11px;color:rgba(200,160,48,.7);letter-spacing:3px;text-transform:uppercase;text-align:center;margin-bottom:28px;}
+.login-divider{display:flex;align-items:center;gap:10px;width:200px;margin-bottom:28px;}
+.login-div-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(200,160,48,.4),transparent);}
+.login-div-mid{color:rgba(200,160,48,.6);font-size:16px;}
+.login-vdiv{width:1px;background:linear-gradient(180deg,transparent 0%,rgba(200,160,48,.25) 20%,rgba(200,160,48,.25) 80%,transparent 100%);flex-shrink:0;z-index:2;}
+.login-right{flex:.9;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 36px;background:rgba(0,0,0,.25);z-index:2;}
+.login-logo{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,rgba(200,160,48,.12),rgba(90,128,64,.18));border:1.5px solid rgba(200,160,48,.35);display:flex;align-items:center;justify-content:center;margin-bottom:14px;box-shadow:0 0 0 5px rgba(200,160,48,.05),0 0 24px rgba(90,128,64,.15);animation:pulse 3s ease-in-out infinite;font-size:26px;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 5px rgba(200,160,48,.05),0 0 24px rgba(90,128,64,.15);}50%{box-shadow:0 0 0 8px rgba(200,160,48,.08),0 0 36px rgba(90,128,64,.25);}}
+.login-welcome{font-family:'Lora',serif;font-size:17px;color:#e0dcc8;margin-bottom:4px;letter-spacing:.3px;}
+.login-welcome-sub{font-size:11px;color:rgba(200,160,48,.5);letter-spacing:1.5px;margin-bottom:28px;}
+.login-input{width:100%;max-width:220px;background:rgba(255,255,255,.07);border:1px solid rgba(200,160,48,.22);border-radius:10px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:#e8e4d0;text-align:center;letter-spacing:2px;outline:none;transition:all .2s;margin-bottom:12px;}
+.login-input:focus{border-color:rgba(200,160,48,.55);background:rgba(255,255,255,.1);box-shadow:0 0 0 3px rgba(200,160,48,.08);}
+.login-input::placeholder{letter-spacing:1px;color:rgba(200,160,48,.3);font-size:12px;}
+.login-btn{width:100%;max-width:220px;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,#2a4818,#3a6020,#2a4818);color:#b8d090;font-family:'DM Sans',sans-serif;font-size:13.5px;cursor:pointer;letter-spacing:.5px;position:relative;overflow:hidden;transition:all .15s;}
+.login-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(200,160,48,.12),transparent);transform:translateX(-100%);animation:sw 2.5s ease infinite;}
+.login-btn:hover{opacity:.88;transform:translateY(-1px);}
+.login-error{font-size:12px;color:#d87070;margin-top:8px;min-height:16px;text-align:center;}
+.login-strip{display:none;}
+@media(max-width:580px){.login-left{display:none;}.login-vdiv{display:none;}.login-right{flex:1;padding:40px 28px;}}
 /* PRINT */
 .print-hdr{display:none;text-align:center;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--border);}
 .print-hdr h1{font-family:'Lora',serif;font-size:19px;}
@@ -442,6 +348,7 @@ tbody tr.r0:nth-child(even) td{background:var(--surface2);}
 <div class="olive-strip"></div>
 
 <header class="site-header">
+  <div class="header-olives" id="headerOlives"></div>
   <div class="header-brand">
     <div class="olive-icon">🫒</div>
     <div>
@@ -864,6 +771,13 @@ function calc(y,m,annualMode=false){
   }
 }
 
+function animateVals(id){
+  document.querySelectorAll('#'+id+' .val').forEach(el=>{
+    el.classList.remove('val-anim');
+    void el.offsetWidth;
+    el.classList.add('val-anim');
+  });
+}
 function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE){
   function diff(cur,prev){
     if(prev===undefined||prev===0) return '';
@@ -879,6 +793,7 @@ function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE){
     <div class="stat-card r"><div class="lbl">Σύνολο Εξόδων</div><div class="val">${fmt(tE)}${diff(tE,prevTE)}</div></div>
     <div class="stat-card r"><div class="lbl">Πληρωθέντα Εξ.</div><div class="val">${fmt(pE)}</div></div>
     <div class="stat-card a"><div class="lbl">Εκκρεμή Εξ.</div><div class="val">${fmt(uE)}</div></div>`;
+  setTimeout(()=>animateVals(id),10);
 }
 function renderProfit(id,pr,lbl){
   const p=pr>=0;const el=document.getElementById(id);
@@ -929,7 +844,7 @@ function makeChart(canvasId,labels,incD,expD,inst){
   return new Chart(ctx,{type:'bar',data:{labels,datasets:[
     {label:'Εισπραχθέντα',data:incD,backgroundColor:'rgba(61,92,42,.18)',borderColor:'rgba(61,92,42,.7)',borderWidth:1.5,borderRadius:4},
     {label:'Πληρωθέντα Εξ.',data:expD,backgroundColor:'rgba(176,48,48,.12)',borderColor:'rgba(176,48,48,.55)',borderWidth:1.5,borderRadius:4}
-  ]},options:{plugins:{legend:{labels:{font:{family:"'DM Sans',sans-serif",size:11},color:'#6b6456',boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{family:"'DM Sans',sans-serif",size:11},color:'#a09a8e'}},y:{grid:{color:'#e8e4dc'},ticks:{font:{family:"'DM Mono',monospace",size:10},color:'#a09a8e',callback:v=>v.toLocaleString('el-GR')+'€'}}},animation:{duration:300}}});
+  ]},options:{plugins:{legend:{labels:{font:{family:"'DM Sans',sans-serif",size:11},color:'#6b6456',boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{family:"'DM Sans',sans-serif",size:11},color:'#a09a8e'}},y:{grid:{color:'#e8e4dc'},ticks:{font:{family:"'DM Mono',monospace",size:10},color:'#a09a8e',callback:v=>v.toLocaleString('el-GR')+'€'}}},animation:{duration:800,easing:"easeInOutQuart"}}});
 }
 
 // ── HOME PAGE ─────────────────────────────────────────
@@ -1556,6 +1471,68 @@ function toggleDark(){
   });
 })();
 
+
+
+// ── FALLING LEAVES (login) ────────────────────────────
+function initLoginLeaves(){
+  const wrap=document.getElementById('loginLeaves');
+  if(!wrap)return;
+  const leafPaths=['M0,8 Q4,-2 8,8 Q4,18 0,8Z','M0,6 Q5,-1 10,6 Q5,13 0,6Z','M0,5 Q6,0 12,5 Q6,10 0,5Z'];
+  const colors=['#3a6820','#4a7828','#507830','#406028','#5a8040'];
+  for(let i=0;i<20;i++){
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    const size=10+Math.random()*14;
+    svg.setAttribute('width',size);svg.setAttribute('height',size);svg.setAttribute('viewBox','0 0 12 16');
+    svg.style.cssText='position:absolute;pointer-events:none;';
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',leafPaths[Math.floor(Math.random()*leafPaths.length)]);
+    path.setAttribute('fill',colors[Math.floor(Math.random()*colors.length)]);
+    path.setAttribute('opacity','0.75');
+    svg.appendChild(path);
+    const left=Math.random()*100;
+    const delay=Math.random()*14;
+    const duration=9+Math.random()*12;
+    const drift=(Math.random()-.5)*70;
+    svg.style.left=left+'%';
+    svg.animate([
+      {transform:`translateY(-60px) rotate(0deg) translateX(0px)`,opacity:0},
+      {transform:`translateY(20px) rotate(60deg) translateX(${drift*.3}px)`,opacity:.5,offset:.08},
+      {transform:`translateY(50vh) rotate(200deg) translateX(${drift}px)`,opacity:.35,offset:.5},
+      {transform:`translateY(100vh) rotate(340deg) translateX(${drift*.4}px)`,opacity:0},
+    ],{duration:duration*1000,delay:delay*1000,iterations:Infinity,easing:'linear'});
+    wrap.appendChild(svg);
+  }
+}
+initLoginLeaves();
+
+// ── HEADER FLOATING OLIVES ────────────────────────────
+function initHeaderOlives(){
+  const wrap=document.getElementById('headerOlives');
+  if(!wrap)return;
+  const colors=['rgba(90,128,64,', 'rgba(200,160,48,', 'rgba(61,92,42,'];
+  for(let i=0;i<14;i++){
+    const el=document.createElement('span');
+    const size=4+Math.random()*7;
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    const left=Math.random()*100;
+    const delay=Math.random()*8;
+    const dur=5+Math.random()*7;
+    const isLeaf=Math.random()>.5;
+    el.style.cssText=`
+      width:${isLeaf?size*2.2:size}px;
+      height:${size}px;
+      background:${col}0.6);
+      left:${left}%;
+      border-radius:${isLeaf?'50% 0 50% 0':'50%'};
+      animation-duration:${dur}s;
+      animation-delay:${delay}s;
+      transform:rotate(${Math.random()*360}deg);
+    `;
+    wrap.appendChild(el);
+  }
+}
+initHeaderOlives();
+
 function saveInstSettings(){}
 function addInstCount(delta){}
 
@@ -1646,13 +1623,62 @@ if('serviceWorker' in navigator){
 
 <!-- LOGIN SCREEN -->
 <div class="login-screen" id="loginScreen">
-  <div class="login-box">
+  <div class="login-shimmer"></div>
+  <div class="login-leaves" id="loginLeaves"></div>
+
+  <div class="login-left">
+    <div class="login-title">Αγροτικός Συνεταιρισμός<br>Αγιάσου</div>
+    <div class="login-sub">Λέσβος</div>
+    <div class="login-divider">
+      <div class="login-div-line"></div>
+      <div class="login-div-mid">❧</div>
+      <div class="login-div-line"></div>
+    </div>
+    <svg viewBox="0 0 220 210" width="200" height="190" xmlns="http://www.w3.org/2000/svg" fill="none" opacity=".8">
+      <path d="M110 208 Q107 178 103 150 Q98 118 102 95" stroke="#8a6a20" stroke-width="7" stroke-linecap="round"/>
+      <path d="M110 208 Q125 200 140 205" stroke="#6a5018" stroke-width="4" stroke-linecap="round"/>
+      <path d="M110 208 Q95 202 80 206" stroke="#6a5018" stroke-width="4" stroke-linecap="round"/>
+      <path d="M102 95 Q78 78 54 62 Q40 52 22 58" stroke="#7a6018" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M102 95 Q118 70 128 45 Q135 28 152 20" stroke="#7a6018" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M104 118 Q128 104 144 96 Q158 88 172 92" stroke="#7a6018" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M106 135 Q86 124 68 120 Q54 116 42 122" stroke="#7a6018" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M54 62 Q42 52 32 48" stroke="#7a6018" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M54 62 Q48 50 44 38" stroke="#7a6018" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M128 45 Q138 34 148 28" stroke="#7a6018" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M128 45 Q122 32 124 20" stroke="#7a6018" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse cx="24" cy="55" rx="12" ry="6" transform="rotate(-25 24 55)" fill="#3a6820"/>
+      <ellipse cx="36" cy="45" rx="11" ry="5" transform="rotate(-45 36 45)" fill="#4a7828"/>
+      <ellipse cx="46" cy="35" rx="10" ry="5" transform="rotate(-15 46 35)" fill="#3a6820"/>
+      <ellipse cx="30" cy="50" rx="9" ry="4" transform="rotate(10 30 50)" fill="#507830"/>
+      <ellipse cx="42" cy="48" rx="8" ry="4" transform="rotate(-35 42 48)" fill="#406028"/>
+      <ellipse cx="152" cy="18" rx="12" ry="6" transform="rotate(20 152 18)" fill="#3a6820"/>
+      <ellipse cx="138" cy="26" rx="11" ry="5" transform="rotate(-8 138 26)" fill="#4a7828"/>
+      <ellipse cx="148" cy="30" rx="10" ry="5" transform="rotate(35 148 30)" fill="#3a6820"/>
+      <ellipse cx="160" cy="24" rx="9" ry="4" transform="rotate(-20 160 24)" fill="#507830"/>
+      <ellipse cx="125" cy="22" rx="9" ry="4" transform="rotate(-30 125 22)" fill="#406028"/>
+      <ellipse cx="172" cy="89" rx="11" ry="5" transform="rotate(12 172 89)" fill="#3a6820"/>
+      <ellipse cx="160" cy="96" rx="10" ry="5" transform="rotate(-22 160 96)" fill="#4a7828"/>
+      <ellipse cx="175" cy="98" rx="9" ry="4" transform="rotate(30 175 98)" fill="#3a6820"/>
+      <ellipse cx="42" cy="119" rx="11" ry="5" transform="rotate(-8 42 119)" fill="#3a6820"/>
+      <ellipse cx="56" cy="113" rx="10" ry="5" transform="rotate(18 56 113)" fill="#4a7828"/>
+      <ellipse cx="44" cy="128" rx="9" ry="4" transform="rotate(-28 44 128)" fill="#507830"/>
+      <ellipse cx="38" cy="48" rx="3.5" ry="4.5" fill="#1a2c0a"/>
+      <ellipse cx="150" cy="26" rx="3.5" ry="4.5" fill="#1a2c0a"/>
+      <ellipse cx="163" cy="92" rx="3" ry="4" fill="#1a2c0a"/>
+      <ellipse cx="52" cy="116" rx="3" ry="4" fill="#1a2c0a"/>
+      <ellipse cx="112" cy="84" rx="3" ry="4" fill="#1a2c0a"/>
+      <path d="M60 208 Q110 202 160 208" stroke="#5a4010" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+    </svg>
+  </div>
+
+  <div class="login-vdiv"></div>
+
+  <div class="login-right">
     <div class="login-logo">🫒</div>
-    <div class="login-title">Α.Σ Αγιάσου</div>
-    <div class="login-sub">Έσοδα &amp; Έξοδα · Ελαιοτριβείο</div>
-    <div class="login-strip"></div>
+    <div class="login-welcome">Καλώς ήρθες</div>
+    <div class="login-welcome-sub">ΕΙΣΟΔΟΣ ΛΟΓΑΡΙΑΣΜΟΥ</div>
     <input class="login-input" type="password" id="loginPass" placeholder="Κωδικός πρόσβασης" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="login-btn" onclick="doLogin()">Είσοδος</button>
+    <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
   </div>
 </div>
