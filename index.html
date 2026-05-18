@@ -113,7 +113,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .chart-hdr{font-family:'Lora',serif;font-size:13px;color:var(--text2);font-style:italic;margin-bottom:12px;}
 
 /* ── HOME: side-by-side mini tables ─── */
-.home-tables{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:0;}
+.home-tables{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:0;}
+@media(max-width:1100px){.home-tables{grid-template-columns:1fr 1fr;}}
 @media(max-width:860px){.home-tables{grid-template-columns:1fr;}}
 
 /* ── FULL PAGE TABLE ─── */
@@ -494,6 +495,20 @@ tr.ry:hover td{background:#e8f4de;}tr.rn:hover td{background:#f5e4e4;}
           <button onclick="homePage('exp',-1)" id="expPrev">&#8249;</button>
           <span id="expPagerInfo"></span>
           <button onclick="homePage('exp',1)" id="expNext">&#8250;</button>
+        </div>
+      </div>
+      <!-- oil mini -->
+      <div class="page-table-card">
+        <div class="page-table-header oil">
+          <div class="page-title-text oil"><div class="dot dot-oil"></div>Πωλήσεις Λαδιού</div>
+          <span class="muted no-print" id="homeOilCount"></span>
+          <button class="btn btn-ghost btn-sm no-print" onclick="goPage('oil')">Όλα →</button>
+        </div>
+        <div class="tbl-scroll">
+          <table><thead><tr>
+            <th>Ημερομηνία</th><th>Πελάτης</th>
+            <th style="text-align:right">Ποσό</th><th>Πληρώθηκε</th><th class="no-print"></th>
+          </tr></thead><tbody id="homeOilBody"></tbody></table>
         </div>
       </div>
       <!-- inc mini -->
@@ -1142,6 +1157,9 @@ function openModal(type,prefill=null){ if(isViewer()) return;
   document.getElementById('instFields').style.display='none';
   document.getElementById('saveBtn').className='btn '+(isExp?'btn-exp':isOil?'btn-oil':'btn-inc');
   if(prefill!==null){
+    document.getElementById('fMoveWrap').style.display='';
+    // pre-select current type in move dropdown (so "same" is default)
+    document.getElementById('fMoveType').value='';
     const r=ents(CY,CM)[type][prefill];
     document.getElementById('fDate').value=r.date||'';
     document.getElementById('fName').value=r.name||'';
@@ -1159,6 +1177,8 @@ function openModal(type,prefill=null){ if(isViewer()) return;
     document.getElementById('fInstAmt').value='';
     document.getElementById('fInstTotal').value='';
     document.getElementById('instFields').style.display='none';
+    document.getElementById('fMoveWrap').style.display='none';
+    document.getElementById('fMoveType').value='';
     document.getElementById('fDate').value=new Date().toISOString().slice(0,10);
   }
   document.getElementById('entryOverlay').classList.add('open');
@@ -1186,15 +1206,23 @@ function saveEntry(){
     instGroupId:paid==='ΔΟΣΕΙΣ'?groupId:''
   };
   if(!entry.name&&!entry.amount){closeModal();return;}
+  const moveType=document.getElementById('fMoveType').value;
   const d=ents(CY,CM);
-  if(eid!==''){
+  if(eid!==''&&moveType&&moveType!==type){
+    // Move: delete from current type, add to new type
+    d[type].splice(+eid,1);
+    if(!d[moveType]) d[moveType]=[];
+    // Remove type-specific fields if needed
+    if(moveType!=='exp'){delete entry.code;delete entry.instPlan;delete entry.instGroupId;entry.paid=entry.paid==='ΔΟΣΕΙΣ'?'ΟΧΙ':entry.paid;}
+    d[moveType].push(entry);
+    setEnts(CY,CM,d);
+  } else if(eid!==''){
     d[type][+eid]=entry;
     setEnts(CY,CM,d);
   } else {
     if(!d[type]) d[type]=[];
     d[type].push(entry);
     setEnts(CY,CM,d);
-    // Main entry = Δόση 1. Next installments created only when user pays each one.
   }
   closeModal();renderCurrentPage();
 }
@@ -1227,8 +1255,23 @@ function createInstallment(groupId, name, amt, total, num, originY, originM, cat
 function editEntry(type,i){openModal(type,i);}
 function copyEntry(type,i){
   const d=ents(CY,CM);
-  const copy={...d[type][i],date:new Date().toISOString().slice(0,10),paid:''};
-  d[type].push(copy);setEnts(CY,CM,d);renderCurrentPage();
+  const orig={...d[type][i]};
+  // Ask destination
+  const labels={'exp':'Λοιπά Έξοδα','oil':'Πωλήσεις Λαδιού','inc':'Έσοδα'};
+  const opts=Object.entries(labels).map(([k,v])=>`${k===type?'✓ ':' '}${v} (${k})`);
+  const choice=prompt(`Αντιγραφή σε:
+1. ${opts[0]}
+2. ${opts[1]}
+3. ${opts[2]}
+
+Γράψε 1, 2 ή 3:`);
+  const keys=['exp','oil','inc'];
+  const destType=keys[parseInt(choice)-1]||type;
+  const copy={...orig,date:new Date().toISOString().slice(0,10),paid:''};
+  if(destType!=='exp'){delete copy.code;delete copy.instPlan;delete copy.instGroupId;}
+  if(!d[destType]) d[destType]=[];
+  d[destType].push(copy);
+  setEnts(CY,CM,d);renderCurrentPage();
 }
 
 // ── DELETE ────────────────────────────────────────────
