@@ -863,7 +863,10 @@ function calc(y,m,annualMode=false){
     const tE=s(monthExp);
     const pE=s(monthExp,r=>r.paid==='ΝΑΙ');
     const uE=s(monthExp,r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ');
-    return{inc,exp,tI,pI,uI,tE,pE,uE,pr:pI-pE};
+    // Oil sales
+    const{oil}=ents(y,m);
+    const tO=s(oil),pO=s(oil,r=>r.paid==='ΝΑΙ'),uO=s(oil,r=>r.paid==='ΟΧΙ');
+    return{inc,exp,oil,tI,pI,uI,tE,pE,uE,tO,pO,uO,pr:pI-pE};
   }
 }
 
@@ -946,7 +949,7 @@ function makeChart(canvasId,labels,incD,expD,inst){
 // ── HOME PAGE ─────────────────────────────────────────
 function renderHome(){
   const q=(document.getElementById('searchBox').value||'').trim();
-  const{inc,exp,tI,pI,uI,tE,pE,uE,pr}=calc(CY,CM);
+  const{inc,exp,oil,tI,pI,uI,tE,pE,uE,tO,pO,uO,pr}=calc(CY,CM);
   const mn=MN[CM];
   // Previous month for comparison
   let pm=CM-1, py=CY; if(pm<0){pm=11;py--;}
