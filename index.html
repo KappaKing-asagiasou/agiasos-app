@@ -326,6 +326,7 @@ tr.ry:hover td{background:#e8f4de;}tr.rn:hover td{background:#f5e4e4;}
 /* VIEWER MODE — hide all edit/delete controls */
 .viewer-mode .no-print .act-cell { display: none !important; }
 .viewer-mode #btnAddExp,
+.viewer-mode #btnAddOil,
 .viewer-mode #btnAddInc { display: none !important; }
 .viewer-mode .btn-exp:not(.paid-toggle),
 .viewer-mode .btn-inc:not(.paid-toggle) { pointer-events: none; opacity: .4; }
@@ -362,6 +363,24 @@ tr.ry:hover td{background:#e8f4de;}tr.rn:hover td{background:#f5e4e4;}
 .notif-item.viewer .ni-icon::after{content:'👁';}
 .notif-empty{padding:20px;text-align:center;color:var(--text3);font-style:italic;font-size:12.5px;}
 [data-theme="dark"] .notif-panel{background:var(--surface);border-color:var(--border);}
+
+
+/* OIL SALES TABLE */
+.table-header.oil{background:linear-gradient(135deg,#f7f0d8 0%,#f0e4b8 100%);border-bottom:2px solid #d4b840;}
+.page-table-header.oil{background:linear-gradient(135deg,#f7f0d8 0%,#f0e4b8 100%);border-bottom:2px solid #d4b840;}
+.table-title.oil{color:var(--gold);}
+.dot-oil{background:var(--gold-mid);}
+.stat-card.o .val{color:var(--gold);}
+.stat-card.o{background:linear-gradient(135deg,var(--surface) 0%,#f9f4e0 100%);border-left:3px solid var(--gold-mid);}
+[data-theme="dark"] .table-header.oil{background:linear-gradient(135deg,#221a06 0%,#1e1604 100%);border-bottom-color:#443010;}
+[data-theme="dark"] .page-table-header.oil{background:linear-gradient(135deg,#221a06 0%,#1e1604 100%);border-bottom-color:#443010;}
+[data-theme="dark"] .stat-card.o{background:linear-gradient(135deg,#1e211c 0%,#221a06 100%);}
+
+
+.modal-title.oil{color:var(--gold);}
+.btn-oil{background:linear-gradient(135deg,var(--gold-lt),#ede0b8);color:var(--gold);border-color:#c8a850;}
+.btn-oil:hover{background:#e8d8a0;}
+[data-theme="dark"] .btn-oil{background:linear-gradient(135deg,#221a06,#1e1604);color:var(--gold);border-color:#443010;}
 
 /* PRINT */
 .print-hdr{display:none;text-align:center;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--border);}
@@ -402,6 +421,7 @@ tr.ry:hover td{background:#e8f4de;}tr.rn:hover td{background:#f5e4e4;}
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="goPage('home')">🏠 Αρχική</button>
       <button class="nav-tab" onclick="goPage('exp')">📤 Έξοδα</button>
+      <button class="nav-tab" onclick="goPage('oil')">🫒 Λάδι</button>
       <button class="nav-tab" onclick="goPage('inc')">📥 Έσοδα</button>
       <button class="nav-tab" onclick="goPage('annual')">📊 Έτος</button>
     </div>
@@ -443,6 +463,7 @@ tr.ry:hover td{background:#e8f4de;}tr.rn:hover td{background:#f5e4e4;}
     <button class="btn btn-muted no-print" onclick="openBackup()" title="Backup">💾</button>
     <div class="div-v no-print"></div>
     <button class="btn btn-exp no-print" id="btnAddExp" onclick="openModal('exp')">+ Έξοδο</button>
+    <button class="btn no-print" id="btnAddOil" onclick="openModal('oil')" style="background:linear-gradient(135deg,var(--gold-lt),#ede0b8);color:var(--gold);border-color:#c8a850;">+ Λάδι</button>
     <button class="btn btn-inc no-print" id="btnAddInc" onclick="openModal('inc')">+ Έσοδο</button>
   </div>
 </header>
@@ -519,6 +540,26 @@ tr.ry:hover td{background:#e8f4de;}tr.rn:hover td{background:#f5e4e4;}
           <th>Σχόλια</th>
           <th class="no-print"></th>
         </tr></thead><tbody id="expPageBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OIL SALES PAGE ─── -->
+  <div class="page" id="page-oil">
+    <div class="page-table-card">
+      <div class="page-table-header oil">
+        <div class="page-title-text oil"><div class="dot dot-oil"></div>Πωλήσεις Λαδιού</div>
+        <span class="muted no-print" id="oilPageCount"></span>
+      </div>
+      <div class="tbl-scroll">
+        <table id="oilTable"><thead><tr>
+          <th onclick="sort('oil','date')">Ημερομηνία</th>
+          <th onclick="sort('oil','name')">Πελάτης</th>
+          <th onclick="sort('oil','amount')" style="text-align:right">Ποσό</th>
+          <th onclick="sort('oil','paid')">Πληρώθηκε</th>
+          <th>Σχόλια</th>
+          <th class="no-print"></th>
+        </tr></thead><tbody id="oilPageBody"></tbody></table>
       </div>
     </div>
   </div>
@@ -722,10 +763,10 @@ function save(){
 // No migration needed — fresh start with new model
 function migrateInstallments(){}
 function setEntsSilent(y,m,d){data[mk(y,m)]=d;save();}function mk(y,m){return'y'+y+'m'+m;}
-function ents(y,m){const k=mk(y,m);if(!data[k])data[k]={inc:[],exp:[]};return data[k];}
+function ents(y,m){const k=mk(y,m);if(!data[k])data[k]={inc:[],exp:[],oil:[]};if(!data[k].oil)data[k].oil=[];return data[k];}
 function setEnts(y,m,d){data[mk(y,m)]=d;save();}
 
-const sortS={exp:{col:'date',dir:1},inc:{col:'date',dir:1}};
+const sortS={exp:{col:'date',dir:1},inc:{col:'date',dir:1},oil:{col:'date',dir:1}};
 const PAGE_SIZE=10;
 let homeExpPage=0,homeIncPage=0;
 
@@ -769,13 +810,14 @@ function goPage(p){
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach((t,i)=>{
-    const pages=['home','exp','inc','annual'];
+    const pages=['home','exp','oil','inc','annual'];
     t.classList.toggle('active',pages[i]===p);
   });
   // Hide search & add buttons on annual page
   const isAnnual=p==='annual';
   document.getElementById('searchWrap').style.display=isAnnual?'none':'';
   document.getElementById('btnAddExp').style.display=isAnnual?'none':'';
+  document.getElementById('btnAddOil').style.display=isAnnual?'none':'';
   document.getElementById('btnAddInc').style.display=isAnnual?'none':'';
   document.getElementById('monthSel').disabled=isAnnual;
   renderCurrentPage();
@@ -784,6 +826,7 @@ function goPage(p){
 function renderCurrentPage(){
   if(CPage==='home')renderHome();
   else if(CPage==='exp')renderExpPage();
+  else if(CPage==='oil')renderOilPage();
   else if(CPage==='inc')renderIncPage();
   else if(CPage==='annual')renderAnnual();
 }
@@ -808,7 +851,9 @@ function calc(y,m,annualMode=false){
     const tE=s(annualExp);
     const pE=s(annualExp,r=>r.paid==='ΝΑΙ');
     const uE=s(annualExp,r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ');
-    return{inc,exp,tI,pI,uI,tE,pE,uE,pr:pI-pE};
+    const{oil:oilA}=ents(y,m);
+    const tOa=s(oilA),pOa=s(oilA,r=>r.paid==='ΝΑΙ'),uOa=s(oilA,r=>r.paid==='ΟΧΙ');
+    return{inc,exp,oil:oilA,tI,pI,uI,tE,pE,uE,tO:tOa,pO:pOa,uO:uOa,pr:pI-pE};
   } else {
     // Monthly: same — main entry counts as installment amount only
     const monthExp=exp.map(r=>{
@@ -829,7 +874,7 @@ function animateVals(id){
     el.classList.add('val-anim');
   });
 }
-function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE){
+function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE,tO,pO,uO){
   function diff(cur,prev){
     if(prev===undefined||prev===0) return '';
     const d=cur-prev, pct=Math.round(d/prev*100);
@@ -841,9 +886,9 @@ function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE){
     <div class="stat-card g"><div class="lbl">Σύνολο Εσόδων</div><div class="val">${fmt(tI)}${diff(tI,prevTI)}</div></div>
     <div class="stat-card g"><div class="lbl">Εισπραχθέντα</div><div class="val">${fmt(pI)}</div></div>
     <div class="stat-card a"><div class="lbl">Εκκρεμή Έσοδα</div><div class="val">${fmt(uI)}</div></div>
-    <div class="stat-card r"><div class="lbl">Σύνολο Εξόδων</div><div class="val">${fmt(tE)}${diff(tE,prevTE)}</div></div>
+    <div class="stat-card r"><div class="lbl">Λοιπά Έξοδα</div><div class="val">${fmt(tE)}${diff(tE,prevTE)}</div></div>
     <div class="stat-card r"><div class="lbl">Πληρωθέντα Εξ.</div><div class="val">${fmt(pE)}</div></div>
-    <div class="stat-card a"><div class="lbl">Εκκρεμή Εξ.</div><div class="val">${fmt(uE)}</div></div>`;
+    <div class="stat-card o"><div class="lbl">🫒 Πωλήσεις Λαδιού</div><div class="val">${fmt(tO||0)}</div></div>`;
   setTimeout(()=>animateVals(id),10);
 }
 function renderProfit(id,pr,lbl){
@@ -881,7 +926,7 @@ function sort(type,col){
   const ss=sortS[type];
   ss.dir=ss.col===col?-ss.dir:1;ss.col=col;
   document.querySelectorAll(`#${type}Table th`).forEach(th=>{th.classList.remove('sa','sd');});
-  const cols={exp:{date:0,name:1,amount:2,cat:4,paid:5},inc:{date:0,name:1,amount:2,paid:3}};
+  const cols={exp:{date:0,name:1,amount:2,cat:4,paid:5},inc:{date:0,name:1,amount:2,paid:3},oil:{date:0,name:1,amount:2,paid:3}};
   const idx=cols[type][col];
   const ths=document.querySelectorAll(`#${type}Table th`);
   if(ths[idx])ths[idx].classList.add(ss.dir===1?'sa':'sd');
@@ -906,7 +951,7 @@ function renderHome(){
   // Previous month for comparison
   let pm=CM-1, py=CY; if(pm<0){pm=11;py--;}
   const prev=calc(py,pm);
-  renderSummary('homeSummary',tI,pI,uI,tE,pE,uE,prev.tI,prev.tE);
+  renderSummary('homeSummary',tI,pI,uI,tE,pE,uE,prev.tI,prev.tE,tO,pO,uO);
   renderProfit('homeProfitBar',pr,'εισπραχθέντα − πληρωθέντα · '+mn+' '+CY);
 
   const hasPending=inc.some(r=>r.paid==='ΟΧΙ')||exp.some(r=>r.paid==='ΟΧΙ');
@@ -932,6 +977,21 @@ function renderHome(){
   if(ep){ep.textContent=fExp.length===0?'':('Σελ. '+(homeExpPage+1)+' / '+expPages);
     document.getElementById('expPrev').disabled=homeExpPage<=0;
     document.getElementById('expNext').disabled=homeExpPage>=expPages-1;}
+
+  // Oil with pagination
+  const fOil=sorted(oil,'oil',q);
+  const oilPages=Math.max(1,Math.ceil(fOil.length/PAGE_SIZE));
+  const oilSlice=fOil.slice(0,PAGE_SIZE);
+  document.getElementById('homeOilCount').textContent=fOil.length+' / '+oil.length+' εγγρ.';
+  document.getElementById('homeOilBody').innerHTML=oilSlice.length===0
+    ?'<tr class="empty-row"><td colspan="5">Δεν υπάρχουν πωλήσεις λαδιού</td></tr>'
+    :oilSlice.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
+      <td class="mono">${fmtD(r.date)}</td>
+      <td>${esc(r.name)}</td>
+      <td class="mono" style="text-align:right">${fmt(r.amount)}</td>
+      <td>${ptHtml(r.paid,'oil',r._i)}</td>
+      <td class="no-print">${actHtml('oil',r._i)}</td>
+    </tr>`).join('');
 
   // Inc with pagination
   const fInc=sorted(inc,'inc',q);
@@ -997,14 +1057,34 @@ function renderIncPage(){
     </tr>`).join('');
 }
 
+// ── OIL SALES PAGE ───────────────────────────────────
+function renderOilPage(){
+  const q=(document.getElementById('searchBox').value||'').trim();
+  const{oil}=ents(CY,CM);
+  const fOil=sorted(oil,'oil',q);
+  document.getElementById('oilPageCount').textContent=fOil.length+' / '+oil.length+' εγγραφές · '+MN[CM]+' '+CY;
+  document.getElementById('oilPageBody').innerHTML=fOil.length===0
+    ?'<tr class="empty-row"><td colspan="6">'+(q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν πωλήσεις λαδιού')+'</td></tr>'
+    :fOil.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
+        <td class="mono">${fmtD(r.date)}</td>
+        <td>${esc(r.name)}</td>
+        <td class="mono" style="text-align:right">${fmt(r.amount)}</td>
+        <td>${ptHtml(r.paid,'oil',r._i)}</td>
+        <td class="muted">${esc(r.notes)}</td>
+        <td class="no-print">${actHtml('oil',r._i)}</td>
+      </tr>`).join('');
+}
+
 // ── ANNUAL ────────────────────────────────────────────
 function renderAnnual(){
   document.getElementById('annualTitle').textContent='Ανάλυση έτους '+CY;
   document.getElementById('annualCardHdr').textContent='Ανάλυση ανά μήνα · '+CY;
   let tI=0,pI=0,uI=0,tE=0,pE=0,uE=0,rows='';
   const iD=[],eD=[];
+  let tOtot=0,pOtot=0,uOtot=0;
   MN.forEach((m,i)=>{
     const c=calc(CY,i,true);  // annualMode: excludes installment sub-entries
+    tOtot+=c.tO||0;pOtot+=c.pO||0;uOtot+=c.uO||0;
     tI+=c.tI;pI+=c.pI;uI+=c.uI;tE+=c.tE;pE+=c.pE;uE+=c.uE;
     iD.push(+c.pI.toFixed(2));eD.push(+c.pE.toFixed(2));
     const pc=c.pr>=0?'var(--olive)':'var(--red-mid)';
@@ -1031,7 +1111,7 @@ function renderAnnual(){
     <td class="mono" style="text-align:right;font-weight:500;color:${tc}">${fmt(Math.abs(totPr))}</td>
   </tr>`;
   document.getElementById('annualBody').innerHTML=rows;
-  renderSummary('annualSummary',tI,pI,uI,tE,pE,uE);
+  renderSummary('annualSummary',tI,pI,uI,tE,pE,uE,undefined,undefined,tOtot,pOtot,uOtot);
   renderProfit('annualProfitBar',totPr,'Συνολικό αποτέλεσμα · '+CY);
   annualChartI=makeChart('annualChart',MNS,iD,eD,annualChartI);
 }
@@ -1048,13 +1128,16 @@ function togglePaid(type,i){ if(isViewer()) return;
 function openModal(type,prefill=null){ if(isViewer()) return;
   refreshCatSel();
   const isExp=type==='exp';
+  const isOil=type==='oil';
   const t=document.getElementById('modalTitle');
-  t.textContent=(prefill!==null?'Επεξεργασία':'Νέα εγγραφή —')+(isExp?' Έξοδο':' Έσοδο');
-  t.className='modal-title '+type;
+  t.textContent=(prefill!==null?'Επεξεργασία':'Νέα εγγραφή —')+(isExp?' Έξοδο':isOil?' Πώληση Λαδιού':' Έσοδο');
+  t.className='modal-title '+(isOil?'oil':type);
   document.getElementById('editType').value=type;
   document.getElementById('editId').value=prefill!==null?prefill:'';
   document.getElementById('fCodeWrap').style.display=isExp?'':'none';
-  document.getElementById('saveBtn').className='btn '+(isExp?'btn-exp':'btn-inc');
+  document.getElementById('fInstFields')||0;
+  document.getElementById('instFields').style.display='none';
+  document.getElementById('saveBtn').className='btn '+(isExp?'btn-exp':isOil?'btn-oil':'btn-inc');
   if(prefill!==null){
     const r=ents(CY,CM)[type][prefill];
     document.getElementById('fDate').value=r.date||'';
@@ -1105,6 +1188,7 @@ function saveEntry(){
     d[type][+eid]=entry;
     setEnts(CY,CM,d);
   } else {
+    if(!d[type]) d[type]=[];
     d[type].push(entry);
     setEnts(CY,CM,d);
     // Main entry = Δόση 1. Next installments created only when user pays each one.
