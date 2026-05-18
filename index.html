@@ -1218,10 +1218,11 @@ function saveEntry(){
   const moveType=document.getElementById('fMoveType').value;
   const d=ents(CY,CM);
   if(eid!==''&&moveType&&moveType!==type){
-    // Move: delete from current type, add to new type
+    // Move: preserve original date, delete from current type, add to new type
+    const originalDate=d[type][+eid].date;
+    entry.date=originalDate;
     d[type].splice(+eid,1);
     if(!d[moveType]) d[moveType]=[];
-    // Remove type-specific fields if needed
     if(moveType!=='exp'){delete entry.code;delete entry.instPlan;delete entry.instGroupId;entry.paid=entry.paid==='ΔΟΣΕΙΣ'?'ΟΧΙ':entry.paid;}
     d[moveType].push(entry);
     setEnts(CY,CM,d);
@@ -1280,12 +1281,15 @@ function copyEntry(type,i){
   const keys=['exp','oil','inc'];
   const destType=keys[parseInt(choice)-1];
   if(!destType){return;}
-  const copy={...orig,date:new Date().toISOString().slice(0,10),paid:'',instPlan:null,instGroupId:''};
+  const copy={...orig,date:orig.date,paid:'',instPlan:null,instGroupId:''};
   if(destType!=='exp'){delete copy.code;}
   if(!d[destType]) d[destType]=[];
   if(destType!==type){
-    // Move: delete from source
+    // Move: delete from source, keep original date
     d[type].splice(i,1);
+  } else {
+    // Copy in same category: use today's date
+    copy.date=new Date().toISOString().slice(0,10);
   }
   d[destType].push(copy);
   setEnts(CY,CM,d);renderCurrentPage();
