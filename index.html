@@ -383,6 +383,14 @@ tr.ry:hover td{background:#e8f4de;}tr.rn:hover td{background:#f5e4e4;}
 .btn-oil:hover{background:#e8d8a0;}
 [data-theme="dark"] .btn-oil{background:linear-gradient(135deg,#221a06,#1e1604);color:var(--gold);border-color:#443010;}
 
+
+/* HIDE FROM VIEWER */
+.hide-btn{font-size:11px;border-radius:var(--r);padding:2px 7px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);transition:all .15s;white-space:nowrap;}
+.hide-btn:hover{background:var(--surface2);}
+.hide-btn.hidden-on{background:var(--amber-lt);color:var(--amber);border-color:#d4a840;}
+tr.row-hidden td{opacity:.4;}
+tr.row-hidden td .hide-btn{opacity:1;}
+
 /* PRINT */
 .print-hdr{display:none;text-align:center;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--border);}
 .print-hdr h1{font-family:'Lora',serif;font-size:19px;}
@@ -880,7 +888,7 @@ function calc(y,m,annualMode=false){
     return{inc,exp,oil:oilA,tI,pI,uI,tE,pE,uE,tO:tOa,pO:pOa,uO:uOa,pr:pI-pE};
   } else {
     // Monthly: same — main entry counts as installment amount only
-    const monthExp=exp.map(r=>{
+    const monthExp=exp.filter(r=>!r.hidden||isAdmin()).map(r=>{
       if(r.instPlan) return{...r, amount:+r.instPlan.amt||0};
       return r;
     });
@@ -930,8 +938,11 @@ function ptHtml(paid,type,idx){
   return`<button class="pt ${c}" onclick="togglePaid('${type}',${idx})">${t}</button>`;
 }
 
-function actHtml(type,ri){
+function actHtml(type,ri,isHidden){
+  const hideLbl=isHidden?'👁':'🙈';
+  const hideTip=isHidden?'Ορατό στους θεατές':'Κρυφό από θεατές';
   return`<div class="act-cell">
+    <button class="btn btn-ghost btn-sm hide-btn ${isHidden?'hidden-on':''}" onclick="toggleHide('${type}',${ri})" title="${hideTip}">${hideLbl}</button>
     <button class="btn btn-ghost btn-sm" onclick="copyEntry('${type}',${ri})" title="Αντιγραφή">⧉</button>
     <button class="btn btn-ghost btn-sm" onclick="editEntry('${type}',${ri})">✏</button>
     <button class="btn btn-ghost btn-danger btn-sm" onclick="promptDel('${type}',${ri})">✕</button>
@@ -992,12 +1003,12 @@ function renderHome(){
   document.getElementById('homeExpCount').textContent=fExp.length+' / '+exp.length+' εγγρ.';
   document.getElementById('homeExpBody').innerHTML=expSlice.length===0
     ?'<tr class="empty-row"><td colspan="5">Δεν υπάρχουν εγγραφές</td></tr>'
-    :expSlice.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
+    :expSlice.filter(r=>isAdmin()||!r.hidden).map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r.hidden?' row-hidden':''}">
       <td class="mono">${fmtD(r.date)}</td>
       <td>${esc(r.name)}${r.cat?'<br><span class="muted">'+esc(r.cat)+'</span>':''}</td>
       <td class="mono" style="text-align:right">${fmt(r.amount)}</td>
       <td>${instBadgeHtml(r,'exp',r._i)}</td>
-      <td class="no-print">${actHtml('exp',r._i)}</td>
+      <td class="no-print">${actHtml('exp',r._i,r.hidden)}</td>
     </tr>`).join('');
   // pager
   const ep=document.getElementById('expPagerInfo');
@@ -1144,6 +1155,13 @@ function renderAnnual(){
 }
 
 // ── PAID TOGGLE ───────────────────────────────────────
+function toggleHide(type,i){
+  if(isViewer()) return;
+  const d=ents(CY,CM);
+  d[type][i].hidden=!d[type][i].hidden;
+  setEnts(CY,CM,d);renderCurrentPage();
+}
+
 function togglePaid(type,i){ if(isViewer()) return;
   const d=ents(CY,CM);
   const cur=d[type][i].paid;
