@@ -767,8 +767,13 @@ tr.row-hidden td .hide-btn{opacity:1;}
     </div>
   </div>
   <div class="field-row">
-    <div class="field"><label>Ποσό (€)</label><input type="number" id="fAmount" step="0.01" placeholder="0.00"></div>
+    <div class="field"><label>Ποσό (€)</label><input type="number" id="fAmount" step="0.01" placeholder="0.00" oninput="updateEnantiPreview()"></div>
+    <div class="field"><label>Έναντι (€) <span style="font-weight:400;color:var(--text3);font-size:10px">— προαιρετικό</span></label><input type="number" id="fEnanti" step="0.01" placeholder="0.00" oninput="updateEnantiPreview()"></div>
+  </div>
+  <div id="enantiPreview" style="font-size:12px;color:var(--text2);font-style:italic;margin:-8px 0 8px 0;min-height:16px;"></div>
+  <div class="field-row">
     <div class="field" id="fCodeWrap"><label>Κωδ. Πληρωμής</label><input type="text" id="fCode" placeholder="ΤΙΜ-001"></div>
+    <div class="field" style="visibility:hidden"></div>
   </div>
   <div class="field"><label>Κατηγορία</label><select id="fCat"><option value="">— Χωρίς —</option></select></div>
   <div class="field"><label>Σχόλια</label><textarea id="fNotes" placeholder="Προαιρετικά..."></textarea></div>
@@ -1017,8 +1022,18 @@ function calc(y,m,annualMode=false){
       return r;
     });
     const tE=s(monthExp);
-    const pE=s(monthExp,r=>r.paid==='ΝΑΙ');
-    const uE=s(monthExp,r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ');
+    // For entries with enanti: count enanti as paid, (amount-enanti) as unpaid
+    const pE=monthExp.reduce((sum,r)=>{
+      if(r.paid==='ΝΑΙ') return sum+(+r.amount||0);
+      if(r.enanti>0) return sum+(+r.enanti||0);
+      return sum;
+    },0);
+    const uE=monthExp.reduce((sum,r)=>{
+      if(r.paid==='ΝΑΙ') return sum;
+      if(r.enanti>0) return sum+Math.max(0,(+r.amount||0)-(+r.enanti||0));
+      if(r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ') return sum+(+r.amount||0);
+      return sum;
+    },0);
     // Oil sales
     const{oil}=ents(y,m);
     const tO=s(oil),pO=s(oil,r=>r.paid==='ΝΑΙ'),uO=s(oil,r=>r.paid==='ΟΧΙ');
@@ -1130,7 +1145,7 @@ function renderHome(){
     :expSlice.filter(r=>isAdmin()||!r.hidden).map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r.hidden?' row-hidden':''}">
       <td class="mono">${fmtD(r.date)}</td>
       <td>${esc(r.name)}${r.cat?'<br><span class="muted">'+esc(r.cat)+'</span>':''}</td>
-      <td class="mono" style="text-align:right">${fmt(r.amount)}</td>
+      <td class="mono" style="text-align:right">${fmt(r.amount)}${r.enanti>0?`<br><span style="font-size:10px;color:var(--amber)">έναντι ${fmt(r.enanti)}</span>`:''}</td>
       <td>${instBadgeHtml(r,'exp',r._i)}</td>
       <td class="no-print">${actHtml('exp',r._i,r.hidden)}</td>
     </tr>`).join('');
@@ -1345,6 +1360,8 @@ function togglePaid(type,i){ if(isViewer()) return;
   const d=ents(CY,CM);
   const cur=d[type][i].paid;
   d[type][i].paid=cur==='ΝΑΙ'?'ΟΧΙ':cur==='ΟΧΙ'?'':'ΝΑΙ';
+  // Auto-clear enanti when fully paid
+  if(d[type][i].paid==='ΝΑΙ') d[type][i].enanti=0;
   setEnts(CY,CM,d);renderCurrentPage();
 }
 
@@ -1370,15 +1387,18 @@ function openModal(type,prefill=null){ if(isViewer()) return;
     document.getElementById('fDate').value=r.date||'';
     document.getElementById('fName').value=r.name||'';
     document.getElementById('fAmount').value=r.amount||'';
+    document.getElementById('fEnanti').value=r.enanti||'';
     document.getElementById('fCode').value=r.code||'';
     document.getElementById('fPaid').value=r.paid||'';
     document.getElementById('fInstAmt').value=r.instAmt||'';
     document.getElementById('fInstTotal').value=r.instTotalCount||'';
     toggleInstFields();
+    updateEnantiPreview();
     document.getElementById('fCat').value=r.cat||'';
     document.getElementById('fNotes').value=r.notes||'';
   }else{
-    ['fDate','fName','fAmount','fCode','fPaid','fNotes'].forEach(id=>document.getElementById(id).value='');
+    ['fDate','fName','fAmount','fEnanti','fCode','fPaid','fNotes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('enantiPreview').textContent='';
     document.getElementById('fCat').value='';
     document.getElementById('fInstAmt').value='';
     document.getElementById('fInstTotal').value='';
@@ -1400,10 +1420,12 @@ function saveEntry(){
   const instAmt=paid==='ΔΟΣΕΙΣ'?parseFloat(document.getElementById('fInstAmt').value)||0:0;
   const instTotalCount=paid==='ΔΟΣΕΙΣ'?parseInt(document.getElementById('fInstTotal').value)||1:0;
   const groupId=paid==='ΔΟΣΕΙΣ'?Date.now().toString(36):'';
+  const enantiVal=parseFloat(document.getElementById('fEnanti').value)||0;
   const entry={
     date:document.getElementById('fDate').value,
     name:document.getElementById('fName').value.trim(),
     amount:rawAmt,
+    enanti:paid==='ΝΑΙ'?0:(enantiVal>0?enantiVal:0),
     code:document.getElementById('fCode').value.trim(),
     paid:paid==='ΔΟΣΕΙΣ'?'ΟΧΙ':paid,
     cat:document.getElementById('fCat').value,
@@ -1710,6 +1732,19 @@ function instGroupRemain(r){
   const tot=(+r.instTotalCount||1)*(+r.instAmt||0);
   const alreadyPaid=(+r.instNum-1)*(+r.instAmt||0);
   return Math.max(0,tot-alreadyPaid-(+r.instAmt||0));
+}
+
+
+function updateEnantiPreview(){
+  const total=parseFloat(document.getElementById('fAmount').value)||0;
+  const enanti=parseFloat(document.getElementById('fEnanti').value)||0;
+  const el=document.getElementById('enantiPreview');
+  if(!el) return;
+  if(enanti<=0||total<=0){el.textContent='';return;}
+  const remain=Math.max(0,total-enanti);
+  const pct=Math.round(enanti/total*100);
+  el.textContent=`Έναντι ${fmt(enanti)} από ${fmt(total)} · Υπόλοιπο: ${fmt(remain)} (${pct}%)`;
+  el.style.color=remain<=0?'var(--olive)':'var(--amber)';
 }
 
 function toggleInstFields(){
