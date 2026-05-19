@@ -686,6 +686,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
         <input id="contactSearch" type="text" placeholder="🔍 Αναζήτηση..." oninput="renderContactsPage()"
           style="font-family:'DM Sans',sans-serif;font-size:12.5px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;width:180px;">
         <button class="btn btn-inc no-print" id="btnNewContact2" onclick="newContact()">+ Νέος Πελάτης</button>
+        <button class="btn btn-gold no-print" onclick="exportContacts()" title="Εξαγωγή σε Excel">📊 Excel</button>
       </div>
     </div>
     <div class="contacts-table-card">
@@ -704,6 +705,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
               <th style="text-align:right">🫒 Λάδι</th>
               <th style="text-align:right">Εκκρεμείς</th>
               <th>Τελ. Συναλλαγή</th>
+              <th>Σημειώσεις</th>
               <th class="no-print"></th>
             </tr>
           </thead>
@@ -1203,7 +1205,7 @@ function renderExpPage(){
   const fExp=sorted(exp,'exp',q);
   document.getElementById('expPageCount').textContent=fExp.length+' / '+exp.length+' εγγραφές · '+MN[CM]+' '+CY;
   document.getElementById('expPageBody').innerHTML=fExp.length===0
-    ?'<tr class="empty-row"><td colspan="8">'+( q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν εγγραφές εξόδων')+'</td></tr>'
+    ?'<tr class="empty-row"><td colspan="9">'+( q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν εγγραφές εξόδων')+'</td></tr>'
     :fExp.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
       <td class="mono">${fmtD(r.date)}</td>
       <td>${esc(r.name)}</td>
@@ -1980,12 +1982,13 @@ let activeContactName = null;
 function getAllContacts(){
   // Returns [{name, phone}] — merging manual contacts (with phone) + auto from entries
   const map = {}; // name.lower -> {name, phone}
-  // Manual contacts first (they have phone info)
+  // Manual contacts first (they have phone + notes)
   (data['__contacts__']||[]).forEach(ct=>{
     const key=(ct.name||ct).trim().toLowerCase();
     const name=ct.name||ct;
     const phone=ct.phone||'';
-    map[key]={name:name.trim(),phone};
+    const notes=ct.notes||'';
+    map[key]={name:name.trim(),phone,notes};
   });
   // Auto from entries (add if not already there)
   Object.keys(data).forEach(mk=>{
@@ -1996,7 +1999,7 @@ function getAllContacts(){
       d[type].forEach(r=>{
         if(!r.name||!r.name.trim()) return;
         const key=r.name.trim().toLowerCase();
-        if(!map[key]) map[key]={name:r.name.trim(),phone:''};
+        if(!map[key]) map[key]={name:r.name.trim(),phone:'',notes:''};
       });
     });
   });
@@ -2062,6 +2065,7 @@ function renderContactsPage(){
       <td class="mono" style="text-align:right;color:var(--gold)">${totalOil>0?fmt(totalOil):'—'}</td>
       <td class="mono" style="text-align:right;${unpaid>0?'color:var(--amber)':'color:var(--text3)'}">${unpaid>0?fmt(unpaid):'—'}</td>
       <td class="muted">${lastDate}</td>
+      <td class="muted" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(ct.notes||'')}">${esc(ct.notes||'')}</td>
       <td class="no-print"><div class="act-cell">
         ${isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editContactPhone('${esc(ct.name).replace(/'/g,"\'")}','${esc(ct.phone||'').replace(/'/g,"\'")}')">✏</button>
         <button class="btn btn-ghost btn-danger btn-sm" onclick="event.stopPropagation();deleteContact('${esc(ct.name).replace(/'/g,"\'")}')">✕</button>`:''}
@@ -2163,16 +2167,72 @@ function newContact(){
   selectContact(n);
 }
 
+
+function exportContacts(){
+  const all=getAllContacts();
+  const wb=XLSX.utils.book_new();
+  const rows=[
+    ['Α.Σ Αγιάσου — Πελατολόγιο'],
+    [],
+    ['Όνομα','Τηλέφωνο','Σύν. Εσόδων','Σύν. Εξόδων','🫒 Λάδι','Εκκρεμείς','Τελ. Συναλλαγή','Σημειώσεις']
+  ];
+  all.forEach(ct=>{
+    const txns=getTxnsForContact(ct.name);
+    const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+ +r.amount,0);
+    const totalExp=txns.filter(r=>r.type==='exp').reduce((s,r)=>s+ +r.amount,0);
+    const totalOil=txns.filter(r=>r.type==='oil').reduce((s,r)=>s+ +r.amount,0);
+    const unpaid=txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').reduce((s,r)=>s+ +r.amount,0);
+    const lastTxn=txns[0];
+    rows.push([ct.name,ct.phone||'',totalInc,totalExp,totalOil,unpaid,lastTxn?fmtD(lastTxn.date):'',ct.notes||'']);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:28},{wch:14},{wch:14},{wch:14},{wch:12},{wch:12},{wch:16},{wch:36}];
+  XLSX.utils.book_append_sheet(wb,ws,'Πελατολόγιο');
+  XLSX.writeFile(wb,'agiasos_pelatoloio_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
 function editContactPhone(name,currentPhone){
+  editContactInfo(name);
+}
+
+function editContactInfo(name){
   if(isViewer()) return;
-  const phone=(prompt('Τηλέφωνο για "'+name+'":', currentPhone)||'').trim();
-  if(phone===null) return; // cancelled
+  const ctObj=getAllContacts().find(c=>c.name===name)||{name,phone:'',notes:''};
+  // Show inline edit form in detail panel
+  document.getElementById('contactDetail').innerHTML=`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;">
+      <div style="font-family:'Lora',serif;font-size:15px;color:var(--text);margin-bottom:16px;">✏ Επεξεργασία — ${esc(name)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+          <label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;">Τηλέφωνο</label>
+          <input id="ciPhone" type="text" value="${esc(ctObj.phone||'')}" placeholder="69xxxxxxxx"
+            style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;">
+        </div>
+        <div></div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;">Σημειώσεις</label>
+        <textarea id="ciNotes" placeholder="Σημειώσεις για τον πελάτη..." rows="4"
+          style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;resize:vertical;">${esc(ctObj.notes||'')}</textarea>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-inc" onclick="saveContactInfo('${esc(name).replace(/'/g,"\'")}')">Αποθήκευση</button>
+        <button class="btn btn-ghost" onclick="renderContactDetail('${esc(name).replace(/'/g,"\'")}')">Ακύρωση</button>
+      </div>
+    </div>`;
+  setTimeout(()=>{const el=document.getElementById('ciNotes');if(el)el.focus();},100);
+}
+
+function saveContactInfo(name){
+  if(isViewer()) return;
+  const phone=(document.getElementById('ciPhone').value||'').trim();
+  const notes=(document.getElementById('ciNotes').value||'').trim();
   const manual=getManualContacts();
   const existing=manual.findIndex(c=>(c.name||c).toLowerCase()===name.toLowerCase());
-  if(existing>=0){ manual[existing]={name,phone}; }
-  else { manual.push({name,phone}); }
+  if(existing>=0){ manual[existing]={name,phone,notes}; }
+  else { manual.push({name,phone,notes}); }
   setManualContacts(manual);
-  renderContactsList();
+  renderContactsPage();
   renderContactDetail(name);
 }
 
