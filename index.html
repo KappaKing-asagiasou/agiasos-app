@@ -392,14 +392,15 @@ tr.row-hidden td{opacity:.4;}
 tr.row-hidden td .hide-btn{opacity:1;}
 
 
-/* CONTACTS */
-.contacts-overlay{display:none;position:fixed;inset:0;background:rgba(18,16,12,.45);z-index:200;backdrop-filter:blur(3px);}
-.contacts-overlay.open{display:flex;}
-.contacts-panel{background:var(--surface);border-radius:var(--rl);border:1px solid var(--border);width:900px;max-width:97vw;max-height:90vh;margin:auto;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.2);animation:up .2s ease;}
-.contacts-hdr{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.contacts-hdr h3{font-family:'Lora',serif;font-size:17px;font-weight:400;color:var(--text);flex:1;}
-.contacts-body{display:flex;flex:1;min-height:0;}
-.contacts-list{width:260px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
+/* CONTACTS PAGE */
+.contacts-layout{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start;}
+@media(max-width:700px){.contacts-layout{grid-template-columns:1fr;}}
+.contacts-sidebar{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;position:sticky;top:80px;}
+.contacts-sidebar-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--olive-bg),#e8f2dc);}
+.contacts-sidebar-hdr h3{font-family:'Lora',serif;font-size:14px;font-weight:400;color:var(--olive);flex:1;}
+.contacts-list{max-height:calc(100vh - 200px);overflow-y:auto;}
+.contacts-hdr{display:none;}
+.contacts-body{display:none;}
 .contact-item{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
 .contact-item:hover{background:var(--surface2);}
 .contact-item.active{background:var(--olive-bg);border-left:3px solid var(--olive-mid);}
@@ -435,7 +436,8 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .cd-field input:focus,.cd-field textarea:focus{border-color:var(--olive-mid);}
 .cd-field textarea{resize:vertical;min-height:60px;}
 .cd-field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-[data-theme="dark"] .contacts-panel{background:var(--surface);}
+[data-theme="dark"] .contacts-sidebar{background:var(--surface);border-color:var(--border);}
+[data-theme="dark"] .contacts-sidebar-hdr{background:var(--olive-bg);}
 [data-theme="dark"] .cd-stat{background:var(--surface2);}
 [data-theme="dark"] .contact-item.active{background:var(--olive-bg);}
 
@@ -494,7 +496,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
       <button class="nav-tab" onclick="goPage('oil')">🫒 Λάδι</button>
       <button class="nav-tab" onclick="goPage('inc')">📥 Έσοδα</button>
       <button class="nav-tab" onclick="goPage('annual')">📊 Έτος</button>
-      <button class="nav-tab" onclick="openContacts()">👥 Πελάτες</button>
+      <button class="nav-tab" onclick="goPage('contacts')">👥 Πελάτες</button>
     </div>
     <div class="div-v"></div>
     <!-- Year + month -->
@@ -665,6 +667,34 @@ tr.row-hidden td .hide-btn{opacity:1;}
           <th>Σχόλια</th>
           <th class="no-print"></th>
         </tr></thead><tbody id="incPageBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTACTS PAGE ─── -->
+  <div class="page" id="page-contacts">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      <h2 style="font-family:'Lora',serif;font-size:15px;font-weight:400;color:var(--text2);font-style:italic;">👥 Πελατολόγιο</h2>
+      <button class="btn btn-inc no-print" id="btnNewContact2" onclick="newContact()">+ Νέος Πελάτης</button>
+    </div>
+    <div class="contacts-layout">
+      <!-- LEFT: list -->
+      <div class="contacts-sidebar">
+        <div class="contacts-sidebar-hdr">
+          <h3>Πελάτες</h3>
+          <span class="muted" id="contactsCount"></span>
+        </div>
+        <div style="padding:8px 10px;border-bottom:1px solid var(--border);">
+          <input id="contactSearch" type="text" placeholder="🔍 Αναζήτηση..." oninput="renderContactsList()"
+            style="width:100%;font-family:'DM Sans',sans-serif;font-size:12.5px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;">
+        </div>
+        <div id="contactsList"></div>
+      </div>
+      <!-- RIGHT: detail -->
+      <div id="contactDetail">
+        <div class="contact-detail-empty" style="padding:40px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);color:var(--text3);font-style:italic;">
+          Επέλεξε πελάτη από αριστερά
+        </div>
       </div>
     </div>
   </div>
@@ -914,11 +944,11 @@ function goPage(p){
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach((t,i)=>{
-    const pages=['home','exp','oil','inc','annual'];
+    const pages=['home','exp','oil','inc','annual','contacts'];
     t.classList.toggle('active',pages[i]===p);
   });
   // Hide search & add buttons on annual page
-  const isAnnual=p==='annual';
+  const isAnnual=p==='annual'||p==='contacts';
   document.getElementById('searchWrap').style.display=isAnnual?'none':'';
   document.getElementById('btnAddExp').style.display=isAnnual?'none':'';
   document.getElementById('btnAddOil').style.display=isAnnual?'none':'';
@@ -933,6 +963,7 @@ function renderCurrentPage(){
   else if(CPage==='oil')renderOilPage();
   else if(CPage==='inc')renderIncPage();
   else if(CPage==='annual')renderAnnual();
+  else if(CPage==='contacts')renderContactsPage();
 }
 
 // ── HELPERS ───────────────────────────────────────────
@@ -1919,13 +1950,18 @@ function getAllContacts(){
 function getManualContacts(){ return data['__contacts__']||[]; }
 function setManualContacts(arr){ data['__contacts__']=arr; save(); }
 
-function openContacts(){
-  activeContactName=null;
+function openContacts(){ goPage('contacts'); }
+function closeContacts(){ goPage('home'); }
+
+function renderContactsPage(){
   renderContactsList();
-  document.getElementById('contactDetail').innerHTML='<div class="contact-detail-empty">Επέλεξε πελάτη από αριστερά</div>';
-  document.getElementById('contactsOverlay').classList.add('open');
+  const all=getAllContacts();
+  const cEl=document.getElementById('contactsCount');
+  if(cEl) cEl.textContent=all.length+' πελάτες';
+  if(!activeContactName && all.length>0){
+    // auto-select first
+  }
 }
-function closeContacts(){ document.getElementById('contactsOverlay').classList.remove('open'); }
 
 function renderContactsList(){
   const contacts=getAllContacts();
@@ -1945,6 +1981,8 @@ function renderContactsList(){
       </div>
     </div>`;
   }).join('');
+  const cEl=document.getElementById('contactsCount');
+  if(cEl) cEl.textContent=contacts.length+' πελάτες';
 }
 
 function selectContact(name){
@@ -2060,8 +2098,9 @@ function applyRole(){
     if(w) w.style.display='';
     loadNotifs();
   } else {
-    const b=document.getElementById('btnNewContact');
-    if(b) b.style.display='none';
+    ['btnNewContact','btnNewContact2'].forEach(id=>{
+      const b=document.getElementById(id);if(b)b.style.display='none';
+    });
   }
   if(isViewer()){
     // Add viewer CSS class to body
@@ -2327,28 +2366,7 @@ if('serviceWorker' in navigator){
 </div>
 
 
-<!-- CONTACTS -->
-<div class="contacts-overlay" id="contactsOverlay" onclick="if(event.target===this)closeContacts()">
-<div class="contacts-panel">
-  <div class="contacts-hdr">
-    <h3>👥 Πελατολόγιο</h3>
-    <button class="btn btn-inc no-print" id="btnNewContact" onclick="newContact()">+ Νέος</button>
-    <button class="btn btn-ghost" onclick="closeContacts()">✕</button>
-  </div>
-  <div class="contacts-body">
-    <div class="contacts-list">
-      <div style="padding:8px 10px;border-bottom:1px solid var(--border);">
-        <input id="contactSearch" type="text" placeholder="🔍 Αναζήτηση..." oninput="renderContactsList()"
-          style="width:100%;font-family:'DM Sans',sans-serif;font-size:12.5px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;">
-      </div>
-      <div id="contactsList"></div>
-    </div>
-    <div class="contact-detail" id="contactDetail">
-      <div class="contact-detail-empty">Επέλεξε πελάτη από αριστερά</div>
-    </div>
-  </div>
-</div>
-</div>
+<!-- contacts page is now inline -->
 
 </body>
 </html>
