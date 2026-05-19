@@ -393,14 +393,21 @@ tr.row-hidden td .hide-btn{opacity:1;}
 
 
 /* CONTACTS PAGE */
-.contacts-layout{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start;}
-@media(max-width:700px){.contacts-layout{grid-template-columns:1fr;}}
-.contacts-sidebar{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;position:sticky;top:80px;}
-.contacts-sidebar-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--olive-bg),#e8f2dc);}
-.contacts-sidebar-hdr h3{font-family:'Lora',serif;font-size:14px;font-weight:400;color:var(--olive);flex:1;}
-.contacts-list{max-height:calc(100vh - 200px);overflow-y:auto;}
-.contacts-hdr{display:none;}
-.contacts-body{display:none;}
+.contacts-table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;}
+.contacts-table-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--olive-bg),#e8f2dc);flex-wrap:wrap;}
+.contacts-table-hdr h3{font-family:'Lora',serif;font-size:14px;font-weight:400;color:var(--olive);flex:1;}
+.contacts-pager{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface2);font-size:12.5px;color:var(--text2);}
+.contacts-pager .cp-info{flex:1;text-align:center;}
+.contacts-pager button{font-size:18px;border:none;background:transparent;cursor:pointer;color:var(--text2);padding:0 6px;line-height:1;border-radius:6px;}
+.contacts-pager button:disabled{opacity:.25;cursor:default;}
+.contacts-pager button:hover:not(:disabled){color:var(--olive);background:var(--surface);}
+.contacts-expand{display:none;}
+.contacts-hdr{display:none;}.contacts-body{display:none;}
+.contacts-layout{display:block;}
+.contacts-sidebar{display:none;}
+[data-theme="dark"] .contacts-table-card{background:var(--surface);border-color:var(--border);}
+[data-theme="dark"] .contacts-table-hdr{background:var(--olive-bg);}
+[data-theme="dark"] .contacts-pager{background:var(--surface2);}
 .contact-item{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
 .contact-item:hover{background:var(--surface2);}
 .contact-item.active{background:var(--olive-bg);border-left:3px solid var(--olive-mid);}
@@ -675,28 +682,42 @@ tr.row-hidden td .hide-btn{opacity:1;}
   <div class="page" id="page-contacts">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
       <h2 style="font-family:'Lora',serif;font-size:15px;font-weight:400;color:var(--text2);font-style:italic;">👥 Πελατολόγιο</h2>
-      <button class="btn btn-inc no-print" id="btnNewContact2" onclick="newContact()">+ Νέος Πελάτης</button>
-    </div>
-    <div class="contacts-layout">
-      <!-- LEFT: list -->
-      <div class="contacts-sidebar">
-        <div class="contacts-sidebar-hdr">
-          <h3>Πελάτες</h3>
-          <span class="muted" id="contactsCount"></span>
-        </div>
-        <div style="padding:8px 10px;border-bottom:1px solid var(--border);">
-          <input id="contactSearch" type="text" placeholder="🔍 Αναζήτηση..." oninput="renderContactsList()"
-            style="width:100%;font-family:'DM Sans',sans-serif;font-size:12.5px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;">
-        </div>
-        <div id="contactsList"></div>
-      </div>
-      <!-- RIGHT: detail -->
-      <div id="contactDetail">
-        <div class="contact-detail-empty" style="padding:40px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);color:var(--text3);font-style:italic;">
-          Επέλεξε πελάτη από αριστερά
-        </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="contactSearch" type="text" placeholder="🔍 Αναζήτηση..." oninput="renderContactsPage()"
+          style="font-family:'DM Sans',sans-serif;font-size:12.5px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;width:180px;">
+        <button class="btn btn-inc no-print" id="btnNewContact2" onclick="newContact()">+ Νέος Πελάτης</button>
       </div>
     </div>
+    <div class="contacts-table-card">
+      <div class="contacts-table-hdr">
+        <h3>Πελάτες</h3>
+        <span class="muted" id="contactsCount"></span>
+      </div>
+      <div class="tbl-scroll">
+        <table id="contactsTable">
+          <thead>
+            <tr>
+              <th>Όνομα</th>
+              <th>Τηλέφωνο</th>
+              <th style="text-align:right">Σύν. Εσόδων</th>
+              <th style="text-align:right">Σύν. Εξόδων</th>
+              <th style="text-align:right">🫒 Λάδι</th>
+              <th style="text-align:right">Εκκρεμείς</th>
+              <th>Τελ. Συναλλαγή</th>
+              <th class="no-print"></th>
+            </tr>
+          </thead>
+          <tbody id="contactsBody"></tbody>
+        </table>
+      </div>
+      <div class="contacts-pager">
+        <button onclick="contactsChangePage(-1)" id="contactsPrev">&#8249;</button>
+        <span class="cp-info" id="contactsPagerInfo"></span>
+        <button onclick="contactsChangePage(1)" id="contactsNext">&#8250;</button>
+      </div>
+    </div>
+    <!-- Detail panel (shown below table when row clicked) -->
+    <div id="contactDetail" style="margin-top:16px;"></div>
   </div>
 
   <!-- ── ANNUAL PAGE ─── -->
@@ -1950,45 +1971,83 @@ function getAllContacts(){
 function getManualContacts(){ return data['__contacts__']||[]; }
 function setManualContacts(arr){ data['__contacts__']=arr; save(); }
 
+let contactsPage=0;
+const CONTACTS_PER_PAGE=30;
+
 function openContacts(){ goPage('contacts'); }
 function closeContacts(){ goPage('home'); }
 
-function renderContactsPage(){
-  renderContactsList();
-  const all=getAllContacts();
-  const cEl=document.getElementById('contactsCount');
-  if(cEl) cEl.textContent=all.length+' πελάτες';
-  if(!activeContactName && all.length>0){
-    // auto-select first
-  }
+function contactsChangePage(delta){
+  contactsPage=Math.max(0,contactsPage+delta);
+  renderContactsPage();
 }
 
-function renderContactsList(){
-  const contacts=getAllContacts();
-  const q=(document.getElementById('contactSearch').value||'').toLowerCase();
-  const filtered=contacts.filter(ct=>ct.name.toLowerCase().includes(q)||(ct.phone||'').includes(q));
-  const list=document.getElementById('contactsList');
+function renderContactsPage(){
+  const q=(document.getElementById('contactSearch')||{}).value||'';
+  const ql=q.trim().toLowerCase();
+  const all=getAllContacts();
+  const filtered=ql?all.filter(ct=>ct.name.toLowerCase().includes(ql)||(ct.phone||'').includes(ql)):all;
+
+  const totalPages=Math.max(1,Math.ceil(filtered.length/CONTACTS_PER_PAGE));
+  contactsPage=Math.min(contactsPage,totalPages-1);
+  const slice=filtered.slice(contactsPage*CONTACTS_PER_PAGE,(contactsPage+1)*CONTACTS_PER_PAGE);
+
+  const cEl=document.getElementById('contactsCount');
+  if(cEl) cEl.textContent=filtered.length+' πελάτες';
+
+  const info=document.getElementById('contactsPagerInfo');
+  if(info) info.textContent=filtered.length===0?'':('Σελ. '+(contactsPage+1)+' / '+totalPages+' · '+filtered.length+' πελάτες');
+  const prev=document.getElementById('contactsPrev');
+  const next=document.getElementById('contactsNext');
+  if(prev) prev.disabled=contactsPage<=0;
+  if(next) next.disabled=contactsPage>=totalPages-1;
+
+  const tbody=document.getElementById('contactsBody');
+  if(!tbody) return;
+
   if(filtered.length===0){
-    list.innerHTML='<div class="contact-empty">'+(q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν πελάτες ακόμα')+'</div>';
+    tbody.innerHTML=`<tr class="empty-row"><td colspan="8">${ql?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν πελάτες ακόμα'}</td></tr>`;
     return;
   }
-  list.innerHTML=filtered.map(ct=>{
+
+  tbody.innerHTML=slice.map(ct=>{
     const txns=getTxnsForContact(ct.name);
-    const unpaid=txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').length;
-    return`<div class="contact-item${ct.name===activeContactName?' active':''}" onclick="selectContact('${esc(ct.name).replace(/'/g,"\'")}')">
-      <div class="cn">${esc(ct.name)}</div>
-      <div class="ct">${ct.phone?'📞 '+esc(ct.phone)+' · ':''}${txns.length} συναλλαγές${unpaid>0?` · <span style="color:var(--amber)">⚠ ${unpaid} εκκρεμείς</span>`:''}
-      </div>
-    </div>`;
+    const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+ +r.amount,0);
+    const totalExp=txns.filter(r=>r.type==='exp').reduce((s,r)=>s+ +r.amount,0);
+    const totalOil=txns.filter(r=>r.type==='oil').reduce((s,r)=>s+ +r.amount,0);
+    const unpaid=txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').reduce((s,r)=>s+ +r.amount,0);
+    const lastTxn=txns[0];
+    const lastDate=lastTxn?fmtD(lastTxn.date):'—';
+    const isActive=ct.name===activeContactName;
+    return`<tr class="${isActive?'ry':'r0'}" style="cursor:pointer" onclick="selectContact('${esc(ct.name).replace(/'/g,"\'")}')">
+      <td><strong style="font-size:13px">${esc(ct.name)}</strong></td>
+      <td class="muted">${ct.phone?'📞 '+esc(ct.phone):'—'}</td>
+      <td class="mono" style="text-align:right;color:var(--olive)">${totalInc>0?fmt(totalInc):'—'}</td>
+      <td class="mono" style="text-align:right;color:var(--red-mid)">${totalExp>0?fmt(totalExp):'—'}</td>
+      <td class="mono" style="text-align:right;color:var(--gold)">${totalOil>0?fmt(totalOil):'—'}</td>
+      <td class="mono" style="text-align:right;${unpaid>0?'color:var(--amber)':'color:var(--text3)'}">${unpaid>0?fmt(unpaid):'—'}</td>
+      <td class="muted">${lastDate}</td>
+      <td class="no-print"><div class="act-cell">
+        ${isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editContactPhone('${esc(ct.name).replace(/'/g,"\'")}','${esc(ct.phone||'').replace(/'/g,"\'")}')">✏</button>
+        <button class="btn btn-ghost btn-danger btn-sm" onclick="event.stopPropagation();deleteContact('${esc(ct.name).replace(/'/g,"\'")}')">✕</button>`:''}
+      </div></td>
+    </tr>`;
   }).join('');
-  const cEl=document.getElementById('contactsCount');
-  if(cEl) cEl.textContent=contacts.length+' πελάτες';
 }
 
+function renderContactsList(){ renderContactsPage(); }
+
 function selectContact(name){
-  activeContactName=name;
-  renderContactsList();
-  renderContactDetail(name);
+  activeContactName=name===activeContactName?null:name; // toggle
+  renderContactsPage();
+  if(activeContactName){
+    renderContactDetail(activeContactName);
+    const el=document.getElementById('contactDetail');
+    if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } else {
+    const el=document.getElementById('contactDetail');
+    if(el) el.innerHTML='';
+  }
 }
 
 function getTxnsForContact(name){
