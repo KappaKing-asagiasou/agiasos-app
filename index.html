@@ -391,6 +391,67 @@ tr.ry:hover td{background:#e8f4de;}tr.rn:hover td{background:#f5e4e4;}
 tr.row-hidden td{opacity:.4;}
 tr.row-hidden td .hide-btn{opacity:1;}
 
+
+/* CONTACTS */
+.contacts-overlay{display:none;position:fixed;inset:0;background:rgba(18,16,12,.45);z-index:200;backdrop-filter:blur(3px);}
+.contacts-overlay.open{display:flex;}
+.contacts-panel{background:var(--surface);border-radius:var(--rl);border:1px solid var(--border);width:900px;max-width:97vw;max-height:90vh;margin:auto;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.2);animation:up .2s ease;}
+.contacts-hdr{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.contacts-hdr h3{font-family:'Lora',serif;font-size:17px;font-weight:400;color:var(--text);flex:1;}
+.contacts-body{display:flex;flex:1;min-height:0;}
+.contacts-list{width:260px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
+.contact-item{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+.contact-item:hover{background:var(--surface2);}
+.contact-item.active{background:var(--olive-bg);border-left:3px solid var(--olive-mid);}
+.contact-item .cn{font-size:13px;color:var(--text);margin-bottom:2px;}
+.contact-item .ct{font-size:11px;color:var(--text3);}
+.contact-empty{padding:20px;text-align:center;color:var(--text3);font-style:italic;font-size:12.5px;}
+.contact-detail{flex:1;overflow-y:auto;padding:20px;}
+.contact-detail-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);font-style:italic;font-size:13px;}
+.cd-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.cd-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--olive-lt),var(--olive-bg));border:1.5px solid var(--olive-mid);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.cd-name{font-family:'Lora',serif;font-size:18px;font-weight:400;color:var(--text);margin-bottom:4px;}
+.cd-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--text2);}
+.cd-meta span{display:flex;align-items:center;gap:4px;}
+.cd-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.cd-stat{background:var(--surface2);border-radius:var(--r);padding:9px 12px;text-align:center;}
+.cd-stat .csl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:3px;}
+.cd-stat .csv{font-family:'DM Mono',monospace;font-size:14px;}
+.cd-stat.g .csv{color:var(--olive);}
+.cd-stat.r .csv{color:var(--red-mid);}
+.cd-stat.o .csv{color:var(--gold);}
+.cd-txn-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px;}
+.cd-txn{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;}
+.cd-txn-row{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--border);font-size:12.5px;}
+.cd-txn-row:last-child{border-bottom:none;}
+.cd-txn-row:hover{background:var(--bg);}
+.cd-txn-type{font-size:10px;padding:2px 6px;border-radius:10px;white-space:nowrap;}
+.cd-txn-type.exp{background:var(--red-lt);color:var(--red);}
+.cd-txn-type.inc{background:var(--olive-lt);color:var(--olive);}
+.cd-txn-type.oil{background:var(--gold-lt);color:var(--gold);}
+.cd-edit-form{display:flex;flex-direction:column;gap:10px;}
+.cd-field label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;}
+.cd-field input,.cd-field textarea{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;}
+.cd-field input:focus,.cd-field textarea:focus{border-color:var(--olive-mid);}
+.cd-field textarea{resize:vertical;min-height:60px;}
+.cd-field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+[data-theme="dark"] .contacts-panel{background:var(--surface);}
+[data-theme="dark"] .cd-stat{background:var(--surface2);}
+[data-theme="dark"] .contact-item.active{background:var(--olive-bg);}
+
+
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative;}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-top:none;border-radius:0 0 var(--r) var(--r);max-height:180px;overflow-y:auto;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.12);display:none;}
+.ac-list.open{display:block;}
+.ac-item{padding:8px 12px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);transition:background .1s;}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:hover,.ac-item.focused{background:var(--olive-bg);}
+.ac-item .ac-name{flex:1;color:var(--text);}
+.ac-item .ac-phone{font-size:11px;color:var(--text3);}
+[data-theme="dark"] .ac-list{background:var(--surface);border-color:var(--border2);}
+[data-theme="dark"] .ac-item:hover,[data-theme="dark"] .ac-item.focused{background:var(--olive-bg);}
+
 /* PRINT */
 .print-hdr{display:none;text-align:center;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--border);}
 .print-hdr h1{font-family:'Lora',serif;font-size:19px;}
@@ -433,6 +494,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
       <button class="nav-tab" onclick="goPage('oil')">🫒 Λάδι</button>
       <button class="nav-tab" onclick="goPage('inc')">📥 Έσοδα</button>
       <button class="nav-tab" onclick="goPage('annual')">📊 Έτος</button>
+      <button class="nav-tab" onclick="openContacts()">👥 Πελάτες</button>
     </div>
     <div class="div-v"></div>
     <!-- Year + month -->
@@ -645,7 +707,14 @@ tr.row-hidden td .hide-btn{opacity:1;}
       <select id="fPaid" onchange="toggleInstFields()"><option value="">—</option><option value="ΝΑΙ">ΝΑΙ</option><option value="ΟΧΙ">ΟΧΙ</option><option value="ΔΟΣΕΙΣ">Δόσεις</option></select>
     </div>
   </div>
-  <div class="field"><label>Όνομα</label><input type="text" id="fName" placeholder="Προμηθευτής / Πελάτης..."></div>
+  <div class="field">
+    <label>Όνομα</label>
+    <div class="ac-wrap">
+      <input type="text" id="fName" placeholder="Προμηθευτής / Πελάτης..." autocomplete="off"
+        oninput="acInput(this.value)" onkeydown="acKey(event)" onfocus="acInput(this.value)" onblur="setTimeout(acHide,180)">
+      <div class="ac-list" id="acList"></div>
+    </div>
+  </div>
   <div class="field-row">
     <div class="field"><label>Ποσό (€)</label><input type="number" id="fAmount" step="0.01" placeholder="0.00"></div>
     <div class="field" id="fCodeWrap"><label>Κωδ. Πληρωμής</label><input type="text" id="fCode" placeholder="ΤΙΜ-001"></div>
@@ -796,6 +865,9 @@ function save(){
 function migrateInstallments(){}
 function setEntsSilent(y,m,d){data[mk(y,m)]=d;save();}function mk(y,m){return'y'+y+'m'+m;}
 function ents(y,m){const k=mk(y,m);if(!data[k])data[k]={inc:[],exp:[],oil:[]};if(!data[k].oil)data[k].oil=[];return data[k];}
+function getContacts(){return data['__contacts__']||[];}
+function setContacts(arr){data['__contacts__']=arr;save();}
+function genContactId(){return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 function setEnts(y,m,d){data[mk(y,m)]=d;save();}
 
 const sortS={exp:{col:'date',dir:1},inc:{col:'date',dir:1},oil:{col:'date',dir:1}};
@@ -1155,6 +1227,61 @@ function renderAnnual(){
 }
 
 // ── PAID TOGGLE ───────────────────────────────────────
+
+// ── AUTOCOMPLETE for name field ───────────────────────
+let acIdx = -1;
+
+function acInput(val){
+  const list = document.getElementById('acList');
+  if(!list) return;
+  const q = val.trim().toLowerCase();
+  if(!q){ list.classList.remove('open'); return; }
+  const contacts = getAllContacts();
+  const matches = contacts.filter(ct =>
+    ct.name.toLowerCase().includes(q)
+  ).slice(0, 8);
+  if(matches.length === 0){ list.classList.remove('open'); return; }
+  acIdx = -1;
+  list.innerHTML = matches.map((ct,i) =>
+    `<div class="ac-item" data-name="${esc(ct.name)}" onmousedown="acSelect('${esc(ct.name).replace(/'/g,"\'")}')">
+      <span class="ac-name">${esc(ct.name)}</span>
+      ${ct.phone?`<span class="ac-phone">📞 ${esc(ct.phone)}</span>`:''}
+    </div>`
+  ).join('');
+  list.classList.add('open');
+}
+
+function acSelect(name){
+  document.getElementById('fName').value = name;
+  acHide();
+}
+
+function acHide(){
+  const list = document.getElementById('acList');
+  if(list){ list.classList.remove('open'); acIdx = -1; }
+}
+
+function acKey(e){
+  const list = document.getElementById('acList');
+  if(!list || !list.classList.contains('open')) return;
+  const items = list.querySelectorAll('.ac-item');
+  if(e.key === 'ArrowDown'){
+    e.preventDefault();
+    acIdx = Math.min(acIdx+1, items.length-1);
+    items.forEach((el,i)=>el.classList.toggle('focused',i===acIdx));
+  } else if(e.key === 'ArrowUp'){
+    e.preventDefault();
+    acIdx = Math.max(acIdx-1, -1);
+    items.forEach((el,i)=>el.classList.toggle('focused',i===acIdx));
+  } else if(e.key === 'Enter' && acIdx >= 0){
+    e.preventDefault();
+    const focused = list.querySelector('.ac-item.focused');
+    if(focused) acSelect(focused.dataset.name);
+  } else if(e.key === 'Escape'){
+    acHide();
+  }
+}
+
 function toggleHide(type,i){
   if(isViewer()) return;
   const d=ents(CY,CM);
@@ -1758,13 +1885,183 @@ document.addEventListener('click',e=>{
   }
 });
 
+
+// ── CONTACTS ──────────────────────────────────────────
+// Contacts = unique names. Auto-populated from entries + manual additions.
+let activeContactName = null;
+
+function getAllContacts(){
+  // Returns [{name, phone}] — merging manual contacts (with phone) + auto from entries
+  const map = {}; // name.lower -> {name, phone}
+  // Manual contacts first (they have phone info)
+  (data['__contacts__']||[]).forEach(ct=>{
+    const key=(ct.name||ct).trim().toLowerCase();
+    const name=ct.name||ct;
+    const phone=ct.phone||'';
+    map[key]={name:name.trim(),phone};
+  });
+  // Auto from entries (add if not already there)
+  Object.keys(data).forEach(mk=>{
+    if(!mk.startsWith('y')) return;
+    const d=data[mk];
+    ['exp','inc','oil'].forEach(type=>{
+      if(!d[type]) return;
+      d[type].forEach(r=>{
+        if(!r.name||!r.name.trim()) return;
+        const key=r.name.trim().toLowerCase();
+        if(!map[key]) map[key]={name:r.name.trim(),phone:''};
+      });
+    });
+  });
+  return Object.values(map).sort((a,b)=>a.name.localeCompare(b.name,'el'));
+}
+
+function getManualContacts(){ return data['__contacts__']||[]; }
+function setManualContacts(arr){ data['__contacts__']=arr; save(); }
+
+function openContacts(){
+  activeContactName=null;
+  renderContactsList();
+  document.getElementById('contactDetail').innerHTML='<div class="contact-detail-empty">Επέλεξε πελάτη από αριστερά</div>';
+  document.getElementById('contactsOverlay').classList.add('open');
+}
+function closeContacts(){ document.getElementById('contactsOverlay').classList.remove('open'); }
+
+function renderContactsList(){
+  const contacts=getAllContacts();
+  const q=(document.getElementById('contactSearch').value||'').toLowerCase();
+  const filtered=contacts.filter(ct=>ct.name.toLowerCase().includes(q)||(ct.phone||'').includes(q));
+  const list=document.getElementById('contactsList');
+  if(filtered.length===0){
+    list.innerHTML='<div class="contact-empty">'+(q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν πελάτες ακόμα')+'</div>';
+    return;
+  }
+  list.innerHTML=filtered.map(ct=>{
+    const txns=getTxnsForContact(ct.name);
+    const unpaid=txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').length;
+    return`<div class="contact-item${ct.name===activeContactName?' active':''}" onclick="selectContact('${esc(ct.name).replace(/'/g,"\'")}')">
+      <div class="cn">${esc(ct.name)}</div>
+      <div class="ct">${ct.phone?'📞 '+esc(ct.phone)+' · ':''}${txns.length} συναλλαγές${unpaid>0?` · <span style="color:var(--amber)">⚠ ${unpaid} εκκρεμείς</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectContact(name){
+  activeContactName=name;
+  renderContactsList();
+  renderContactDetail(name);
+}
+
+function getTxnsForContact(name){
+  const txns=[];
+  const nameLower=name.trim().toLowerCase();
+  Object.keys(data).forEach(mk=>{
+    if(!mk.startsWith('y')) return;
+    const parts=mk.replace('y','').split('m');
+    const y=+parts[0],m=+parts[1];
+    const d=data[mk];
+    ['exp','inc','oil'].forEach(type=>{
+      if(!d[type]) return;
+      d[type].forEach(r=>{
+        if((r.name||'').trim().toLowerCase()===nameLower){
+          txns.push({...r,type,y,m});
+        }
+      });
+    });
+  });
+  txns.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  return txns;
+}
+
+function renderContactDetail(name){
+  const txns=getTxnsForContact(name);
+  const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+ +r.amount,0);
+  const totalExp=txns.filter(r=>r.type==='exp').reduce((s,r)=>s+ +r.amount,0);
+  const totalOil=txns.filter(r=>r.type==='oil').reduce((s,r)=>s+ +r.amount,0);
+  const unpaid=txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').reduce((s,r)=>s+ +r.amount,0);
+
+  const isManual=getManualContacts().some(c=>(c.name||c)===name);
+  const deleteBtn=isAdmin()&&isManual?`<button class="btn btn-ghost btn-danger btn-sm" onclick="deleteContact('${esc(name).replace(/'/g,"\'")}')">✕ Διαγραφή</button>`:'';
+
+  const txnRows=txns.length===0
+    ?'<div style="padding:16px;text-align:center;color:var(--text3);font-style:italic">Δεν υπάρχουν συναλλαγές</div>'
+    :txns.map(r=>`<div class="cd-txn-row">
+        <span class="cd-txn-type ${r.type}">${r.type==='exp'?'Έξοδο':r.type==='oil'?'🫒 Λάδι':'Έσοδο'}</span>
+        <span class="mono" style="font-size:11px;color:var(--text3);min-width:72px">${fmtD(r.date)}</span>
+        <span style="flex:1;font-size:12px;color:var(--text2)">${MN[r.m]} ${r.y}</span>
+        <span class="mono" style="font-size:12.5px">${fmt(r.amount)}</span>
+        <span class="${r.paid==='ΝΑΙ'?'paid-yes':r.paid==='ΟΧΙ'?'paid-no':'muted'}" style="font-size:11px;min-width:28px">${r.paid||'—'}</span>
+      </div>`).join('');
+
+  const ctObj=getAllContacts().find(c=>c.name===name)||{name,phone:''};
+  const phoneHtml=ctObj.phone?`<span style="font-size:13px;color:var(--text2)">📞 ${esc(ctObj.phone)}</span>`:'';
+  const editPhoneBtn=isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="editContactPhone('${esc(name).replace(/'/g,"\'")}','${esc(ctObj.phone||'').replace(/'/g,"\'")}')">✏ Τηλ.</button>`:'';
+  document.getElementById('contactDetail').innerHTML=`
+    <div class="cd-header">
+      <div class="cd-avatar">👤</div>
+      <div style="flex:1">
+        <div class="cd-name">${esc(name)}</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:3px">${phoneHtml}</div>
+      </div>
+      <div style="display:flex;gap:6px">${editPhoneBtn}${deleteBtn}</div>
+    </div>
+    <div class="cd-stats">
+      <div class="cd-stat g"><div class="csl">Σύν. Εσόδων</div><div class="csv">${fmt(totalInc)}</div></div>
+      <div class="cd-stat r"><div class="csl">Σύν. Εξόδων</div><div class="csv">${fmt(totalExp)}</div></div>
+      <div class="cd-stat o"><div class="csl">🫒 Λάδι</div><div class="csv">${fmt(totalOil)}</div></div>
+    </div>
+    ${unpaid>0?`<div class="pending-alert" style="margin-bottom:14px">⚠ Εκκρεμείς πληρωμές: ${fmt(unpaid)}</div>`:''}
+    <div class="cd-txn-hdr">Συναλλαγές</div>
+    <div class="cd-txn">${txnRows}</div>`;
+}
+
+function newContact(){
+  if(isViewer()) return;
+  const name=prompt('Όνομα νέου πελάτη:');
+  if(!name||!name.trim()) return;
+  const n=name.trim();
+  const phone=(prompt('Τηλέφωνο (προαιρετικό):')||'').trim();
+  const manual=getManualContacts();
+  const existing=manual.findIndex(c=>(c.name||c).toLowerCase()===n.toLowerCase());
+  if(existing>=0){ manual[existing]={name:n,phone}; }
+  else { manual.push({name:n,phone}); }
+  setManualContacts(manual);
+  renderContactsList();
+  selectContact(n);
+}
+
+function editContactPhone(name,currentPhone){
+  if(isViewer()) return;
+  const phone=(prompt('Τηλέφωνο για "'+name+'":', currentPhone)||'').trim();
+  if(phone===null) return; // cancelled
+  const manual=getManualContacts();
+  const existing=manual.findIndex(c=>(c.name||c).toLowerCase()===name.toLowerCase());
+  if(existing>=0){ manual[existing]={name,phone}; }
+  else { manual.push({name,phone}); }
+  setManualContacts(manual);
+  renderContactsList();
+  renderContactDetail(name);
+}
+
+function deleteContact(name){
+  if(!confirm('Διαγραφή "'+name+'" από το πελατολόγιο;\n(Οι συναλλαγές δεν διαγράφονται)')) return;
+  const manual=getManualContacts().filter(c=>(c.name||c)!==name);
+  setManualContacts(manual);
+  activeContactName=null;
+  renderContactsList();
+  document.getElementById('contactDetail').innerHTML='<div class="contact-detail-empty">Επέλεξε πελάτη από αριστερά</div>';
+}
+
 // ── ROLE SYSTEM ───────────────────────────────────────
 function applyRole(){
   if(isAdmin()){
-    // Show notification bell and load notifications
     const w=document.getElementById('notifWrap');
     if(w) w.style.display='';
     loadNotifs();
+  } else {
+    const b=document.getElementById('btnNewContact');
+    if(b) b.style.display='none';
   }
   if(isViewer()){
     // Add viewer CSS class to body
@@ -1863,7 +2160,7 @@ function saveInstSettings(){}
 function addInstCount(delta){}
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeModal();cancelDel();closeBackup();closeCats();closePending();closeInst();}
+  if(e.key==='Escape'){closeModal();cancelDel();closeBackup();closeCats();closePending();closeInst();closeContacts();}
   if((e.ctrlKey||e.metaKey)&&e.key==='f'&&CPage!=='annual'){e.preventDefault();document.getElementById('searchBox').focus();}
 });
 
@@ -2027,6 +2324,30 @@ if('serviceWorker' in navigator){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
   </div>
+</div>
+
+
+<!-- CONTACTS -->
+<div class="contacts-overlay" id="contactsOverlay" onclick="if(event.target===this)closeContacts()">
+<div class="contacts-panel">
+  <div class="contacts-hdr">
+    <h3>👥 Πελατολόγιο</h3>
+    <button class="btn btn-inc no-print" id="btnNewContact" onclick="newContact()">+ Νέος</button>
+    <button class="btn btn-ghost" onclick="closeContacts()">✕</button>
+  </div>
+  <div class="contacts-body">
+    <div class="contacts-list">
+      <div style="padding:8px 10px;border-bottom:1px solid var(--border);">
+        <input id="contactSearch" type="text" placeholder="🔍 Αναζήτηση..." oninput="renderContactsList()"
+          style="width:100%;font-family:'DM Sans',sans-serif;font-size:12.5px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;">
+      </div>
+      <div id="contactsList"></div>
+    </div>
+    <div class="contact-detail" id="contactDetail">
+      <div class="contact-detail-empty">Επέλεξε πελάτη από αριστερά</div>
+    </div>
+  </div>
+</div>
 </div>
 
 </body>
