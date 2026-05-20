@@ -696,16 +696,17 @@ tr.row-hidden td .hide-btn{opacity:1;}
       </div>
       <div class="tbl-scroll">
         <table id="contactsTable">
-          <thead>
+          <thead id="contactsThead">
             <tr>
-              <th>Όνομα</th>
-              <th>Τηλέφωνο</th>
-              <th style="text-align:right">Σύν. Εσόδων</th>
-              <th style="text-align:right">Σύν. Εξόδων</th>
-              <th style="text-align:right">🫒 Λάδι</th>
-              <th style="text-align:right">Εκκρεμείς</th>
-              <th>Τελ. Συναλλαγή</th>
-              <th>Σημειώσεις</th>
+              <th onclick="sortContacts('name')">Όνομα</th>
+              <th onclick="sortContacts('phone')">Τηλέφωνο</th>
+              <th onclick="sortContacts('inc')" style="text-align:right">Σύν. Εσόδων</th>
+              <th onclick="sortContacts('exp')" style="text-align:right">Σύν. Εξόδων</th>
+              <th onclick="sortContacts('oil')" style="text-align:right">🫒 Λάδι</th>
+              <th onclick="sortContacts('unpaid')" style="text-align:right">Εκκρεμείς</th>
+              <th onclick="sortContacts('last')">Τελ. Συναλλαγή</th>
+              <th onclick="sortContacts('code')">Κωδ. Πληρωμής</th>
+              <th onclick="sortContacts('notes')">Σημειώσεις</th>
               <th class="no-print"></th>
             </tr>
           </thead>
@@ -757,7 +758,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
   <div class="field-row">
     <div class="field"><label>Ημερομηνία</label><input type="date" id="fDate"></div>
     <div class="field"><label>Πληρώθηκε;</label>
-      <select id="fPaid" onchange="toggleInstFields()"><option value="">—</option><option value="ΝΑΙ">ΝΑΙ</option><option value="ΟΧΙ">ΟΧΙ</option><option value="ΔΟΣΕΙΣ">Δόσεις</option></select>
+      <select id="fPaid" onchange="toggleInstFields()"><option value="ΟΧΙ">ΟΧΙ</option><option value="ΝΑΙ">ΝΑΙ</option><option value="ΔΟΣΕΙΣ">Δόσεις</option></select>
     </div>
   </div>
   <div class="field">
@@ -1205,7 +1206,7 @@ function renderExpPage(){
   const fExp=sorted(exp,'exp',q);
   document.getElementById('expPageCount').textContent=fExp.length+' / '+exp.length+' εγγραφές · '+MN[CM]+' '+CY;
   document.getElementById('expPageBody').innerHTML=fExp.length===0
-    ?'<tr class="empty-row"><td colspan="9">'+( q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν εγγραφές εξόδων')+'</td></tr>'
+    ?'<tr class="empty-row"><td colspan="10">'+( q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν εγγραφές εξόδων')+'</td></tr>'
     :fExp.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
       <td class="mono">${fmtD(r.date)}</td>
       <td>${esc(r.name)}</td>
@@ -1399,7 +1400,8 @@ function openModal(type,prefill=null){ if(isViewer()) return;
     document.getElementById('fCat').value=r.cat||'';
     document.getElementById('fNotes').value=r.notes||'';
   }else{
-    ['fDate','fName','fAmount','fEnanti','fCode','fPaid','fNotes'].forEach(id=>document.getElementById(id).value='');
+    ['fDate','fName','fAmount','fEnanti','fCode','fNotes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fPaid').value='ΟΧΙ';
     document.getElementById('enantiPreview').textContent='';
     document.getElementById('fCat').value='';
     document.getElementById('fInstAmt').value='';
@@ -2011,9 +2013,17 @@ function setManualContacts(arr){ data['__contacts__']=arr; save(); }
 
 let contactsPage=0;
 const CONTACTS_PER_PAGE=30;
+let contactsSort={col:'name',dir:1};
 
 function openContacts(){ goPage('contacts'); }
 function closeContacts(){ goPage('home'); }
+
+function sortContacts(col){
+  if(contactsSort.col===col) contactsSort.dir*=-1;
+  else{contactsSort.col=col;contactsSort.dir=1;}
+  contactsPage=0;
+  renderContactsPage();
+}
 
 function contactsChangePage(delta){
   contactsPage=Math.max(0,contactsPage+delta);
@@ -2025,6 +2035,31 @@ function renderContactsPage(){
   const ql=q.trim().toLowerCase();
   const all=getAllContacts();
   const filtered=ql?all.filter(ct=>ct.name.toLowerCase().includes(ql)||(ct.phone||'').includes(ql)):all;
+
+  // Apply sort
+  filtered.sort((a,b)=>{
+    const col=contactsSort.col, dir=contactsSort.dir;
+    if(col==='name') return dir*a.name.localeCompare(b.name,'el');
+    if(col==='phone') return dir*(a.phone||'').localeCompare(b.phone||'');
+    if(col==='notes') return dir*(a.notes||'').localeCompare(b.notes||'');
+    // numeric cols: need txns
+    const ta=getTxnsForContact(a.name), tb=getTxnsForContact(b.name);
+    const sum=(txns,type)=>txns.filter(r=>r.type===type).reduce((s,r)=>s+ +r.amount,0);
+    const unpaid=txns=>txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').reduce((s,r)=>s+ +r.amount,0);
+    if(col==='inc') return dir*(sum(ta,'inc')-sum(tb,'inc'));
+    if(col==='exp') return dir*(sum(ta,'exp')-sum(tb,'exp'));
+    if(col==='oil') return dir*(sum(ta,'oil')-sum(tb,'oil'));
+    if(col==='unpaid') return dir*(unpaid(ta)-unpaid(tb));
+    if(col==='last'){
+      const da=ta[0]?.date||'', db=tb[0]?.date||'';
+      return dir*da.localeCompare(db);
+    }
+    if(col==='code'){
+      const ca=ta[0]?.code||'', cb=tb[0]?.code||'';
+      return dir*ca.localeCompare(cb);
+    }
+    return 0;
+  });
 
   const totalPages=Math.max(1,Math.ceil(filtered.length/CONTACTS_PER_PAGE));
   contactsPage=Math.min(contactsPage,totalPages-1);
@@ -2048,6 +2083,16 @@ function renderContactsPage(){
     return;
   }
 
+  // Update header sort indicators
+  const thead=document.getElementById('contactsThead');
+  if(thead){
+    thead.querySelectorAll('th').forEach(th=>{th.classList.remove('sa','sd');});
+    const cols=['name','phone','inc','exp','oil','unpaid','last','code','notes'];
+    const idx=cols.indexOf(contactsSort.col);
+    const ths=thead.querySelectorAll('th');
+    if(ths[idx]) ths[idx].classList.add(contactsSort.dir===1?'sa':'sd');
+  }
+
   tbody.innerHTML=slice.map(ct=>{
     const txns=getTxnsForContact(ct.name);
     const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+ +r.amount,0);
@@ -2065,6 +2110,7 @@ function renderContactsPage(){
       <td class="mono" style="text-align:right;color:var(--gold)">${totalOil>0?fmt(totalOil):'—'}</td>
       <td class="mono" style="text-align:right;${unpaid>0?'color:var(--amber)':'color:var(--text3)'}">${unpaid>0?fmt(unpaid):'—'}</td>
       <td class="muted">${lastDate}</td>
+      <td><span class="code-badge">${esc(lastTxn&&lastTxn.code?lastTxn.code:'')}</span>${!(lastTxn&&lastTxn.code)?'<span class="muted">—</span>':''}</td>
       <td class="muted" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(ct.notes||'')}">${esc(ct.notes||'')}</td>
       <td class="no-print"><div class="act-cell">
         ${isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editContactPhone('${esc(ct.name).replace(/'/g,"\'")}','${esc(ct.phone||'').replace(/'/g,"\'")}')">✏</button>
@@ -2174,7 +2220,7 @@ function exportContacts(){
   const rows=[
     ['Α.Σ Αγιάσου — Πελατολόγιο'],
     [],
-    ['Όνομα','Τηλέφωνο','Σύν. Εσόδων','Σύν. Εξόδων','🫒 Λάδι','Εκκρεμείς','Τελ. Συναλλαγή','Σημειώσεις']
+    ['Όνομα','Τηλέφωνο','Σύν. Εσόδων','Σύν. Εξόδων','🫒 Λάδι','Εκκρεμείς','Τελ. Συναλλαγή','Κωδ. Πληρωμής','Σημειώσεις']
   ];
   all.forEach(ct=>{
     const txns=getTxnsForContact(ct.name);
@@ -2183,7 +2229,7 @@ function exportContacts(){
     const totalOil=txns.filter(r=>r.type==='oil').reduce((s,r)=>s+ +r.amount,0);
     const unpaid=txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').reduce((s,r)=>s+ +r.amount,0);
     const lastTxn=txns[0];
-    rows.push([ct.name,ct.phone||'',totalInc,totalExp,totalOil,unpaid,lastTxn?fmtD(lastTxn.date):'',ct.notes||'']);
+    rows.push([ct.name,ct.phone||'',totalInc,totalExp,totalOil,unpaid,lastTxn?fmtD(lastTxn.date):'',lastTxn?.code||'',ct.notes||'']);
   });
   const ws=XLSX.utils.aoa_to_sheet(rows);
   ws['!cols']=[{wch:28},{wch:14},{wch:14},{wch:14},{wch:12},{wch:12},{wch:16},{wch:36}];

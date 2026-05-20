@@ -1,10 +1,9 @@
-const CACHE = 'agiasos-v2';
+const CACHE = 'agiasos-v18';
 const ASSETS = [
   './index.html',
   './manifest.json'
 ];
 
-// External CDN assets to cache on first load
 const CDN = [
   'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap',
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
@@ -14,9 +13,7 @@ const CDN = [
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(cache => {
-      // Cache local files immediately
       cache.addAll(ASSETS);
-      // Cache CDN files (best effort — may fail offline on first install)
       CDN.forEach(url => cache.add(url).catch(() => {}));
     })
   );
@@ -33,10 +30,11 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Network first for navigation, cache fallback for assets
   if (e.request.mode === 'navigate') {
+    // Always network-first for navigation so updates load immediately
     e.respondWith(
-      fetch(e.request).catch(() => caches.match('./index.html'))
+      fetch(e.request, {cache: 'no-cache'})
+        .catch(() => caches.match('./index.html'))
     );
     return;
   }
@@ -44,7 +42,6 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(response => {
-        // Cache successful responses
         if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE).then(cache => cache.put(e.request, clone));
