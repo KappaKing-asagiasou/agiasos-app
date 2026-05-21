@@ -124,13 +124,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .page-table-header.exp{background:linear-gradient(135deg,#3a2820 0%,#322018 100%);border-bottom:2px solid #e8c8c8;}
 .page-table-header.inc{background:linear-gradient(135deg,#283020 0%,#202a18 100%);border-bottom:2px solid #c0d8a8;}
 .page-title-text{font-family:'Lora',serif;font-size:14px;display:flex;align-items:center;gap:7px;flex:1;}
-.page-title-text.exp{color:#7a2020;}
-.page-title-text.inc{color:#2e5020;}
+.page-title-text.exp{color:var(--hdr-exp-tx,#7a2020);}
+.page-title-text.inc{color:var(--hdr-inc-tx,#2e5020);}
 
 /* ── TABLE ─── */
 .tbl-scroll{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12.5px;}
-th{padding:8px 11px;text-align:left;font-size:9.5px;letter-spacing:.7px;text-transform:uppercase;color:#706050;border-bottom:1px solid #c8c0a8;white-space:nowrap;background:var(--surface2);cursor:pointer;user-select:none;}
+th{padding:8px 11px;text-align:left;font-size:9.5px;letter-spacing:.7px;text-transform:uppercase;color:#706050;border-bottom:1px solid var(--hdr-th-bd,#c8c0a8);white-space:nowrap;background:var(--hdr-th-bg,#d8d2c0);cursor:pointer;user-select:none;}
 th:hover{color:var(--text2);}
 th.sa::after{content:' ↑';}th.sd::after{content:' ↓';}
 td{padding:7px 10px;border-bottom:1px solid #c8c0a8;color:#1e1c14;vertical-align:middle;transition:background .1s;}
@@ -161,7 +161,7 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 
 /* ── ANNUAL VIEW ─── */
 .annual-card{background:#e8e2d2;border:1px solid #c0b898;border-radius:var(--rl);overflow:hidden;}
-.annual-card-hdr{padding:13px 17px;border-bottom:1px solid var(--border);font-size:13px;color:var(--olive);font-style:italic;background:var(--olive-bg);font-family:'Lora',serif;letter-spacing:.2px;}
+.annual-card-hdr{padding:13px 17px;border-bottom:1px solid var(--hdr-inc-bd,#c0b898);font-size:13px;color:var(--hdr-inc-tx,#2e5020);font-style:italic;background:var(--hdr-inc-bg,#d8ecc4);font-family:'Lora',serif;letter-spacing:.2px;}
 .view-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
 .view-label h2{font-family:'Lora',serif;font-size:15px;font-weight:400;color:var(--text2);font-style:italic;}
 
@@ -261,7 +261,7 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 .mn-btn:hover{background:rgba(255,255,255,.25);}
 .mn-btn:disabled{opacity:.3;cursor:default;}
 /* home table pagination */
-.tbl-pager{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid #c8c0a8;background:#d8d2c0;font-size:12px;color:#706050;}
+.tbl-pager{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid var(--hdr-th-bd,#c8c0a8);background:var(--hdr-th-bg,#d8d2c0);font-size:12px;color:var(--text3);}
 .tbl-pager button{font-size:16px;border:none;background:transparent;cursor:pointer;color:var(--text2);padding:0 4px;line-height:1;}
 .tbl-pager button:disabled{opacity:.25;cursor:default;}
 .tbl-pager button:hover:not(:disabled){color:var(--olive);}
@@ -368,9 +368,9 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 
 
 /* OIL SALES TABLE */
-.table-header.oil{background:#f5edd0;border-bottom:2px solid #c8a850;}
-.page-table-header.oil{background:#f5edd0;border-bottom:2px solid #c8a850;}
-.table-title.oil{color:var(--gold);}
+.table-header.oil{background:var(--hdr-oil-bg,#f5edd0);border-bottom:2px solid var(--hdr-oil-bd,#c8a850);}
+.page-table-header.oil{background:var(--hdr-oil-bg,#f5edd0);border-bottom:2px solid var(--hdr-oil-bd,#c8a850);}
+.table-title.oil{color:var(--hdr-oil-tx,#7a5e14);}
 .dot-oil{background:var(--gold-mid);}
 .stat-card.o .val{color:var(--gold);}
 .stat-card.o{background:linear-gradient(135deg,var(--surface) 0%,#f9f4e0 100%);border-left:3px solid var(--gold-mid);}
@@ -399,7 +399,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
 #contactsTable .mono{font-size:14px;}
 #contactsTable .muted{font-size:14px;}
 #contactsTable .code-badge{font-size:12.5px;}
-.contacts-table-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #c0b898;background:#d8ecc4;flex-wrap:wrap;}
+.contacts-table-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hdr-inc-bd,#c0b898);background:var(--hdr-inc-bg,#d8ecc4);flex-wrap:wrap;}
 .contacts-table-hdr h3{font-family:'Lora',serif;font-size:14px;font-weight:400;color:var(--olive);flex:1;}
 .contacts-pager{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface2);font-size:12.5px;color:var(--text2);}
 .contacts-pager .cp-info{flex:1;text-align:center;}
@@ -2156,6 +2156,30 @@ function applyBgTheme(id){
   r.setProperty('--red-lt',    isDark?'rgba(168,48,48,.2)'  :'#f6e8e8');
   r.setProperty('--amber-lt',  isDark?'rgba(110,68,8,.3)'   :'#fdf0d8');
   r.setProperty('--gold-lt',   isDark?'rgba(122,94,20,.25)' :'#f5edd0');
+  // Table header colors — light on dark bg, dark on light bg
+  const hExp   = isDark ? '#5a2020' : '#f5dede';
+  const hExpBd = isDark ? '#8a3030' : '#d0a8a8';
+  const hExpTx = isDark ? '#f0c0c0' : '#7a2020';
+  const hInc   = isDark ? '#203a18' : '#d8ecc4';
+  const hIncBd = isDark ? '#3a6028' : '#a8c888';
+  const hIncTx = isDark ? '#a0d080' : '#2e5020';
+  const hOil   = isDark ? '#3a2e08' : '#f5edd0';
+  const hOilBd = isDark ? '#6a5010' : '#c8a850';
+  const hOilTx = isDark ? '#e0c060' : '#7a5e14';
+  const hTh    = isDark ? 'rgba(255,255,255,.08)' : '#d8d2c0';
+  const hTd    = isDark ? 'rgba(255,255,255,.04)' : '#c8c0a8';
+  // Apply via CSS custom props
+  r.setProperty('--hdr-exp-bg',  hExp);
+  r.setProperty('--hdr-exp-bd',  hExpBd);
+  r.setProperty('--hdr-exp-tx',  hExpTx);
+  r.setProperty('--hdr-inc-bg',  hInc);
+  r.setProperty('--hdr-inc-bd',  hIncBd);
+  r.setProperty('--hdr-inc-tx',  hIncTx);
+  r.setProperty('--hdr-oil-bg',  hOil);
+  r.setProperty('--hdr-oil-bd',  hOilBd);
+  r.setProperty('--hdr-oil-tx',  hOilTx);
+  r.setProperty('--hdr-th-bg',   hTh);
+  r.setProperty('--hdr-th-bd',   hTd);
   document.body.style.backgroundImage=`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='80' height='80' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),${t.bodyGrad}`;
   // Update active indicator in picker
   document.querySelectorAll('.bg-opt').forEach(el=>{
