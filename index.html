@@ -394,6 +394,11 @@ tr.row-hidden td .hide-btn{opacity:1;}
 
 /* CONTACTS PAGE */
 .contacts-table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;}
+#contactsTable td{font-size:16px;padding:12px 14px;}
+#contactsTable th{font-size:11px;padding:11px 14px;}
+#contactsTable .mono{font-size:15px;}
+#contactsTable .muted{font-size:15px;}
+#contactsTable .code-badge{font-size:13px;}
 .contacts-table-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--olive-bg),#e8f2dc);flex-wrap:wrap;}
 .contacts-table-hdr h3{font-family:'Lora',serif;font-size:14px;font-weight:400;color:var(--olive);flex:1;}
 .contacts-pager{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface2);font-size:12.5px;color:var(--text2);}
@@ -2110,7 +2115,7 @@ function renderContactsPage(){
       <td class="mono" style="text-align:right;color:var(--gold)">${totalOil>0?fmt(totalOil):'—'}</td>
       <td class="mono" style="text-align:right;${unpaid>0?'color:var(--amber)':'color:var(--text3)'}">${unpaid>0?fmt(unpaid):'—'}</td>
       <td class="muted">${lastDate}</td>
-      <td><span class="code-badge">${esc(lastTxn&&lastTxn.code?lastTxn.code:'')}</span>${!(lastTxn&&lastTxn.code)?'<span class="muted">—</span>':''}</td>
+      <td><span class="code-badge" ${lastTxn&&lastTxn.code?`onclick="copyCode('${esc(lastTxn.code).replace(/'/g,"\\'")}'); event.stopPropagation();" title="Κλικ για αντιγραφή" style="cursor:pointer"`:''}>${esc(lastTxn&&lastTxn.code?lastTxn.code:'')}</span>${!(lastTxn&&lastTxn.code)?'<span class="muted">—</span>':''}</td>
       <td class="muted" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(ct.notes||'')}">${esc(ct.notes||'')}</td>
       <td class="no-print"><div class="act-cell">
         ${isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editContactPhone('${esc(ct.name).replace(/'/g,"\'")}','${esc(ct.phone||'').replace(/'/g,"\'")}')">✏</button>
@@ -2213,6 +2218,33 @@ function newContact(){
   selectContact(n);
 }
 
+
+function copyCode(code){
+  navigator.clipboard.writeText(code).then(()=>{
+    showToast('✓ Αντιγράφηκε: '+code);
+  }).catch(()=>{
+    // fallback for older browsers
+    const ta=document.createElement('textarea');
+    ta.value=code; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('✓ Αντιγράφηκε: '+code);
+  });
+}
+
+function showToast(msg){
+  let t=document.getElementById('copyToast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='copyToast';
+    t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#2e5020;color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-family:\'DM Sans\',sans-serif;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.25);white-space:nowrap;';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.style.opacity='0',2000);
+}
 
 function exportContacts(){
   const all=getAllContacts();
