@@ -466,6 +466,24 @@ tr.row-hidden td .hide-btn{opacity:1;}
 [data-theme="dark"] .ac-list{background:var(--surface);border-color:var(--border2);}
 [data-theme="dark"] .ac-item:hover,[data-theme="dark"] .ac-item.focused{background:var(--olive-bg);}
 
+
+/* HEADER DROPDOWNS */
+.hdr-dropdown{position:relative;display:inline-flex;}
+.hdr-drop-btn{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.85);padding:5px 11px;border-radius:var(--r);cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+.hdr-drop-btn:hover{background:rgba(255,255,255,.22);}
+.hdr-drop-btn .arrow{font-size:9px;opacity:.7;transition:transform .15s;}
+.hdr-drop-btn.open .arrow{transform:rotate(180deg);}
+.hdr-drop-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);min-width:190px;box-shadow:0 12px 36px rgba(0,0,0,.18);z-index:500;display:none;animation:up .15s ease;overflow:hidden;}
+.hdr-drop-menu.open{display:block;}
+.hdr-drop-item{display:flex;align-items:center;gap:10px;padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;transition:background .1s;border:none;background:transparent;width:100%;text-align:left;font-family:'DM Sans',sans-serif;}
+.hdr-drop-item:hover{background:var(--surface2);}
+.hdr-drop-item .di-icon{font-size:15px;width:20px;text-align:center;}
+.hdr-drop-sep{height:1px;background:var(--border);margin:4px 0;}
+.hdr-drop-item.danger{color:var(--red-mid);}
+.hdr-drop-item.danger:hover{background:var(--red-lt);}
+[data-theme="dark"] .hdr-drop-menu{background:var(--surface);border-color:var(--border);}
+[data-theme="dark"] .hdr-drop-item:hover{background:var(--surface2);}
+
 /* PRINT */
 .print-hdr{display:none;text-align:center;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--border);}
 .print-hdr h1{font-family:'Lora',serif;font-size:19px;}
@@ -481,7 +499,8 @@ tr.row-hidden td .hide-btn{opacity:1;}
   .pval{font-size:17px;}
   table{font-size:10.5px;}td,th{padding:4px 7px;}
   .act-cell,.pt{display:none!important;}
-  .page{display:block!important;}
+  .page{display:none!important;}
+  .page.active{display:block!important;}
   tr.ry td{background:#f0f9ec!important;}tr.rn td{background:#fdf2f2!important;}
   tr:hover td,tr.ry:hover td,tr.rn:hover td{background:inherit!important;}
   .pending-alert{display:none!important;}
@@ -528,11 +547,8 @@ tr.row-hidden td .hide-btn{opacity:1;}
       <input class="search-box" id="searchBox" placeholder="Αναζήτηση..." oninput="renderCurrentPage()" autocomplete="off">
     </div>
     <div class="div-v"></div>
-    <!-- Actions -->
-    <button class="btn btn-white no-print" onclick="openPending()" title="Εκκρεμή ανά προμηθευτή">⏳</button>
-    <button class="btn btn-white no-print" onclick="openCats()" title="Κατηγορίες">🏷</button>
-    <button class="btn btn-gold no-print" onclick="doPrint()" title="Εκτύπωση">🖨</button>
-    <button class="btn btn-white no-print" id="darkBtn" onclick="toggleDark()" title="Dark mode">🌙</button>
+
+    <!-- Notifications (admin only) -->
     <div class="notif-wrap no-print" id="notifWrap" style="display:none">
       <button class="notif-btn" onclick="toggleNotifPanel()" title="Ειδοποιήσεις">🔔<span class="notif-badge" id="notifBadge"></span></button>
       <div class="notif-panel" id="notifPanel">
@@ -543,9 +559,38 @@ tr.row-hidden td .hide-btn{opacity:1;}
         <div class="notif-list" id="notifList"><div class="notif-empty">Δεν υπάρχουν ειδοποιήσεις</div></div>
       </div>
     </div>
-    <button class="btn btn-pdf no-print" onclick="exportPDF()" title="Εξαγωγή PDF">📄 PDF</button>
-    <button class="btn btn-xlsx no-print" onclick="exportExcel()" title="Εξαγωγή Excel">📊 Excel</button>
-    <button class="btn btn-muted no-print" onclick="openBackup()" title="Backup">💾</button>
+
+    <!-- Εξαγωγή dropdown -->
+    <div class="hdr-dropdown no-print">
+      <button class="hdr-drop-btn" onclick="toggleDropdown('exportDrop')" id="exportDropBtn">🖨 Εξαγωγή <span class="arrow">▾</span></button>
+      <div class="hdr-drop-menu" id="exportDrop">
+        <button class="hdr-drop-item" onclick="doPrint();closeDropdowns()"><span class="di-icon">🖨</span>Εκτύπωση</button>
+        <button class="hdr-drop-item" onclick="exportPDF();closeDropdowns()"><span class="di-icon">📄</span>Αποθήκευση PDF</button>
+        <button class="hdr-drop-item" onclick="exportExcel();closeDropdowns()"><span class="di-icon">📊</span>Εξαγωγή Excel</button>
+      </div>
+    </div>
+
+    <!-- Εργαλεία dropdown -->
+    <div class="hdr-dropdown no-print">
+      <button class="hdr-drop-btn" onclick="toggleDropdown('toolsDrop')" id="toolsDropBtn">⚙ Εργαλεία <span class="arrow">▾</span></button>
+      <div class="hdr-drop-menu" id="toolsDrop">
+        <button class="hdr-drop-item" onclick="openPending();closeDropdowns()"><span class="di-icon">⏳</span>Εκκρεμείς πληρωμές</button>
+        <button class="hdr-drop-item" onclick="openCats();closeDropdowns()"><span class="di-icon">🏷</span>Κατηγορίες εξόδων</button>
+        <button class="hdr-drop-item" onclick="openBackup();closeDropdowns()"><span class="di-icon">💾</span>Backup / Restore</button>
+        <div class="hdr-drop-sep"></div>
+        <button class="hdr-drop-item" id="darkMenuItem" onclick="toggleDark()"><span class="di-icon">🌙</span><span id="darkMenuLabel">Dark mode</span></button>
+      </div>
+    </div>
+
+    <!-- Ρυθμίσεις dropdown (admin only) -->
+    <div class="hdr-dropdown no-print" id="settingsWrap" style="display:none">
+      <button class="hdr-drop-btn" onclick="toggleDropdown('settingsDrop')" id="settingsDropBtn">🔧 Ρυθμίσεις <span class="arrow">▾</span></button>
+      <div class="hdr-drop-menu" id="settingsDrop">
+        <button class="hdr-drop-item" onclick="changePassword('admin');closeDropdowns()"><span class="di-icon">👨‍💼</span>Αλλαγή κωδικού Admin</button>
+        <button class="hdr-drop-item" onclick="changePassword('viewer');closeDropdowns()"><span class="di-icon">👁</span>Αλλαγή κωδικού Θεατή</button>
+      </div>
+    </div>
+
     <div class="div-v no-print"></div>
     <button class="btn btn-exp no-print" id="btnAddExp" onclick="openModal('exp')">+ Έξοδο</button>
     <button class="btn no-print" id="btnAddOil" onclick="openModal('oil')" style="background:linear-gradient(135deg,var(--gold-lt),#ede0b8);color:var(--gold);border-color:#c8a850;">+ Λάδι</button>
@@ -756,7 +801,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
 </div>
 
 <!-- ENTRY MODAL -->
-<div class="overlay" id="entryOverlay" onclick="if(event.target===this)closeModal()">
+<div class="overlay" id="entryOverlay">
 <div class="modal">
   <div class="modal-title" id="modalTitle"></div>
   <input type="hidden" id="editId"><input type="hidden" id="editType">
@@ -1628,9 +1673,9 @@ function restoreBackup(){
 
 // ── EXPORTS ───────────────────────────────────────────
 function exportPDF(){
-  const mn=MN[CM], lbl=CPage==='annual'?'Σύνολο_έτους_'+CY:mn+'_'+CY;
-  document.getElementById('printSub').textContent=(CPage==='annual'?'Σύνολο έτους · '+CY:mn+' '+CY)+' · Εκτυπώθηκε '+new Date().toLocaleDateString('el-GR');
-  // Use browser print-to-PDF
+  const mn=MN[CM];
+  const lbl=CPage==='annual'?'Σύνολο έτους · '+CY:CPage==='exp'?'Έξοδα · '+mn+' '+CY:CPage==='inc'?'Έσοδα · '+mn+' '+CY:CPage==='oil'?'Πωλήσεις Λαδιού · '+mn+' '+CY:CPage==='contacts'?'Πελατολόγιο':mn+' '+CY;
+  document.getElementById('printSub').textContent=lbl+' · Εκτυπώθηκε '+new Date().toLocaleDateString('el-GR');
   const style=document.createElement('style');
   style.id='pdf-force';
   style.textContent='@page{size:A4 landscape;margin:12mm}';
@@ -1641,12 +1686,14 @@ function exportPDF(){
 
 function exportExcel(){
   const mn=MN[CM];
-  const{inc,exp}=ents(CY,CM);
+  const{inc,exp,oil}=ents(CY,CM);
   const isAnnual=CPage==='annual';
+  const isExp=CPage==='exp';
+  const isInc=CPage==='inc';
+  const isOil=CPage==='oil';
   const wb=XLSX.utils.book_new();
 
   if(isAnnual){
-    // Annual sheet
     const aRows=[
       ['Α.Σ Αγιάσου — Σύνολο Έτους '+CY],
       [],
@@ -1661,65 +1708,89 @@ function exportExcel(){
     aRows.push([]);
     aRows.push(['ΣΥΝΟΛΟ',tI,pI,uI,tE,pE,uE,pI-pE]);
     const ws=XLSX.utils.aoa_to_sheet(aRows);
-    // column widths
     ws['!cols']=[{wch:18},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15}];
     XLSX.utils.book_append_sheet(wb,ws,'Ετήσια Ανάλυση '+CY);
-  } else {
-    // Expenses sheet
-    const expRows=[
-      ['Α.Σ Αγιάσου — Έξοδα '+mn+' '+CY],
+  } else if(isOil){
+    // Oil only
+    const oilRows=[
+      ['Α.Σ Αγιάσου — Πωλήσεις Λαδιού '+mn+' '+CY],
       [],
-      ['Ημερομηνία','Προμηθευτής','Ποσό (€)','Κωδ. Πληρωμής','Κατηγορία','Πληρώθηκε','Δόσεις Πληρ. (€)','Υπόλοιπο Δόσεων (€)','Σχόλια']
+      ['Ημερομηνία','Πελάτης','Ποσό (€)','Πληρώθηκε','Σχόλια']
     ];
-    exp.forEach(r=>{
-      const instP=(+r.instAmt||0)*(+r.instCount||0);
-      const instR=r.paid==='ΔΟΣΕΙΣ'?Math.max(0,(+r.amount||0)-instP):0;
-      expRows.push([
-        r.date||'', r.name||'', +r.amount||0,
-        r.code||'', r.cat||'', r.paid||'',
-        r.paid==='ΔΟΣΕΙΣ'?instP:'',
-        r.paid==='ΔΟΣΕΙΣ'?instR:'',
-        r.notes||''
-      ]);
-    });
-    expRows.push([]);
-    const tE=exp.reduce((s,r)=>s+ +r.amount,0);
-    const pE=exp.filter(r=>r.paid==='ΝΑΙ').reduce((s,r)=>s+ +r.amount,0);
-    expRows.push(['','Σύνολο Εξόδων',tE,'','','','','','']);
-    expRows.push(['','Πληρωθέντα',pE,'','','','','','']);
-    const wsE=XLSX.utils.aoa_to_sheet(expRows);
-    wsE['!cols']=[{wch:14},{wch:28},{wch:12},{wch:14},{wch:20},{wch:12},{wch:16},{wch:18},{wch:28}];
-    XLSX.utils.book_append_sheet(wb,wsE,'Έξοδα');
-
-    // Income sheet
+    oil.forEach(r=>oilRows.push([r.date||'',r.name||'',+r.amount||0,r.paid||'',r.notes||'']));
+    oilRows.push([]);
+    const tO=oil.reduce((s,r)=>s+ +r.amount,0);
+    const pO=oil.filter(r=>r.paid==='ΝΑΙ').reduce((s,r)=>s+ +r.amount,0);
+    oilRows.push(['','Σύνολο Λαδιού',tO,'','']);
+    oilRows.push(['','Εισπραχθέντα',pO,'','']);
+    const ws=XLSX.utils.aoa_to_sheet(oilRows);
+    ws['!cols']=[{wch:14},{wch:28},{wch:12},{wch:12},{wch:28}];
+    XLSX.utils.book_append_sheet(wb,ws,'Λάδι');
+  } else if(isInc){
+    // Income only
     const incRows=[
       ['Α.Σ Αγιάσου — Έσοδα '+mn+' '+CY],
       [],
       ['Ημερομηνία','Πελάτης','Ποσό (€)','Πληρώθηκε','Σχόλια']
     ];
-    inc.forEach(r=>{
-      incRows.push([r.date||'', r.name||'', +r.amount||0, r.paid||'', r.notes||'']);
-    });
+    inc.forEach(r=>incRows.push([r.date||'',r.name||'',+r.amount||0,r.paid||'',r.notes||'']));
     incRows.push([]);
     const tI=inc.reduce((s,r)=>s+ +r.amount,0);
     const pI=inc.filter(r=>r.paid==='ΝΑΙ').reduce((s,r)=>s+ +r.amount,0);
     incRows.push(['','Σύνολο Εσόδων',tI,'','']);
     incRows.push(['','Εισπραχθέντα',pI,'','']);
-    incRows.push([]);
-    incRows.push(['ΚΕΡΔΟΣ / ΖΗΜΙΑ','',pI-pE,'','']);
+    const ws=XLSX.utils.aoa_to_sheet(incRows);
+    ws['!cols']=[{wch:14},{wch:28},{wch:12},{wch:12},{wch:28}];
+    XLSX.utils.book_append_sheet(wb,ws,'Έσοδα');
+  } else if(isExp){
+    // Expenses only
+    const expRows=[
+      ['Α.Σ Αγιάσου — Έξοδα '+mn+' '+CY],
+      [],
+      ['Ημερομηνία','Προμηθευτής','Ποσό (€)','Έναντι (€)','Κωδ. Πληρωμής','Κατηγορία','Πληρώθηκε','Σχόλια']
+    ];
+    exp.forEach(r=>{
+      expRows.push([r.date||'',r.name||'',+r.amount||0,+r.enanti||0,r.code||'',r.cat||'',r.paid||'',r.notes||'']);
+    });
+    expRows.push([]);
+    const tE=exp.reduce((s,r)=>s+ +r.amount,0);
+    const pE=exp.filter(r=>r.paid==='ΝΑΙ').reduce((s,r)=>s+ +r.amount,0);
+    expRows.push(['','Σύνολο Εξόδων',tE,'','','','','']);
+    expRows.push(['','Πληρωθέντα',pE,'','','','','']);
+    const ws=XLSX.utils.aoa_to_sheet(expRows);
+    ws['!cols']=[{wch:14},{wch:28},{wch:12},{wch:12},{wch:14},{wch:20},{wch:12},{wch:28}];
+    XLSX.utils.book_append_sheet(wb,ws,'Έξοδα');
+  } else {
+    // Home: all three sheets
+    const expRows=[
+      ['Α.Σ Αγιάσου — Έξοδα '+mn+' '+CY],[],
+      ['Ημερομηνία','Προμηθευτής','Ποσό (€)','Έναντι (€)','Κωδ. Πληρωμής','Κατηγορία','Πληρώθηκε','Σχόλια']
+    ];
+    exp.forEach(r=>expRows.push([r.date||'',r.name||'',+r.amount||0,+r.enanti||0,r.code||'',r.cat||'',r.paid||'',r.notes||'']));
+    const wsE=XLSX.utils.aoa_to_sheet(expRows);
+    wsE['!cols']=[{wch:14},{wch:28},{wch:12},{wch:12},{wch:14},{wch:20},{wch:12},{wch:28}];
+    XLSX.utils.book_append_sheet(wb,wsE,'Έξοδα');
+    const oilRows=[['Α.Σ Αγιάσου — Λάδι '+mn+' '+CY],[],['Ημερομηνία','Πελάτης','Ποσό (€)','Πληρώθηκε','Σχόλια']];
+    oil.forEach(r=>oilRows.push([r.date||'',r.name||'',+r.amount||0,r.paid||'',r.notes||'']));
+    const wsO=XLSX.utils.aoa_to_sheet(oilRows);
+    wsO['!cols']=[{wch:14},{wch:28},{wch:12},{wch:12},{wch:28}];
+    XLSX.utils.book_append_sheet(wb,wsO,'Λάδι');
+    const incRows=[['Α.Σ Αγιάσου — Έσοδα '+mn+' '+CY],[],['Ημερομηνία','Πελάτης','Ποσό (€)','Πληρώθηκε','Σχόλια']];
+    inc.forEach(r=>incRows.push([r.date||'',r.name||'',+r.amount||0,r.paid||'',r.notes||'']));
     const wsI=XLSX.utils.aoa_to_sheet(incRows);
     wsI['!cols']=[{wch:14},{wch:28},{wch:12},{wch:12},{wch:28}];
     XLSX.utils.book_append_sheet(wb,wsI,'Έσοδα');
   }
 
-  const fn=(isAnnual?'agiasos_'+CY:('agiasos_'+mn+'_'+CY))+'.xlsx';
+  const fn='agiasos_'+(isAnnual?CY:CPage+'_'+mn+'_'+CY)+'.xlsx';
   XLSX.writeFile(wb,fn);
 }
 function n2(v){return parseFloat(v||0).toFixed(2);}
 
 // ── PRINT ─────────────────────────────────────────────
 function doPrint(){
-  const lbl=CPage==='annual'?'Σύνολο έτους · '+CY:MN[CM]+' '+CY;
+  const mn=MN[CM];
+  const lbl=CPage==='annual'?'Σύνολο έτους · '+CY:CPage==='exp'?'Έξοδα · '+mn+' '+CY:CPage==='inc'?'Έσοδα · '+mn+' '+CY:CPage==='oil'?'Λάδι · '+mn+' '+CY:CPage==='contacts'?'Πελατολόγιο':mn+' '+CY;
   document.getElementById('printSub').textContent=lbl+' · Εκτυπώθηκε '+new Date().toLocaleDateString('el-GR');
   window.print();
 }
@@ -1981,6 +2052,47 @@ document.addEventListener('click',e=>{
   }
 });
 
+
+
+// ── HEADER DROPDOWNS ──────────────────────────────────
+function toggleDropdown(id){
+  const menu=document.getElementById(id);
+  const btn=document.getElementById(id.replace('Drop','DropBtn'));
+  if(!menu) return;
+  const isOpen=menu.classList.contains('open');
+  closeDropdowns();
+  if(!isOpen){
+    menu.classList.add('open');
+    if(btn) btn.classList.add('open');
+  }
+}
+
+function closeDropdowns(){
+  document.querySelectorAll('.hdr-drop-menu').forEach(m=>m.classList.remove('open'));
+  document.querySelectorAll('.hdr-drop-btn').forEach(b=>b.classList.remove('open'));
+}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.hdr-dropdown')) closeDropdowns();
+});
+
+// ── CHANGE PASSWORD ────────────────────────────────────
+function changePassword(role){
+  const label=role==='admin'?'Administrator':'Θεατή';
+  const current=role==='admin'?APP_PASS:VIEWER_PASS;
+  const np=prompt('Νέος κωδικός για '+label+':');
+  if(!np||!np.trim()){return;}
+  if(np.trim().length<4){alert('Ο κωδικός πρέπει να έχει τουλάχιστον 4 χαρακτήρες.');return;}
+  const confirm=prompt('Επιβεβαίωση νέου κωδικού:');
+  if(np!==confirm){alert('Οι κωδικοί δεν ταιριάζουν.');return;}
+  // Save to localStorage
+  if(role==='admin') localStorage.setItem('agiasos_pass_admin',np);
+  else localStorage.setItem('agiasos_pass_viewer',np);
+  // Update in-memory
+  if(role==='admin') window._adminPass=np;
+  else window._viewerPass=np;
+  alert('✓ Ο κωδικός '+label+' άλλαξε επιτυχώς!');
+}
 
 // ── CONTACTS ──────────────────────────────────────────
 // Contacts = unique names. Auto-populated from entries + manual additions.
@@ -2329,10 +2441,15 @@ function applyRole(){
     const w=document.getElementById('notifWrap');
     if(w) w.style.display='';
     loadNotifs();
+    // Settings dropdown visible for admin only
+    const sw=document.getElementById('settingsWrap');
+    if(sw) sw.style.display='';
   } else {
     ['btnNewContact','btnNewContact2'].forEach(id=>{
       const b=document.getElementById(id);if(b)b.style.display='none';
     });
+    const sw=document.getElementById('settingsWrap');
+    if(sw) sw.style.display='none';
   }
   if(isViewer()){
     // Add viewer CSS class to body
@@ -2352,7 +2469,10 @@ function toggleDark(){
   const next=isDark?'light':'dark';
   document.documentElement.setAttribute('data-theme',next);
   localStorage.setItem('agiasos_theme',next);
-  document.getElementById('darkBtn').textContent=next==='dark'?'☀️':'🌙';
+  const lbl=document.getElementById('darkMenuLabel');
+  const icon=document.querySelector('#darkMenuItem .di-icon');
+  if(lbl) lbl.textContent=next==='dark'?'Light mode':'Dark mode';
+  if(icon) icon.textContent=next==='dark'?'☀️':'🌙';
 }
 // Apply saved theme on load
 (function(){
@@ -2360,8 +2480,10 @@ function toggleDark(){
   document.documentElement.setAttribute('data-theme',t);
   // Button text set after DOM ready
   window.addEventListener('DOMContentLoaded',()=>{
-    const btn=document.getElementById('darkBtn');
-    if(btn) btn.textContent=t==='dark'?'☀️':'🌙';
+    const lbl=document.getElementById('darkMenuLabel');
+    const icon=document.querySelector('#darkMenuItem .di-icon');
+    if(lbl) lbl.textContent=t==='dark'?'Light mode':'Dark mode';
+    if(icon) icon.textContent=t==='dark'?'☀️':'🌙';
   });
 })();
 
@@ -2437,8 +2559,9 @@ document.addEventListener('keydown',e=>{
 
 
 // ── LOGIN ─────────────────────────────────────────────
-const APP_PASS    = '112280Ab.';
-const VIEWER_PASS = 'tamias1';
+// Load passwords (custom or default)
+const APP_PASS    = localStorage.getItem('agiasos_pass_admin')  || '112280Ab.';
+const VIEWER_PASS = localStorage.getItem('agiasos_pass_viewer') || 'tamias1';
 const AUTH_KEY    = 'agiasos_auth';
 const ROLE_KEY    = 'agiasos_role';
 
