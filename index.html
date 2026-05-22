@@ -1277,7 +1277,7 @@ function renderExpPage(){
       <td class="mono">${fmtD(r.date)}</td>
       <td>${esc(r.name)}</td>
       <td class="mono" style="text-align:right">${fmt(r.amount)}</td>
-      <td>${r.code?'<span class="code-badge">'+esc(r.code)+'</span>':'<span class="muted">—</span>'}</td>
+      <td>${r.code?`<span class="code-badge" onclick="copyCode('${esc(r.code).replace(/'/g,"\\'")}');event.stopPropagation();" title="Κλικ για αντιγραφή" style="cursor:pointer">${esc(r.code)}</span>`:'<span class="muted">—</span>'}</td>
       <td class="muted">${esc(r.cat)}</td>
       <td>${instBadgeHtml(r,'exp',r._i)}</td>
       <td class="muted">${esc(r.notes)}</td>
@@ -1667,7 +1667,7 @@ function openPending(){
       return`<div class="supplier-block">
         <div class="supplier-hdr"><span class="supplier-name">${esc(name)}</span><span class="supplier-total">${fmt(tot)}</span></div>
         <table><thead><tr><th>Μήνας</th><th style="text-align:right">Ποσό</th><th>Κωδ.</th><th>Σχόλια</th></tr></thead>
-        <tbody>${rows.map(r=>`<tr><td class="muted">${r.month}</td><td class="mono" style="text-align:right">${r._remaining!==undefined?fmt(r._remaining):fmt(r.amount)}</td><td>${r.code?'<span class="code-badge">'+esc(r.code)+'</span>':'<span class="muted">—</span>'}</td><td class="muted">${esc(r.notes)}</td></tr>`).join('')}</tbody></table>
+        <tbody>${rows.map(r=>`<tr><td class="muted">${r.month}</td><td class="mono" style="text-align:right">${r._remaining!==undefined?fmt(r._remaining):fmt(r.amount)}</td><td>${r.code?`<span class="code-badge" onclick="copyCode('${esc(r.code).replace(/'/g,"\\'")}');event.stopPropagation();" title="Κλικ για αντιγραφή" style="cursor:pointer">${esc(r.code)}</span>`:'<span class="muted">—</span>'}</td><td class="muted">${esc(r.notes)}</td></tr>`).join('')}</tbody></table>
       </div>`;
     }).join('');
   document.getElementById('pendingOverlay').classList.add('open');
