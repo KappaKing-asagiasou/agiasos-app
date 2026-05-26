@@ -1241,8 +1241,6 @@ function renderHome(){
   const fExp=sorted(exp,'exp',q);
   const expPages=Math.max(1,Math.ceil(fExp.length/PAGE_SIZE));
   homeExpPage=Math.min(homeExpPage,expPages-1);
-  const expPages=Math.max(1,Math.ceil(fExp.length/PAGE_SIZE));
-  homeExpPage=Math.min(homeExpPage,expPages-1);
   const expSlice=fExp.slice(homeExpPage*PAGE_SIZE,(homeExpPage+1)*PAGE_SIZE);
   document.getElementById('homeExpCount').textContent=fExp.length+' εγγρ.';
   document.getElementById('homeExpBody').innerHTML=expSlice.length===0
