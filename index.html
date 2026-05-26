@@ -1298,6 +1298,12 @@ function renderHome(){
     </tr>`).join('');
 
 
+  // inc pager
+  const ip=document.getElementById('incPagerInfo');
+  if(ip){ip.textContent=fInc.length===0?'':('Σελ. '+(homeIncPage+1)+' / '+incPages);
+    document.getElementById('incPrev').disabled=homeIncPage<=0;
+    document.getElementById('incNext').disabled=homeIncPage>=incPages-1;}
+
   // Chart
   const labels=[],incD=[],expD=[];
   for(let i=5;i>=0;i--){let m=CM-i,y=CY;if(m<0){m+=12;y--;}const c=calc(y,m);labels.push(MNS[m]);incD.push(+c.pI.toFixed(2));expD.push(+c.pE.toFixed(2));}
