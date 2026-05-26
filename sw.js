@@ -1,4 +1,4 @@
-const CACHE = 'agiasos-v18';
+const CACHE = 'agiasos-v19';
 const ASSETS = [
   './index.html',
   './manifest.json'

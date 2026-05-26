@@ -967,19 +967,19 @@ async function loadFromSupabase(){
       const rows=await res.json();
       if(rows&&rows[0]&&rows[0].data&&Object.keys(rows[0].data).length>0){
         data=rows[0].data;
-        localStorage.setItem(STORE,JSON.stringify(data));
+        safeSet(STORE,JSON.stringify(data));
         return true;
       }
     }
   }catch(e){console.log('Supabase load error:',e);}
   // Fallback: load from localStorage
-  try{data=JSON.parse(localStorage.getItem(STORE)||'{}');}catch(e){}
+  try{data=JSON.parse(safeGet(STORE)||'{}');}catch(e){}
   return false;
 }
 
 async function saveToSupabase(){
   try{
-    localStorage.setItem(STORE,JSON.stringify(data));
+    safeSet(STORE,JSON.stringify(data));
     await fetch(SB_URL+'/rest/v1/app_data?id=eq.singleton',{
       method:'PATCH',
       headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
@@ -993,7 +993,7 @@ async function saveToSupabase(){
 
 function save(){
   // Debounce: save to Supabase max once per 2 seconds
-  localStorage.setItem(STORE,JSON.stringify(data));
+  safeSet(STORE,JSON.stringify(data));
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(()=>saveToSupabase(),2000);
 }
@@ -2151,8 +2151,8 @@ function changePassword(role){
   const confirm=prompt('Επιβεβαίωση νέου κωδικού:');
   if(np!==confirm){alert('Οι κωδικοί δεν ταιριάζουν.');return;}
   // Save to localStorage
-  if(role==='admin') localStorage.setItem('agiasos_pass_admin',np);
-  else localStorage.setItem('agiasos_pass_viewer',np);
+  if(role==='admin') safeSet('agiasos_pass_admin',np);
+  else safeSet('agiasos_pass_viewer',np);
   // Update in-memory
   if(role==='admin') window._adminPass=np;
   else window._viewerPass=np;
@@ -2172,7 +2172,7 @@ const BG_THEMES = [
 const BG_KEY = 'agiasos_bg_theme';
 
 function openBgPicker(){
-  const current=localStorage.getItem(BG_KEY)||'olive';
+  const current=safeGet(BG_KEY)||'olive';
   const box=document.getElementById('bgOptions');
   box.innerHTML=BG_THEMES.map(t=>`
     <div class="bg-opt${t.id===current?' active':''}" onclick="applyBgTheme('${t.id}')">
@@ -2188,7 +2188,7 @@ function closeBgPicker(){
 function applyBgTheme(id){
   const t=BG_THEMES.find(x=>x.id===id);
   if(!t) return;
-  localStorage.setItem(BG_KEY,id);
+  safeSet(BG_KEY,id);
   const r=document.documentElement.style;
   r.setProperty('--bg',t.bg);
   r.setProperty('--surface',t.surface);
@@ -2238,7 +2238,7 @@ function applyBgTheme(id){
 
 // Apply saved theme on load
 (function(){
-  const saved=localStorage.getItem(BG_KEY)||'olive';
+  const saved=safeGet(BG_KEY)||'olive';
   applyBgTheme(saved);
 })();
 
@@ -2616,7 +2616,7 @@ function toggleDark(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
   const next=isDark?'light':'dark';
   document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem('agiasos_theme',next);
+  safeSet('agiasos_theme',next);
   const lbl=document.getElementById('darkMenuLabel');
   const icon=document.querySelector('#darkMenuItem .di-icon');
   if(lbl) lbl.textContent=next==='dark'?'Light mode':'Dark mode';
@@ -2624,7 +2624,7 @@ function toggleDark(){
 }
 // Apply saved theme on load
 (function(){
-  const t=localStorage.getItem('agiasos_theme')||'light';
+  const t=safeGet('agiasos_theme')||'light';
   document.documentElement.setAttribute('data-theme',t);
   // Button text set after DOM ready
   window.addEventListener('DOMContentLoaded',()=>{
@@ -2707,9 +2707,11 @@ document.addEventListener('keydown',e=>{
 
 
 // ── LOGIN ─────────────────────────────────────────────
-// Load passwords (custom or default)
-const APP_PASS    = localStorage.getItem('agiasos_pass_admin')  || '112280Ab.';
-const VIEWER_PASS = localStorage.getItem('agiasos_pass_viewer') || 'tamias1';
+// Load passwords safely (Tracking Prevention may block localStorage)
+function safeGet(key, fallback){try{return safeGet(key)||fallback;}catch(e){return fallback;}}
+function safeSet(key, val){try{safeSet(key,val);}catch(e){}}
+const APP_PASS    = safeGet('agiasos_pass_admin', '112280Ab.');
+const VIEWER_PASS = safeGet('agiasos_pass_viewer', 'tamias1');
 const AUTH_KEY    = 'agiasos_auth';
 const ROLE_KEY    = 'agiasos_role';
 
