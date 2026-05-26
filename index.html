@@ -2881,10 +2881,3 @@ if('serviceWorker' in navigator){
 
 </body>
 </html>
-  // inc pager
-  const ip=document.getElementById('incPagerInfo');
-  if(ip){ip.textContent=fInc.length===0?'':('Σελ. '+(homeIncPage+1)+' / '+incPages);
-    document.getElementById('incPrev').disabled=homeIncPage<=0;
-    document.getElementById('incNext').disabled=homeIncPage>=incPages-1;}
-
-  
