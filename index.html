@@ -947,6 +947,9 @@ tr.row-hidden td .hide-btn{opacity:1;}
 </div>
 
 <script>
+function safeGet(key,fallback){try{return localStorage.getItem(key)||fallback;}catch(e){return fallback;}}
+function safeSet(key,val){try{localStorage.setItem(key,val);}catch(e){}}
+
 const MN=['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
 const MNS=['Ιαν','Φεβ','Μαρ','Απρ','Μαϊ','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
 
@@ -2708,8 +2711,6 @@ document.addEventListener('keydown',e=>{
 
 // ── LOGIN ─────────────────────────────────────────────
 // Load passwords safely (Tracking Prevention may block localStorage)
-function safeGet(key, fallback){try{return safeGet(key)||fallback;}catch(e){return fallback;}}
-function safeSet(key, val){try{safeSet(key,val);}catch(e){}}
 const APP_PASS    = safeGet('agiasos_pass_admin', '112280Ab.');
 const VIEWER_PASS = safeGet('agiasos_pass_viewer', 'tamias1');
 const AUTH_KEY    = 'agiasos_auth';
