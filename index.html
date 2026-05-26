@@ -1069,7 +1069,18 @@ function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/<
 function calc(y,m,annualMode=false){
   const{inc,exp}=ents(y,m);
   const s=(a,f)=>a.filter(f||Boolean).reduce((t,r)=>t+ +r.amount,0);
-  const tI=s(inc),pI=s(inc,r=>r.paid==='ΝΑΙ'),uI=s(inc,r=>r.paid==='ΟΧΙ');
+  const tI=s(inc);
+  const pI=inc.reduce((sum,r)=>{
+    if(r.paid==='ΝΑΙ') return sum+(+r.amount||0);
+    if(r.enanti>0) return sum+(+r.enanti||0);
+    return sum;
+  },0);
+  const uI=inc.reduce((sum,r)=>{
+    if(r.paid==='ΝΑΙ') return sum;
+    if(r.enanti>0) return sum+Math.max(0,(+r.amount||0)-(+r.enanti||0));
+    if(r.paid==='ΟΧΙ') return sum+(+r.amount||0);
+    return sum;
+  },0);
 
   if(annualMode){
     // Annual: main entry (instPlan) counts ONLY its installment amount if paid, not the full debt.
@@ -1105,7 +1116,18 @@ function calc(y,m,annualMode=false){
     },0);
     // Oil sales
     const{oil}=ents(y,m);
-    const tO=s(oil),pO=s(oil,r=>r.paid==='ΝΑΙ'),uO=s(oil,r=>r.paid==='ΟΧΙ');
+    const tO=s(oil);
+    const pO=oil.reduce((sum,r)=>{
+      if(r.paid==='ΝΑΙ') return sum+(+r.amount||0);
+      if(r.enanti>0) return sum+(+r.enanti||0);
+      return sum;
+    },0);
+    const uO=oil.reduce((sum,r)=>{
+      if(r.paid==='ΝΑΙ') return sum;
+      if(r.enanti>0) return sum+Math.max(0,(+r.amount||0)-(+r.enanti||0));
+      if(r.paid==='ΟΧΙ') return sum+(+r.amount||0);
+      return sum;
+    },0);
     return{inc,exp,oil,tI,pI,uI,tE,pE,uE,tO,pO,uO,pr:pI-pE};
   }
 }
@@ -1129,9 +1151,7 @@ function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE,tO,pO,uO){
     <div class="stat-card g"><div class="lbl">Σύνολο Εσόδων</div><div class="val">${fmt(tI)}${diff(tI,prevTI)}</div></div>
     <div class="stat-card g"><div class="lbl">Εισπραχθέντα</div><div class="val">${fmt(pI)}</div></div>
     <div class="stat-card a"><div class="lbl">Εκκρεμή Έσοδα</div><div class="val">${fmt(uI)}</div></div>
-    <div class="stat-card r"><div class="lbl">Λοιπά Έξοδα</div><div class="val">${uE>0&&uE<tE
-      ? `<span style="text-decoration:line-through;font-size:14px;color:#a08070">${fmt(tE)}</span><br><span style="font-size:16px">${fmt(uE)}</span>`
-      : fmt(tE)}${diff(tE,prevTE)}</div></div>
+    <div class="stat-card r"><div class="lbl">Λοιπά Έξοδα</div><div class="val">${fmt(tE)}${diff(tE,prevTE)}</div></div>
     <div class="stat-card r"><div class="lbl">Πληρωθέντα Εξ.</div><div class="val">${fmt(pE)}</div></div>
     <div class="stat-card o"><div class="lbl">🫒 Πωλήσεις Λαδιού</div><div class="val">${fmt(tO||0)}</div></div>`;
   setTimeout(()=>animateVals(id),10);
@@ -1238,7 +1258,9 @@ function renderHome(){
     :oilSlice.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
       <td class="mono">${fmtD(r.date)}</td>
       <td>${esc(r.name)}</td>
-      <td class="mono" style="text-align:right">${fmt(r.amount)}</td>
+      <td class="mono" style="text-align:right">${r.enanti>0
+        ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
+        : fmt(r.amount)}</td>
       <td>${ptHtml(r.paid,'oil',r._i)}</td>
       <td class="no-print">${actHtml('oil',r._i)}</td>
     </tr>`).join('');
@@ -1254,7 +1276,9 @@ function renderHome(){
     :incSlice.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
       <td class="mono">${fmtD(r.date)}</td>
       <td>${esc(r.name)}</td>
-      <td class="mono" style="text-align:right">${fmt(r.amount)}</td>
+      <td class="mono" style="text-align:right">${r.enanti>0
+        ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
+        : fmt(r.amount)}</td>
       <td>${ptHtml(r.paid,'inc',r._i)}</td>
       <td class="no-print">${actHtml('inc',r._i)}</td>
     </tr>`).join('');
@@ -1280,7 +1304,7 @@ function renderExpPage(){
     :fExp.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
       <td class="mono">${fmtD(r.date)}</td>
       <td>${esc(r.name)}</td>
-      <td class="mono" style="text-align:right">${fmt(r.amount)}</td>
+      <td class="mono" style="text-align:right">${r.enanti>0?`<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`:fmt(r.amount)}</td>
       <td>${r.code?`<span class="code-badge" onclick="copyCode('${esc(r.code).replace(/'/g,"\\'")}');event.stopPropagation();" title="Κλικ για αντιγραφή" style="cursor:pointer">${esc(r.code)}</span>`:'<span class="muted">—</span>'}</td>
       <td class="muted">${esc(r.cat)}</td>
       <td>${instBadgeHtml(r,'exp',r._i)}</td>
@@ -1318,7 +1342,9 @@ function renderOilPage(){
     :fOil.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
         <td class="mono">${fmtD(r.date)}</td>
         <td>${esc(r.name)}</td>
-        <td class="mono" style="text-align:right">${fmt(r.amount)}</td>
+        <td class="mono" style="text-align:right">${r.enanti>0
+          ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
+          : fmt(r.amount)}</td>
         <td>${ptHtml(r.paid,'oil',r._i)}</td>
         <td class="muted">${esc(r.notes)}</td>
         <td class="no-print">${actHtml('oil',r._i)}</td>
