@@ -653,7 +653,11 @@ tr.row-hidden td .hide-btn{opacity:1;}
             <th class="no-print" style="width:80px"></th>
           </tr></thead><tbody id="homeExpBody"></tbody></table>
         </div>
-
+        <div class="tbl-pager no-print" id="expPager">
+          <button onclick="homePage('exp',-1)" id="expPrev">&#8249;</button>
+          <span id="expPagerInfo"></span>
+          <button onclick="homePage('exp',1)" id="expNext">&#8250;</button>
+        </div>
       </div>
       <!-- oil mini -->
       <div class="page-table-card">
