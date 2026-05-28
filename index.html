@@ -120,6 +120,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 /* ── FULL PAGE TABLE ─── */
 .page-table-card{background:#e8e2d2;border:1px solid #c0b898;border-radius:var(--rl);overflow:hidden;}
+.page-table-card+.tbl-pager{margin-top:-1px;}
+/* Home mini table card — no bottom radius when pager follows */
+.home-tables .page-table-card{border-radius:var(--rl) var(--rl) 0 0;}
 .page-table-header{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
 .page-table-header.exp{background:linear-gradient(135deg,#3a2820 0%,#322018 100%);border-bottom:2px solid #e8c8c8;}
 .page-table-header.inc{background:linear-gradient(135deg,#283020 0%,#202a18 100%);border-bottom:2px solid #c0d8a8;}
@@ -261,10 +264,10 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 .mn-btn:hover{background:rgba(255,255,255,.25);}
 .mn-btn:disabled{opacity:.3;cursor:default;}
 /* home table pagination */
-.tbl-pager{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid var(--hdr-th-bd,#c8c0a8);background:var(--hdr-th-bg,#d8d2c0);font-size:12px;color:var(--text3);}
-.tbl-pager button{font-size:16px;border:none;background:transparent;cursor:pointer;color:var(--text2);padding:0 4px;line-height:1;}
+.tbl-pager{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border:1px solid #c0b898;border-top:none;border-radius:0 0 var(--rl) var(--rl);background:#d8d2c0;font-size:12px;color:#665c48;}
+.tbl-pager button{font-size:20px;border:none;background:transparent;cursor:pointer;color:#665c48;padding:0 6px;line-height:1;transition:color .15s;}
 .tbl-pager button:disabled{opacity:.25;cursor:default;}
-.tbl-pager button:hover:not(:disabled){color:var(--olive);}
+.tbl-pager button:hover:not(:disabled){color:#2e5020;}
 /* export buttons */
 .btn-pdf{background:linear-gradient(135deg,#f5ede0 0%,#ead8c0 100%);color:#7a4a10;border-color:#c8a070;}
 .btn-pdf:hover{background:#ead0a8;}
@@ -540,7 +543,8 @@ tr.row-hidden td .hide-btn{opacity:1;}
     <div class="olive-icon">🫒</div>
     <div>
       <div class="brand-name">Α.Σ Αγιάσου</div>
-      <div class="brand-sub" id="headerSub">Έσοδα &amp; Έξοδα · 2026</div>
+      <span id="saveIndicator" style="font-size:11px;margin-left:6px;transition:color .3s;"></span>
+          <div class="brand-sub" id="headerSub">Έσοδα &amp; Έξοδα · 2026</div>
     </div>
   </div>
   <div class="hc">
@@ -988,23 +992,59 @@ async function loadFromSupabase(){
 async function saveToSupabase(){
   try{
     safeSet(STORE,JSON.stringify(data));
-    await fetch(SB_URL+'/rest/v1/app_data?id=eq.singleton',{
+    const res=await fetch(SB_URL+'/rest/v1/app_data?id=eq.singleton',{
       method:'PATCH',
       headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
       body:JSON.stringify({data:data,updated_at:new Date().toISOString()})
     });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    _pendingSave=false;
+    // Update save indicator
+    const si=document.getElementById('saveIndicator');
+    if(si){si.textContent='✓';si.style.color='rgba(160,220,120,.7)';setTimeout(()=>{si.textContent='';},2000);}
   }catch(e){
-    // Offline: already saved to localStorage above
-    console.log('Supabase save error (offline?):', e);
+    const si=document.getElementById('saveIndicator');
+    if(si){si.textContent='⚠';si.style.color='rgba(220,160,80,.8)';}
+    // Keep flag so we retry on next save
+    _pendingSave=true;
+    console.log('Supabase save error:', e);
   }
 }
 
+let _pendingSave=false;
+
 function save(){
-  // Debounce: save to Supabase max once per 2 seconds
+  // Show saving indicator
+  const si=document.getElementById('saveIndicator');
+  if(si){si.textContent='…';si.style.color='rgba(255,255,255,.4)';}
+  // 1. Save to localStorage immediately (never loses data locally)
   safeSet(STORE,JSON.stringify(data));
+  _pendingSave=true;
+  // 2. Debounce Supabase to 800ms (was 2s) to reduce API calls but stay fast
   clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(()=>saveToSupabase(),2000);
+  _saveTimer=setTimeout(()=>saveToSupabase(),800);
 }
+
+// Safety net: force-save to Supabase when user closes/leaves the page
+window.addEventListener('beforeunload',()=>{
+  if(_pendingSave){
+    // Use sendBeacon for reliable delivery even during page close
+    const payload=JSON.stringify({data:data,updated_at:new Date().toISOString()});
+    navigator.sendBeacon&&navigator.sendBeacon(
+      SB_URL+'/rest/v1/app_data?id=eq.singleton',
+      new Blob([payload],{type:'application/json'})
+    );
+    // Also try sync XHR as fallback
+    try{
+      const xhr=new XMLHttpRequest();
+      xhr.open('PATCH',SB_URL+'/rest/v1/app_data?id=eq.singleton',false);
+      xhr.setRequestHeader('apikey',SB_KEY);
+      xhr.setRequestHeader('Authorization','Bearer '+SB_KEY);
+      xhr.setRequestHeader('Content-Type','application/json');
+      xhr.send(payload);
+    }catch(e){}
+  }
+});
 
 // No migration needed — fresh start with new model
 function migrateInstallments(){}
