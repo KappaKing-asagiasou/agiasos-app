@@ -1,9 +1,5 @@
 const CACHE = 'agiasos-v19';
-const ASSETS = [
-  './index.html',
-  './manifest.json'
-];
-
+const ASSETS = ['./index.html', './manifest.json'];
 const CDN = [
   'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap',
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
@@ -17,7 +13,7 @@ self.addEventListener('install', e => {
       CDN.forEach(url => cache.add(url).catch(() => {}));
     })
   );
-  self.skipWaiting();
+  self.skipWaiting(); // activate immediately
 });
 
 self.addEventListener('activate', e => {
@@ -26,23 +22,34 @@ self.addEventListener('activate', e => {
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     )
   );
-  self.clients.claim();
+  self.clients.claim(); // take control immediately
 });
 
 self.addEventListener('fetch', e => {
+  // For navigation requests (opening the app): always try network first
+  // If network succeeds AND response differs from cache → tell page to reload
   if (e.request.mode === 'navigate') {
-    // Always network-first for navigation so updates load immediately
     e.respondWith(
-      fetch(e.request, {cache: 'no-cache'})
-        .catch(() => caches.match('./index.html'))
+      fetch(e.request, { cache: 'no-cache' })
+        .then(async networkRes => {
+          if (networkRes.ok) {
+            // Update cache with fresh version
+            const cache = await caches.open(CACHE);
+            cache.put(e.request, networkRes.clone());
+          }
+          return networkRes;
+        })
+        .catch(() => caches.match(e.request)) // offline fallback
     );
     return;
   }
+
+  // For other assets: cache first, network fallback
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(response => {
-        if (response && response.status === 200) {
+        if (response && response.status === 200 && e.request.method === 'GET') {
           const clone = response.clone();
           caches.open(CACHE).then(cache => cache.put(e.request, clone));
         }
@@ -50,4 +57,11 @@ self.addEventListener('fetch', e => {
       }).catch(() => cached);
     })
   );
+});
+
+// Notify all open pages to reload when a new SW activates
+self.addEventListener('activate', () => {
+  self.clients.matchAll({ type: 'window' }).then(clients => {
+    clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
+  });
 });

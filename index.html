@@ -2866,8 +2866,27 @@ if(checkAuth()){
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js')
-      .then(r=>console.log('SW registered'))
+      .then(reg=>{
+        console.log('SW registered');
+        // Check for updates every time the app gets focus
+        reg.update();
+        document.addEventListener('visibilitychange',()=>{
+          if(document.visibilityState==='visible') reg.update();
+        });
+      })
       .catch(e=>console.log('SW error',e));
+
+    // Listen for SW_UPDATED message → reload to get new version
+    navigator.serviceWorker.addEventListener('message', e=>{
+      if(e.data && e.data.type==='SW_UPDATED'){
+        window.location.reload();
+      }
+    });
+
+    // Also: if a new SW is waiting, reload immediately
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      window.location.reload();
+    });
   });
 }
 </script>
