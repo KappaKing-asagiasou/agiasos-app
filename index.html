@@ -1007,8 +1007,9 @@ async function saveToSupabase(){
     const si=document.getElementById('saveIndicator');
     if(si){si.textContent='✓';si.style.color='rgba(160,220,120,.7)';setTimeout(()=>{si.textContent='';},2000);}
   }catch(e){
-    const si=document.getElementById('saveIndicator');
-    if(si){si.textContent='⚠';si.style.color='rgba(220,160,80,.8)';}
+    // Use same si reference
+    const siErr=document.getElementById('saveIndicator');
+    if(siErr){siErr.textContent='⚠';siErr.style.color='rgba(220,160,80,.8)';}
     // Keep flag so we retry on next save
     _pendingSave=true;
     console.log('Supabase save error:', e);
@@ -2456,13 +2457,12 @@ function renderContactsList(){ renderContactsPage(); }
 function selectContact(name){
   activeContactName=name===activeContactName?null:name; // toggle
   renderContactsPage();
+  const elCD=document.getElementById('contactDetail');
   if(activeContactName){
     renderContactDetail(activeContactName);
-    const el=document.getElementById('contactDetail');
-    if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+    if(elCD) elCD.scrollIntoView({behavior:'smooth',block:'nearest'});
   } else {
-    const el=document.getElementById('contactDetail');
-    if(el) el.innerHTML='';
+    if(elCD) elCD.innerHTML='';
   }
 }
 
