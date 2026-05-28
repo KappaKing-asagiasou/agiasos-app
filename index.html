@@ -604,7 +604,8 @@ tr.row-hidden td .hide-btn{opacity:1;}
       <div class="hdr-drop-menu" id="toolsDrop">
         <button class="hdr-drop-item" onclick="openPending();closeDropdowns()"><span class="di-icon">⏳</span>Εκκρεμείς πληρωμές</button>
         <button class="hdr-drop-item" onclick="openCats();closeDropdowns()"><span class="di-icon">🏷</span>Κατηγορίες εξόδων</button>
-        <button class="hdr-drop-item" onclick="openBackup();closeDropdowns()"><span class="di-icon">💾</span>Backup / Restore</button>
+        <button class="hdr-drop-item" onclick="quickBackup();closeDropdowns()"><span class="di-icon">💾</span>Γρήγορο Backup (JSON)</button>
+        <button class="hdr-drop-item" onclick="openBackup();closeDropdowns()"><span class="di-icon">🔄</span>Backup / Restore</button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" id="darkMenuItem" onclick="toggleDark()"><span class="di-icon">🌙</span><span id="darkMenuLabel">Dark mode</span></button>
       </div>
@@ -2763,6 +2764,22 @@ function initHeaderOlives(){
 }
 initHeaderOlives();
 
+function quickBackup(){
+  const date=new Date();
+  const stamp=date.getFullYear()+'-'+
+    String(date.getMonth()+1).padStart(2,'0')+'-'+
+    String(date.getDate()).padStart(2,'0')+'_'+
+    String(date.getHours()).padStart(2,'0')+
+    String(date.getMinutes()).padStart(2,'0');
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='agiasos_backup_'+stamp+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('✓ Backup αποθηκεύτηκε: agiasos_backup_'+stamp+'.json');
+}
+
 function saveInstSettings(){}
 function addInstCount(delta){}
 
@@ -2868,26 +2885,41 @@ if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js')
       .then(reg=>{
         console.log('SW registered');
-        // Check for updates every time the app gets focus
+        // Check for updates when app gets focus
         reg.update();
         document.addEventListener('visibilitychange',()=>{
           if(document.visibilityState==='visible') reg.update();
         });
+        // When a new SW is waiting, ask user if they want to update
+        reg.addEventListener('updatefound',()=>{
+          const newWorker=reg.installing;
+          newWorker.addEventListener('statechange',()=>{
+            if(newWorker.state==='installed'&&navigator.serviceWorker.controller){
+              // New version available — wait for any pending save, then reload
+              safeReload();
+            }
+          });
+        });
       })
       .catch(e=>console.log('SW error',e));
-
-    // Listen for SW_UPDATED message → reload to get new version
-    navigator.serviceWorker.addEventListener('message', e=>{
-      if(e.data && e.data.type==='SW_UPDATED'){
-        window.location.reload();
-      }
-    });
-
-    // Also: if a new SW is waiting, reload immediately
-    navigator.serviceWorker.addEventListener('controllerchange',()=>{
-      window.location.reload();
-    });
   });
+}
+
+function safeReload(){
+  // Wait until no pending save before reloading
+  if(!_pendingSave){
+    window.location.reload();
+    return;
+  }
+  // Save in progress — wait up to 5 seconds then reload
+  let attempts=0;
+  const wait=setInterval(()=>{
+    attempts++;
+    if(!_pendingSave||attempts>10){
+      clearInterval(wait);
+      window.location.reload();
+    }
+  },500);
 }
 </script>
 
