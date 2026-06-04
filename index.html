@@ -3080,6 +3080,7 @@ async function scanInvoice(input){
       ['Προμηθευτής', _scanData.name],
       ['Ποσό', _scanData.amount ? _scanData.amount+'€' : '—'],
       ['Παραστατικό', _scanData.invoice],
+      ['Κωδ. Πληρωμής (RF)', _scanData.code],
       ['Ημερομηνία', _scanData.date],
       ['Σχόλια', _scanData.notes],
     ].filter(([,v])=>v).map(([k,v])=>
@@ -3101,6 +3102,7 @@ function applyScanResult(){
   if(_scanData.name)    document.getElementById('fName').value    = _scanData.name;
   if(_scanData.amount)  document.getElementById('fAmount').value  = parseFloat(_scanData.amount.replace(',','.').replace(/[^0-9.]/g,''))||'';
   if(_scanData.invoice) document.getElementById('fInvoice').value = _scanData.invoice;
+  if(_scanData.code)    document.getElementById('fCode').value    = _scanData.code;
   if(_scanData.date)    document.getElementById('fDate').value    = _scanData.date;
   if(_scanData.notes)   document.getElementById('fNotes').value   = _scanData.notes;
   document.getElementById('scanResult').classList.remove('show');
