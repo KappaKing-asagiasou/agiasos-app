@@ -872,6 +872,18 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 <div class="modal">
   <div class="modal-title" id="modalTitle"></div>
   <input type="hidden" id="editId"><input type="hidden" id="editType">
+  <input type="hidden" id="editY"><input type="hidden" id="editM">
+  <!-- Invoice Scanner -->
+  <div id="scanWrap">
+    <label class="scan-btn" for="invoiceFile">📎 Ανέβασε Τιμολόγιο <span style="opacity:.6;font-size:11px">(PDF ή εικόνα)</span></label>
+    <input type="file" id="invoiceFile" accept=".pdf,image/*" style="display:none" onchange="scanInvoice(this)">
+    <div class="scan-loading" id="scanLoading">⏳ Ανάλυση τιμολογίου…</div>
+    <div class="scan-result" id="scanResult">
+      <div class="sr-title">✓ Βρέθηκαν στοιχεία</div>
+      <div id="scanResultBody"></div>
+      <button class="btn btn-inc scan-apply" onclick="applyScanResult()">Εφαρμογή στη φόρμα</button>
+    </div>
+  </div>
   <div class="field-row">
     <div class="field"><label>Ημερομηνία</label><input type="date" id="fDate"></div>
     <div class="field"><label>Πληρώθηκε;</label>
@@ -1289,14 +1301,16 @@ function ptHtml(paid,type,idx){
   return`<button class="pt ${c}" onclick="togglePaid('${type}',${idx})">${t}</button>`;
 }
 
-function actHtml(type,ri,isHidden){
+function actHtml(type,ri,isHidden,oy,om){
+  // oy,om = original year/month for carryover entries
   const hideLbl=isHidden?'👁':'🙈';
   const hideTip=isHidden?'Ορατό στους θεατές':'Κρυφό από θεατές';
+  const oyParam=oy!==undefined?`,${oy},${om}`:'';
   return`<div class="act-cell">
-    <button class="btn btn-ghost btn-sm hide-btn ${isHidden?'hidden-on':''}" onclick="toggleHide('${type}',${ri})" title="${hideTip}">${hideLbl}</button>
-    <button class="btn btn-ghost btn-sm" onclick="copyEntry('${type}',${ri})" title="Αντιγραφή">⧉</button>
-    <button class="btn btn-ghost btn-sm" onclick="editEntry('${type}',${ri})">✏</button>
-    <button class="btn btn-ghost btn-danger btn-sm" onclick="promptDel('${type}',${ri})">✕</button>
+    <button class="btn btn-ghost btn-sm hide-btn ${isHidden?'hidden-on':''}" onclick="toggleHide('${type}',${ri}${oyParam})" title="${hideTip}">${hideLbl}</button>
+    <button class="btn btn-ghost btn-sm" onclick="copyEntry('${type}',${ri}${oyParam})" title="Αντιγραφή">⧉</button>
+    <button class="btn btn-ghost btn-sm" onclick="editEntry('${type}',${ri}${oyParam})">✏</button>
+    <button class="btn btn-ghost btn-danger btn-sm" onclick="promptDel('${type}',${ri}${oyParam})">✕</button>
   </div>`;
 }
 
@@ -1389,7 +1403,7 @@ function renderHome(){
         ? `<span style="text-decoration:line-through;color:var(--text3);font-size:11px">${fmt(r.amount)}</span><br><span style="color:var(--amber);font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
       <td>${instBadgeHtml(r,'exp',r._i)}</td>
-      <td class="no-print">${actHtml('exp',r._i,r.hidden)}</td>
+      <td class="no-print">${actHtml('exp',r._i,r.hidden,r._carryover?r._origY:undefined,r._carryover?r._origM:undefined)}</td>
     </tr>`).join('');
 
 
@@ -1414,7 +1428,7 @@ function renderHome(){
         ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
       <td>${ptHtml(r.paid,'oil',r._i)}</td>
-      <td class="no-print">${actHtml('oil',r._i)}</td>
+      <td class="no-print">${actHtml('oil',r._i,false,r._carryover?r._origY:undefined,r._carryover?r._origM:undefined)}</td>
     </tr>`).join('');
 
   // oil pager
@@ -1438,7 +1452,7 @@ function renderHome(){
         ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
       <td>${ptHtml(r.paid,'inc',r._i)}</td>
-      <td class="no-print">${actHtml('inc',r._i)}</td>
+      <td class="no-print">${actHtml('inc',r._i,false,r._carryover?r._origY:undefined,r._carryover?r._origM:undefined)}</td>
     </tr>`).join('');
 
 
@@ -1514,9 +1528,9 @@ function renderOilPage(){
         <td class="mono" style="text-align:right">${r.enanti>0
           ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
           : fmt(r.amount)}</td>
-        <td>${ptHtml(r.paid,'oil',r._i)}</td>
+        <td>${ptHtml(r.paid,'oil',r._i,r._carryover?r._origY:undefined,r._carryover?r._origM:undefined)}</td>
         <td class="muted">${esc(r.notes)}</td>
-        <td class="no-print">${actHtml('oil',r._i)}</td>
+        <td class="no-print">${actHtml('oil',r._i,false,r._carryover?r._origY:undefined,r._carryover?r._origM:undefined)}</td>
       </tr>`).join('');
 }
 
@@ -1617,24 +1631,26 @@ function acKey(e){
   }
 }
 
-function toggleHide(type,i){
+function toggleHide(type,i,oy,om){
   if(isViewer()) return;
-  const d=ents(CY,CM);
+  const y=oy!==undefined?oy:CY, m=om!==undefined?om:CM;
+  const d=ents(y,m);
   d[type][i].hidden=!d[type][i].hidden;
-  setEnts(CY,CM,d);renderCurrentPage();
+  setEnts(y,m,d);renderCurrentPage();
 }
 
-function togglePaid(type,i){ if(isViewer()) return;
-  const d=ents(CY,CM);
+function togglePaid(type,i,oy,om){ if(isViewer()) return;
+  const y=oy!==undefined?oy:CY, m=om!==undefined?om:CM;
+  const d=ents(y,m);
   const cur=d[type][i].paid;
-  d[type][i].paid=cur==='ΝΑΙ'?'ΟΧΙ':cur==='ΟΧΙ'?'':'ΝΑΙ';
-  // Auto-clear enanti when fully paid
+  d[type][i].paid=cur==='ΝΑΙ'?'ΟΧΙ':cur==='ΟΧΙ'?'ΟΧΙ':'ΝΑΙ';
   if(d[type][i].paid==='ΝΑΙ') d[type][i].enanti=0;
-  setEnts(CY,CM,d);renderCurrentPage();
+  setEnts(y,m,d);renderCurrentPage();
 }
 
 // ── ENTRY MODAL ───────────────────────────────────────
-function openModal(type,prefill=null){ if(isViewer()) return;
+function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer()) return;
+  const modalY=my!==null?my:CY, modalM=mm!==null?mm:CM;
   refreshCatSel();
   const isExp=type==='exp';
   const isOil=type==='oil';
@@ -1643,15 +1659,16 @@ function openModal(type,prefill=null){ if(isViewer()) return;
   t.className='modal-title '+(isOil?'oil':type);
   document.getElementById('editType').value=type;
   document.getElementById('editId').value=prefill!==null?prefill:'';
+  document.getElementById('editY').value=modalY;
+  document.getElementById('editM').value=modalM;
   document.getElementById('fCodeWrap').style.display=isExp?'':'none';
   document.getElementById('fInstFields')||0;
   document.getElementById('instFields').style.display='none';
   document.getElementById('saveBtn').className='btn '+(isExp?'btn-exp':isOil?'btn-oil':'btn-inc');
   if(prefill!==null){
     document.getElementById('fMoveWrap').style.display='';
-    // pre-select current type in move dropdown (so "same" is default)
     document.getElementById('fMoveType').value='';
-    const r=ents(CY,CM)[type][prefill];
+    const r=ents(modalY,modalM)[type][prefill];
     document.getElementById('fDate').value=r.date||'';
     document.getElementById('fName').value=r.name||'';
     document.getElementById('fAmount').value=r.amount||'';
@@ -1685,6 +1702,9 @@ function closeModal(){document.getElementById('entryOverlay').classList.remove('
 function saveEntry(){
   const type=document.getElementById('editType').value;
   const eid=document.getElementById('editId').value;
+  const saveY=parseInt(document.getElementById('editY').value)||CY;
+  const saveM=parseInt(document.getElementById('editM').value);
+  const useSaveYM=!isNaN(saveM);
   const paid=document.getElementById('fPaid').value;
   const rawAmt=parseFloat(document.getElementById('fAmount').value)||0;
   const instAmt=paid==='ΔΟΣΕΙΣ'?parseFloat(document.getElementById('fInstAmt').value)||0:0;
@@ -1707,23 +1727,23 @@ function saveEntry(){
   };
   if(!entry.name&&!entry.amount){closeModal();return;}
   const moveType=document.getElementById('fMoveType').value;
-  const d=ents(CY,CM);
+  const sy=useSaveYM?saveY:CY, sm=useSaveYM?saveM:CM;
+  const d=ents(sy,sm);
   if(eid!==''&&moveType&&moveType!==type){
-    // Move: preserve original date, delete from current type, add to new type
     const originalDate=d[type][+eid].date;
     entry.date=originalDate;
     d[type].splice(+eid,1);
     if(!d[moveType]) d[moveType]=[];
     if(moveType!=='exp'){delete entry.code;delete entry.instPlan;delete entry.instGroupId;entry.paid=entry.paid==='ΔΟΣΕΙΣ'?'ΟΧΙ':entry.paid;}
     d[moveType].push(entry);
-    setEnts(CY,CM,d);
+    setEnts(sy,sm,d);
   } else if(eid!==''){
     d[type][+eid]=entry;
-    setEnts(CY,CM,d);
+    setEnts(sy,sm,d);
   } else {
     if(!d[type]) d[type]=[];
     d[type].push(entry);
-    setEnts(CY,CM,d);
+    setEnts(sy,sm,d);
   }
   closeModal();renderCurrentPage();
 }
@@ -1753,9 +1773,13 @@ function createInstallment(groupId, name, amt, total, num, originY, originM, cat
   });
   setEnts(ny,nm,nd);
 }
-function editEntry(type,i){openModal(type,i);}
-function copyEntry(type,i){
-  const d=ents(CY,CM);
+function editEntry(type,i,oy,om){
+  const y=oy!==undefined?oy:CY, m=om!==undefined?om:CM;
+  openModal(type,i,null,y,m);
+}
+function copyEntry(type,i,oy,om){
+  const y=oy!==undefined?oy:CY, m=om!==undefined?om:CM;
+  const d=ents(y,m);
   const orig={...d[type][i]};
   // Ask destination
   const labels={'exp':'Λοιπά Έξοδα','oil':'Πωλήσεις Λαδιού','inc':'Έσοδα'};
@@ -1783,14 +1807,15 @@ function copyEntry(type,i){
     copy.date=new Date().toISOString().slice(0,10);
   }
   d[destType].push(copy);
-  setEnts(CY,CM,d);renderCurrentPage();
+  setEnts(y,m,d);renderCurrentPage();
 }
 
 // ── DELETE ────────────────────────────────────────────
 let pendDel=null;
-function promptDel(type,i){ if(isViewer()) return;
-  pendDel={type,i};
-  const r=ents(CY,CM)[type][i];
+function promptDel(type,i,oy,om){ if(isViewer()) return;
+  const y=oy!==undefined?oy:CY, m=om!==undefined?om:CM;
+  pendDel={type,i,y,m};
+  const r=ents(y,m)[type][i];
   const msg=document.getElementById('delMsg');
   if(msg){
     msg.textContent = r.instPlan
@@ -1802,8 +1827,9 @@ function promptDel(type,i){ if(isViewer()) return;
 function cancelDel(){pendDel=null;document.getElementById('delOverlay').classList.remove('open');}
 function confirmDel(){
   if(!pendDel)return;
-  const{type,i}=pendDel;
-  const d=ents(CY,CM);
+  const{type,i,y:dy,m:dm}=pendDel;
+  const y=dy!==undefined?dy:CY, m=dm!==undefined?dm:CM;
+  const d=ents(y,m);
   const r=d[type][i];
 
   // If this is a main installment entry (has instPlan), delete all sub-entries across all months
@@ -1820,7 +1846,7 @@ function confirmDel(){
 
   // Delete the main entry itself
   d[type].splice(i,1);
-  setEnts(CY,CM,d);
+  setEnts(y,m,d);
   cancelDel();
   renderCurrentPage();
 }
