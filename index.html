@@ -3031,6 +3031,9 @@ async function scanInvoice(input){
     }
 
     const data = await resp.json();
+    console.log('Scan response:', JSON.stringify(data).slice(0,200));
+    if(!resp.ok) throw new Error(data.error?.message || 'HTTP '+resp.status);
+    if(!data.content||!data.content[0]) throw new Error('Άδεια απάντηση από AI');
     const text = data.content[0].text.trim();
 
     // Parse JSON (strip markdown if present)
