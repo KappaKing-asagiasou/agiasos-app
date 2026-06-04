@@ -632,6 +632,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" onclick="openBackup();closeDropdowns()"><span class="di-icon">🔄</span>Backup / Restore</button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" id="darkMenuItem" onclick="toggleDark()"><span class="di-icon">🌙</span><span id="darkMenuLabel">Dark mode</span></button>
+        <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
       </div>
     </div>
 
@@ -1103,6 +1104,7 @@ function setEnts(y,m,d){data[mk(y,m)]=d;save();}
 const sortS={exp:{col:'date',dir:1},inc:{col:'date',dir:1},oil:{col:'date',dir:1}};
 const PAGE_SIZE=10;
 let homeExpPage=0,homeIncPage=0,homeOilPage=0;
+let showCarryover=safeGet('agiasos_carryover','0')==='1';
 
 function homePage(type,delta){
   if(type==='exp') homeExpPage=Math.max(0,homeExpPage+delta);
@@ -1470,7 +1472,7 @@ function renderHome(){
 function renderExpPage(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{exp}=ents(CY,CM);
-  const carryExp=getCarryover(CY,CM,'exp');
+  const carryExp=showCarryover?getCarryover(CY,CM,'exp'):[];
   const allExp=[...carryExp,...exp.map((r,i)=>({...r,_i:i,_carryover:false}))];
   const fExp=sorted(allExp,'exp',q);
   document.getElementById('expPageCount').textContent=fExp.length+' / '+exp.length+' εγγραφές · '+MN[CM]+' '+CY;
@@ -1492,7 +1494,7 @@ function renderExpPage(){
 function renderIncPage(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{inc}=ents(CY,CM);
-  const carryInc=getCarryover(CY,CM,'inc');
+  const carryInc=showCarryover?getCarryover(CY,CM,'inc'):[];
   const allInc=[...carryInc,...inc.map((r,i)=>({...r,_i:i,_carryover:false}))];
   const fInc=sorted(allInc,'inc',q);
   document.getElementById('incPageCount').textContent=fInc.length+' / '+inc.length+' εγγραφές · '+MN[CM]+' '+CY;
@@ -1514,7 +1516,7 @@ function renderIncPage(){
 function renderOilPage(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{oil}=ents(CY,CM);
-  const carryOil=getCarryover(CY,CM,'oil');
+  const carryOil=showCarryover?getCarryover(CY,CM,'oil'):[];
   const allOil=[...carryOil,...oil.map((r,i)=>({...r,_i:i,_carryover:false}))];
   const fOil=sorted(allOil,'oil',q);
   document.getElementById('oilPageCount').textContent=fOil.length+' / '+oil.length+' εγγραφές · '+MN[CM]+' '+CY;
@@ -1643,7 +1645,7 @@ function togglePaid(type,i,oy,om){ if(isViewer()) return;
   const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
   const d=ents(y,m);
   const cur=d[type][i].paid;
-  d[type][i].paid=cur==='ΝΑΙ'?'ΟΧΙ':cur==='ΟΧΙ'?'ΟΧΙ':'ΝΑΙ';
+  d[type][i].paid=cur==='ΝΑΙ'?'ΟΧΙ':'ΝΑΙ';
   if(d[type][i].paid==='ΝΑΙ') d[type][i].enanti=0;
   setEnts(y,m,d);renderCurrentPage();
 }
@@ -1663,6 +1665,16 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
   document.getElementById('editY').value=modalY;
   document.getElementById('editM').value=modalM;
   document.getElementById('fCodeWrap').style.display=isExp?'':'none';
+  document.getElementById('fCatWrap').style.display=isExp?'':'none';
+  const fIW=document.getElementById('fIncCatWrap');
+  if(fIW) fIW.style.display=(isOil||type==='inc')?'':'none';
+  if(isOil||type==='inc'){
+    const ic=document.getElementById('fIncCat');
+    if(ic){ic.innerHTML=getIncCats().map(cat=>`<option value="${esc(cat)}">${esc(cat)}</option>`).join('');
+      if(prefill!==null) ic.value=ents(modalY,modalM)[type][prefill].incCat||'';
+      else ic.value='';
+    }
+  }
   document.getElementById('instFields').style.display='none';
   document.getElementById('saveBtn').className='btn '+(isExp?'btn-exp':isOil?'btn-oil':'btn-inc');
   if(prefill!==null){
@@ -1684,6 +1696,8 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
     document.getElementById('fNotes').value=r.notes||'';
   }else{
     ['fDate','fName','fAmount','fEnanti','fCode','fInvoice','fNotes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fCat').value='';
+    const fIC2=document.getElementById('fIncCat'); if(fIC2) fIC2.value='';
     document.getElementById('fPaid').value='ΟΧΙ';
     document.getElementById('enantiPreview').textContent='';
     document.getElementById('fCat').value='';
@@ -2797,6 +2811,17 @@ function applyRole(){
 }
 
 // ── DARK MODE ─────────────────────────────────────────
+function toggleCarryover(){
+  showCarryover=!showCarryover;
+  safeSet('agiasos_carryover', showCarryover?'1':'0');
+  const lbl=document.getElementById('carryoverLabel');
+  if(lbl) lbl.textContent='Εμφάνιση εκκρεμών προηγ. μηνών: '+(showCarryover?'ΝΑΙ':'ΟΧΙ');
+  const icon=document.getElementById('carryoverIcon');
+  if(icon) icon.style.color=showCarryover?'var(--olive)':'';
+  renderCurrentPage();
+  closeDropdowns();
+}
+
 function toggleDark(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
   const next=isDark?'light':'dark';
@@ -3100,6 +3125,11 @@ function bootApp(){
   refreshCatSel();
   migrateInstallments();
   applyRole();
+  // Init carryover label
+  const lbl=document.getElementById('carryoverLabel');
+  if(lbl) lbl.textContent='Εμφάνιση εκκρεμών προηγ. μηνών: '+(showCarryover?'ΝΑΙ':'ΟΧΙ');
+  const icon=document.getElementById('carryoverIcon');
+  if(icon&&showCarryover) icon.style.color='var(--olive)';
   document.body.insertAdjacentHTML('afterbegin',
     '<div id="loadingBar" style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#5a8040,#c8a030,#5a8040);background-size:200%;animation:shimmer 1s linear infinite;z-index:9999"></div>'
   );
