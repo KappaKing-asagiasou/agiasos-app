@@ -907,7 +907,8 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
     <div class="field" id="fCodeWrap"><label>Κωδ. Πληρωμής</label><input type="text" id="fCode" placeholder="ΤΙΜ-001"></div>
     <div class="field"><label>Αρ. Παραστατικού</label><input type="text" id="fInvoice" placeholder="ΤΙΜ-2026-001"></div>
   </div>
-  <div class="field"><label>Κατηγορία</label><select id="fCat"><option value="">— Χωρίς —</option></select></div>
+  <div class="field" id="fCatWrap"><label>Κατηγορία</label><select id="fCat"><option value="">— Χωρίς —</option></select></div>
+  <div class="field" id="fIncCatWrap" style="display:none"><label>Κατηγορία Εσόδου</label><select id="fIncCat"><option value="">— Χωρίς —</option></select></div>
   <div class="field"><label>Σχόλια</label><textarea id="fNotes" placeholder="Προαιρετικά..."></textarea></div>
   <div id="instFields" style="display:none;background:var(--surface2);border-radius:var(--r);padding:12px;margin-bottom:12px;border:1px solid var(--border);">
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">Ρύθμιση Δόσεων</div>
@@ -1403,7 +1404,7 @@ function renderHome(){
         ? `<span style="text-decoration:line-through;color:var(--text3);font-size:11px">${fmt(r.amount)}</span><br><span style="color:var(--amber);font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
       <td>${instBadgeHtml(r,'exp',r._i)}</td>
-      <td class="no-print">${actHtml('exp',r._i,r.hidden,r._carryover?r._origY:undefined,r._carryover?r._origM:undefined)}</td>
+      <td class="no-print">${actHtml('exp',r._i,r.hidden,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
     </tr>`).join('');
 
 
@@ -1428,7 +1429,7 @@ function renderHome(){
         ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
       <td>${ptHtml(r.paid,'oil',r._i)}</td>
-      <td class="no-print">${actHtml('oil',r._i,false,r._carryover?r._origY:undefined,r._carryover?r._origM:undefined)}</td>
+      <td class="no-print">${actHtml('oil',r._i,false,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
     </tr>`).join('');
 
   // oil pager
@@ -1452,7 +1453,7 @@ function renderHome(){
         ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
       <td>${ptHtml(r.paid,'inc',r._i)}</td>
-      <td class="no-print">${actHtml('inc',r._i,false,r._carryover?r._origY:undefined,r._carryover?r._origM:undefined)}</td>
+      <td class="no-print">${actHtml('inc',r._i,false,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
     </tr>`).join('');
 
 
@@ -1528,9 +1529,9 @@ function renderOilPage(){
         <td class="mono" style="text-align:right">${r.enanti>0
           ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
           : fmt(r.amount)}</td>
-        <td>${ptHtml(r.paid,'oil',r._i,r._carryover?r._origY:undefined,r._carryover?r._origM:undefined)}</td>
+        <td>${ptHtml(r.paid,'oil',r._i,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
         <td class="muted">${esc(r.notes)}</td>
-        <td class="no-print">${actHtml('oil',r._i,false,r._carryover?r._origY:undefined,r._carryover?r._origM:undefined)}</td>
+        <td class="no-print">${actHtml('oil',r._i,false,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
       </tr>`).join('');
 }
 
@@ -1633,14 +1634,16 @@ function acKey(e){
 
 function toggleHide(type,i,oy,om){
   if(isViewer()) return;
-  const y=oy!==undefined?oy:CY, m=om!==undefined?om:CM;
+  const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
+  const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
   const d=ents(y,m);
   d[type][i].hidden=!d[type][i].hidden;
   setEnts(y,m,d);renderCurrentPage();
 }
 
 function togglePaid(type,i,oy,om){ if(isViewer()) return;
-  const y=oy!==undefined?oy:CY, m=om!==undefined?om:CM;
+  const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
+  const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
   const d=ents(y,m);
   const cur=d[type][i].paid;
   d[type][i].paid=cur==='ΝΑΙ'?'ΟΧΙ':cur==='ΟΧΙ'?'ΟΧΙ':'ΝΑΙ';
@@ -1650,7 +1653,8 @@ function togglePaid(type,i,oy,om){ if(isViewer()) return;
 
 // ── ENTRY MODAL ───────────────────────────────────────
 function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer()) return;
-  const modalY=my!==null?my:CY, modalM=mm!==null?mm:CM;
+  const modalY=(my!==null&&my!==undefined)?+my:CY;
+  const modalM=(mm!==null&&mm!==undefined)?+mm:CM;
   refreshCatSel();
   const isExp=type==='exp';
   const isOil=type==='oil';
@@ -1662,7 +1666,6 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
   document.getElementById('editY').value=modalY;
   document.getElementById('editM').value=modalM;
   document.getElementById('fCodeWrap').style.display=isExp?'':'none';
-  document.getElementById('fInstFields')||0;
   document.getElementById('instFields').style.display='none';
   document.getElementById('saveBtn').className='btn '+(isExp?'btn-exp':isOil?'btn-oil':'btn-inc');
   if(prefill!==null){
@@ -1702,9 +1705,10 @@ function closeModal(){document.getElementById('entryOverlay').classList.remove('
 function saveEntry(){
   const type=document.getElementById('editType').value;
   const eid=document.getElementById('editId').value;
-  const saveY=parseInt(document.getElementById('editY').value)||CY;
-  const saveM=parseInt(document.getElementById('editM').value);
-  const useSaveYM=!isNaN(saveM);
+  const _eY=document.getElementById('editY').value;
+  const _eM=document.getElementById('editM').value;
+  const saveY=_eY!==''?parseInt(_eY):CY;
+  const saveM=_eM!==''?parseInt(_eM):CM;
   const paid=document.getElementById('fPaid').value;
   const rawAmt=parseFloat(document.getElementById('fAmount').value)||0;
   const instAmt=paid==='ΔΟΣΕΙΣ'?parseFloat(document.getElementById('fInstAmt').value)||0:0;
@@ -1727,7 +1731,7 @@ function saveEntry(){
   };
   if(!entry.name&&!entry.amount){closeModal();return;}
   const moveType=document.getElementById('fMoveType').value;
-  const sy=useSaveYM?saveY:CY, sm=useSaveYM?saveM:CM;
+  const sy=saveY, sm=saveM;
   const d=ents(sy,sm);
   if(eid!==''&&moveType&&moveType!==type){
     const originalDate=d[type][+eid].date;
@@ -1774,11 +1778,13 @@ function createInstallment(groupId, name, amt, total, num, originY, originM, cat
   setEnts(ny,nm,nd);
 }
 function editEntry(type,i,oy,om){
-  const y=oy!==undefined?oy:CY, m=om!==undefined?om:CM;
+  const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
+  const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
   openModal(type,i,null,y,m);
 }
 function copyEntry(type,i,oy,om){
-  const y=oy!==undefined?oy:CY, m=om!==undefined?om:CM;
+  const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
+  const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
   const d=ents(y,m);
   const orig={...d[type][i]};
   // Ask destination
@@ -1813,7 +1819,8 @@ function copyEntry(type,i,oy,om){
 // ── DELETE ────────────────────────────────────────────
 let pendDel=null;
 function promptDel(type,i,oy,om){ if(isViewer()) return;
-  const y=oy!==undefined?oy:CY, m=om!==undefined?om:CM;
+  const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
+  const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
   pendDel={type,i,y,m};
   const r=ents(y,m)[type][i];
   const msg=document.getElementById('delMsg');
