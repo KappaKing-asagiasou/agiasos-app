@@ -1194,12 +1194,7 @@ function fmtD(d){if(!d)return'';const p=d.split('-');return p.length===3?p[2]+'/
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 function calc(y,m,annualMode=false){
-  const{inc:incRaw,exp:expRaw}=ents(y,m);
-  // Include carryover (unpaid from previous months) in totals
-  const carryExp=annualMode?[]:getCarryover(y,m,'exp');
-  const carryInc=annualMode?[]:getCarryover(y,m,'inc');
-  const exp=[...carryExp,...expRaw];
-  const inc=[...carryInc,...incRaw];
+  const{inc,exp}=ents(y,m);
   const s=(a,f)=>a.filter(f||Boolean).reduce((t,r)=>t+ +r.amount,0);
   const tI=s(inc);
   const pI=inc.reduce((sum,r)=>{
@@ -1247,9 +1242,7 @@ function calc(y,m,annualMode=false){
       return sum;
     },0);
     // Oil sales
-    const oilRaw=ents(y,m).oil||[];
-    const carryOilC=annualMode?[]:getCarryover(y,m,'oil');
-    const oil=[...carryOilC,...oilRaw];
+    const oil=ents(y,m).oil||[];
     const tO=s(oil);
     const pO=oil.reduce((sum,r)=>{
       if(r.paid==='ΝΑΙ') return sum+(+r.amount||0);
@@ -1391,7 +1384,8 @@ function renderHome(){
   document.getElementById('pendingAlert').classList.toggle('hidden',!hasPending);
 
   // Exp with pagination
-  const fExp=sorted(exp,'exp',q,true);
+  const expWithIdx=exp.map((r,i)=>({...r,_i:i,_carryover:false}));
+  const fExp=sorted(expWithIdx,'exp',q,true);
   const expPages=Math.max(1,Math.ceil(fExp.length/PAGE_SIZE));
   homeExpPage=Math.min(homeExpPage,expPages-1);
   const expSlice=fExp.slice(homeExpPage*PAGE_SIZE,(homeExpPage+1)*PAGE_SIZE);
@@ -1416,7 +1410,8 @@ function renderHome(){
     document.getElementById('expNext').disabled=homeExpPage>=expPages-1;}
 
   // Oil with pagination
-  const fOil=sorted(oil,'oil',q,true);
+  const oilWithIdx=(ents(CY,CM).oil||[]).map((r,i)=>({...r,_i:i,_carryover:false}));
+  const fOil=sorted(oilWithIdx,'oil',q,true);
   const oilPages=Math.max(1,Math.ceil(fOil.length/PAGE_SIZE));
   homeOilPage=Math.min(homeOilPage,oilPages-1);
   const oilSlice=fOil.slice(homeOilPage*PAGE_SIZE,(homeOilPage+1)*PAGE_SIZE);
@@ -1440,7 +1435,8 @@ function renderHome(){
     document.getElementById('oilNext').disabled=homeOilPage>=oilPages-1;}
 
   // Inc with pagination
-  const fInc=sorted(inc,'inc',q,true);
+  const incWithIdx=inc.map((r,i)=>({...r,_i:i,_carryover:false}));
+  const fInc=sorted(incWithIdx,'inc',q,true);
   const incPages=Math.max(1,Math.ceil(fInc.length/PAGE_SIZE));
   homeIncPage=Math.min(homeIncPage,incPages-1);
   const incSlice=fInc.slice(homeIncPage*PAGE_SIZE,(homeIncPage+1)*PAGE_SIZE);
@@ -1475,7 +1471,7 @@ function renderExpPage(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{exp}=ents(CY,CM);
   const carryExp=getCarryover(CY,CM,'exp');
-  const allExp=[...carryExp,...exp.map((r,i)=>({...r,_i:i}))];
+  const allExp=[...carryExp,...exp.map((r,i)=>({...r,_i:i,_carryover:false}))];
   const fExp=sorted(allExp,'exp',q);
   document.getElementById('expPageCount').textContent=fExp.length+' / '+exp.length+' εγγραφές · '+MN[CM]+' '+CY;
   document.getElementById('expPageBody').innerHTML=fExp.length===0
@@ -1497,7 +1493,7 @@ function renderIncPage(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{inc}=ents(CY,CM);
   const carryInc=getCarryover(CY,CM,'inc');
-  const allInc=[...carryInc,...inc.map((r,i)=>({...r,_i:i}))];
+  const allInc=[...carryInc,...inc.map((r,i)=>({...r,_i:i,_carryover:false}))];
   const fInc=sorted(allInc,'inc',q);
   document.getElementById('incPageCount').textContent=fInc.length+' / '+inc.length+' εγγραφές · '+MN[CM]+' '+CY;
   document.getElementById('incPageBody').innerHTML=fInc.length===0
@@ -1519,7 +1515,7 @@ function renderOilPage(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{oil}=ents(CY,CM);
   const carryOil=getCarryover(CY,CM,'oil');
-  const allOil=[...carryOil,...oil.map((r,i)=>({...r,_i:i}))];
+  const allOil=[...carryOil,...oil.map((r,i)=>({...r,_i:i,_carryover:false}))];
   const fOil=sorted(allOil,'oil',q);
   document.getElementById('oilPageCount').textContent=fOil.length+' / '+oil.length+' εγγραφές · '+MN[CM]+' '+CY;
   document.getElementById('oilPageBody').innerHTML=fOil.length===0
