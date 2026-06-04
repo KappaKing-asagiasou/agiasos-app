@@ -2974,10 +2974,30 @@ function openIncCats(){
 // ── INVOICE SCANNER (Claude AI) ───────────────────────
 let _scanData = null;
 
+function compressImage(file){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = ()=>{
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      let w=img.width, h=img.height;
+      const MAX=1200;
+      if(w>MAX||h>MAX){ const r=Math.min(MAX/w,MAX/h); w=Math.round(w*r); h=Math.round(h*r); }
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl=canvas.toDataURL('image/jpeg',0.85);
+      resolve(dataUrl.split(',')[1]);
+    };
+    img.onerror=reject;
+    img.src=url;
+  });
+}
+
 async function scanInvoice(input){
   const file = input.files[0];
   if(!file) return;
-  input.value = ''; // reset so same file can be re-selected
+  input.value = '';
 
   const loading = document.getElementById('scanLoading');
   const result  = document.getElementById('scanResult');
@@ -2985,17 +3005,31 @@ async function scanInvoice(input){
   result.classList.remove('show');
   _scanData = null;
 
-  try{
-    // Convert file to base64
-    const base64 = await new Promise((res,rej)=>{
-      const r = new FileReader();
-      r.onload = ()=>res(r.result.split(',')[1]);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
+  // Size check
+  if(file.size > 4 * 1024 * 1024){
+    loading.classList.remove('show');
+    showToast('⚠ Αρχείο πολύ μεγάλο (μέγιστο 4MB)');
+    return;
+  }
 
-    const isPDF = file.type === 'application/pdf';
-    const mediaType = isPDF ? 'application/pdf' : file.type || 'image/jpeg';
+  loading.querySelector&&(loading.textContent='⏳ Ανέβασμα και ανάλυση… (μπορεί να πάρει 20-30 δευτ.)');
+
+  try{
+    let base64, mediaType, isPDF;
+    isPDF = file.type === 'application/pdf';
+    mediaType = isPDF ? 'application/pdf' : (file.type || 'image/jpeg');
+
+    if(!isPDF && file.type.startsWith('image/')){
+      // Compress image before sending
+      base64 = await compressImage(file);
+    } else {
+      base64 = await new Promise((res,rej)=>{
+        const r = new FileReader();
+        r.onload = ()=>res(r.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
 
     const body = {
       model: 'claude-opus-4-6',
