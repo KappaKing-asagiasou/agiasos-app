@@ -874,6 +874,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   <div class="modal-title" id="modalTitle"></div>
   <input type="hidden" id="editId"><input type="hidden" id="editType">
   <input type="hidden" id="editY"><input type="hidden" id="editM">
+  <input type="hidden" id="fAttachment">
   <!-- Invoice Scanner -->
   <div id="scanWrap">
     <label class="scan-btn" for="invoiceFile">📎 Ανέβασε Τιμολόγιο <span style="opacity:.6;font-size:11px">(PDF ή εικόνα)</span></label>
@@ -1524,7 +1525,7 @@ function renderOilPage(){
     ?'<tr class="empty-row"><td colspan="6">'+(q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν πωλήσεις λαδιού')+'</td></tr>'
     :fOil.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r._carryover?' carry-row':''}">
         <td class="mono">${fmtD(r.date)}</td>
-        <td>${esc(r.name)}${r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:''}</td>
+        <td>${esc(r.name)}${r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:''}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
         <td class="mono" style="text-align:right">${r.enanti>0
           ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
           : fmt(r.amount)}</td>
@@ -1694,8 +1695,9 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
     updateEnantiPreview();
     document.getElementById('fCat').value=r.cat||'';
     document.getElementById('fNotes').value=r.notes||'';
+    document.getElementById('fAttachment').value=r.attachment||'';
   }else{
-    ['fDate','fName','fAmount','fEnanti','fCode','fInvoice','fNotes'].forEach(id=>document.getElementById(id).value='');
+    ['fDate','fName','fAmount','fEnanti','fCode','fInvoice','fNotes','fAttachment'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('fCat').value='';
     const fIC2=document.getElementById('fIncCat'); if(fIC2) fIC2.value='';
     document.getElementById('fPaid').value='ΟΧΙ';
@@ -1737,6 +1739,7 @@ function saveEntry(){
     cat:document.getElementById('fCat').value,
     incCat:document.getElementById('fIncCat').value||'',
     notes:document.getElementById('fNotes').value.trim(),
+    attachment:document.getElementById('fAttachment').value||'',
     instPlan:paid==='ΔΟΣΕΙΣ'?{amt:instAmt,total:instTotalCount,groupId}:null,
     instGroupId:paid==='ΔΟΣΕΙΣ'?groupId:''
   };
@@ -2973,6 +2976,7 @@ function openIncCats(){
 
 // ── INVOICE SCANNER (Claude AI) ───────────────────────
 let _scanData = null;
+let _scanDataAttachment = null;
 
 function compressImage(file){
   return new Promise((resolve, reject)=>{
@@ -3004,6 +3008,7 @@ async function scanInvoice(input){
   loading.classList.add('show');
   result.classList.remove('show');
   _scanData = null;
+  _scanDataAttachment = null;
 
   // Size check
   if(file.size > 4 * 1024 * 1024){
@@ -3049,6 +3054,38 @@ async function scanInvoice(input){
       }]
     };
 
+    // Upload PDF/image to Supabase Storage
+    let attachmentUrl = null;
+    try{
+      const ext = isPDF ? 'pdf' : 'jpg';
+      const fname = 'inv_' + Date.now() + '.' + ext;
+      const byteStr = atob(base64);
+      const byteArr = new Uint8Array(byteStr.length);
+      for(let i=0;i<byteStr.length;i++) byteArr[i]=byteStr.charCodeAt(i);
+      const blob = new Blob([byteArr], {type: mediaType});
+      const uploadResp = await fetch(
+        `https://akpqfjewlyygngfpvcid.supabase.co/storage/v1/object/invoices/${fname}`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': SB_KEY,
+            'Authorization': 'Bearer ' + SB_KEY,
+            'Content-Type': mediaType,
+            'x-upsert': 'true',
+          },
+          body: blob,
+        }
+      );
+      if(uploadResp.ok){
+        attachmentUrl = `https://akpqfjewlyygngfpvcid.supabase.co/storage/v1/object/public/invoices/${fname}`;
+        console.log('Uploaded:', attachmentUrl);
+      }
+    }catch(uploadErr){
+      console.warn('Upload failed:', uploadErr);
+    }
+    _scanData = _scanData || {};
+    _scanDataAttachment = attachmentUrl;
+
     const resp = await fetch('https://akpqfjewlyygngfpvcid.supabase.co/functions/v1/scan-invoice',{
       method:'POST',
       headers:{
@@ -3076,7 +3113,7 @@ async function scanInvoice(input){
 
     // Show results
     const body2 = document.getElementById('scanResultBody');
-    body2.innerHTML = [
+    const rows2 = [
       ['Προμηθευτής', _scanData.name],
       ['Ποσό', _scanData.amount ? _scanData.amount+'€' : '—'],
       ['Παραστατικό', _scanData.invoice],
@@ -3086,6 +3123,10 @@ async function scanInvoice(input){
     ].filter(([,v])=>v).map(([k,v])=>
       `<div class="sr-row"><span class="muted">${k}</span><strong>${esc(v)}</strong></div>`
     ).join('');
+    const attachRow = _scanDataAttachment
+      ? `<div class="sr-row"><span class="muted">Συνημμένο</span><a href="${_scanDataAttachment}" target="_blank" style="color:var(--olive)">📎 Άνοιγμα PDF</a></div>`
+      : '';
+    body2.innerHTML = rows2 + attachRow;
 
     loading.classList.remove('show');
     result.classList.add('show');
@@ -3105,9 +3146,10 @@ function applyScanResult(){
   if(_scanData.code)    document.getElementById('fCode').value    = _scanData.code;
   if(_scanData.date)    document.getElementById('fDate').value    = _scanData.date;
   if(_scanData.notes)   document.getElementById('fNotes').value   = _scanData.notes;
+  if(_scanDataAttachment) document.getElementById('fAttachment').value=_scanDataAttachment;
   document.getElementById('scanResult').classList.remove('show');
   updateEnantiPreview();
-  showToast('✓ Στοιχεία εφαρμόστηκαν!');
+  showToast('✓ Στοιχεία εφαρμόστηκαν!'+(_scanDataAttachment?' · PDF συνημμένο 📎':''));
 }
 
 function saveInstSettings(){}
