@@ -3236,14 +3236,19 @@ function bootApp(){
 }
 
 // On load: check if already authenticated this session
-if(checkAuth()){
-  currentRole = sessionStorage.getItem(ROLE_KEY) || 'viewer';
-  document.getElementById('loginScreen').style.display='none';
-  bootApp();
-} else {
-  // Show login, focus input
-  setTimeout(()=>document.getElementById('loginPass').focus(), 100);
-}
+window.addEventListener('DOMContentLoaded', ()=>{
+  if(checkAuth()){
+    currentRole = sessionStorage.getItem(ROLE_KEY) || 'viewer';
+    const ls = document.getElementById('loginScreen');
+    if(ls) ls.style.display='none';
+    bootApp();
+  } else {
+    setTimeout(()=>{
+      const lp = document.getElementById('loginPass');
+      if(lp) lp.focus();
+    }, 100);
+  }
+});
 
 </script>
 
