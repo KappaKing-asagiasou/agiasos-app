@@ -9,7 +9,13 @@
 <meta name="apple-mobile-web-app-title" content="Α.Σ Αγιάσου">
 <title>Α.Σ Αγιάσου · Έσοδα & Έξοδα</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="icon-96.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2e5020">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -377,7 +383,9 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 .table-title.oil{color:var(--hdr-oil-tx,#7a5e14);}
 .dot-oil{background:var(--gold-mid);}
 .stat-card.o .val{color:var(--gold);}
-.stat-card.o{background:linear-gradient(135deg,var(--surface) 0%,#f9f4e0 100%);border-left:3px solid var(--gold-mid);}
+.stat-card.o{background:#e8e2d2;border-left:3px solid var(--gold-mid);}
+.stat-card.o .val{color:#6e4408;}
+.stat-card.o .lbl{color:#6a6050;}
 [data-theme="dark"] .table-header.oil{background:linear-gradient(135deg,#221a06 0%,#1e1604 100%);border-bottom-color:#443010;}
 [data-theme="dark"] .page-table-header.oil{background:linear-gradient(135deg,#221a06 0%,#1e1604 100%);border-bottom-color:#443010;}
 [data-theme="dark"] .stat-card.o{background:linear-gradient(135deg,#1e211c 0%,#221a06 100%);}
@@ -3072,16 +3080,20 @@ async function scanInvoice(input){
             'Authorization': 'Bearer ' + SB_KEY,
             'Content-Type': mediaType,
             'x-upsert': 'true',
+            'cache-control': '3600',
           },
           body: blob,
         }
       );
       if(uploadResp.ok){
         attachmentUrl = `https://akpqfjewlyygngfpvcid.supabase.co/storage/v1/object/public/invoices/${fname}`;
-        console.log('Uploaded:', attachmentUrl);
+        console.log('✅ Uploaded:', attachmentUrl);
+      } else {
+        const errTxt = await uploadResp.text();
+        console.warn('Upload failed:', uploadResp.status, errTxt);
       }
     }catch(uploadErr){
-      console.warn('Upload failed:', uploadErr);
+      console.warn('Upload error:', uploadErr);
     }
 
     const resp = await fetch('https://akpqfjewlyygngfpvcid.supabase.co/functions/v1/scan-invoice',{
@@ -3105,7 +3117,11 @@ async function scanInvoice(input){
     const text = data.content[0].text.trim();
 
     // Parse JSON (strip markdown if present)
-    const clean = text.replace(/```json|```/g,'').trim();
+    let clean = text.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+    // Find JSON object
+    const jsonStart = clean.indexOf('{');
+    const jsonEnd = clean.lastIndexOf('}');
+    if(jsonStart>=0 && jsonEnd>jsonStart) clean = clean.slice(jsonStart, jsonEnd+1);
     _scanData = JSON.parse(clean);
     // Save attachment URL AFTER _scanData is set
     _scanDataAttachment = attachmentUrl;
