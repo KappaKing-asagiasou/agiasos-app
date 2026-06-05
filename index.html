@@ -3083,8 +3083,6 @@ async function scanInvoice(input){
     }catch(uploadErr){
       console.warn('Upload failed:', uploadErr);
     }
-    _scanData = _scanData || {};
-    _scanDataAttachment = attachmentUrl;
 
     const resp = await fetch('https://akpqfjewlyygngfpvcid.supabase.co/functions/v1/scan-invoice',{
       method:'POST',
@@ -3103,13 +3101,14 @@ async function scanInvoice(input){
 
     const data = await resp.json();
     console.log('Scan response:', JSON.stringify(data).slice(0,200));
-    if(!resp.ok) throw new Error(data.error?.message || 'HTTP '+resp.status);
     if(!data.content||!data.content[0]) throw new Error('Άδεια απάντηση από AI');
     const text = data.content[0].text.trim();
 
     // Parse JSON (strip markdown if present)
     const clean = text.replace(/```json|```/g,'').trim();
     _scanData = JSON.parse(clean);
+    // Save attachment URL AFTER _scanData is set
+    _scanDataAttachment = attachmentUrl;
 
     // Show results
     const body2 = document.getElementById('scanResultBody');
