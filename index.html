@@ -1397,7 +1397,7 @@ function renderHome(){
     ?'<tr class="empty-row"><td colspan="5">Δεν υπάρχουν εγγραφές</td></tr>'
     :expSlice.filter(r=>isAdmin()||!r.hidden).map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r.hidden?' row-hidden':''}">
       <td class="mono">${fmtD(r.date)}</td>
-      <td>${esc(r.name)}${r.cat?'<br><span class="muted">'+esc(r.cat)+'</span>':''}</td>
+      <td>${esc(r.name)}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}${r.cat?'<br><span class="muted">'+esc(r.cat)+'</span>':''}</td>
       <td class="mono" style="text-align:right">${r.enanti>0
         ? `<span style="text-decoration:line-through;color:var(--text3);font-size:11px">${fmt(r.amount)}</span><br><span style="color:var(--amber);font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
@@ -1423,7 +1423,7 @@ function renderHome(){
     ?'<tr class="empty-row"><td colspan="5">Δεν υπάρχουν πωλήσεις λαδιού</td></tr>'
     :oilSlice.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
       <td class="mono">${fmtD(r.date)}</td>
-      <td>${esc(r.name)}</td>
+      <td>${esc(r.name)}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
       <td class="mono" style="text-align:right">${r.enanti>0
         ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
@@ -1448,7 +1448,7 @@ function renderHome(){
     ?'<tr class="empty-row"><td colspan="5">Δεν υπάρχουν εγγραφές</td></tr>'
     :incSlice.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
       <td class="mono">${fmtD(r.date)}</td>
-      <td>${esc(r.name)}</td>
+      <td>${esc(r.name)}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
       <td class="mono" style="text-align:right">${r.enanti>0
         ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
@@ -1481,7 +1481,7 @@ function renderExpPage(){
     ?'<tr class="empty-row"><td colspan="10">'+( q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν εγγραφές εξόδων')+'</td></tr>'
     :fExp.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
       <td class="mono">${fmtD(r.date)}</td>
-      <td>${esc(r.name)}</td>
+      <td>${esc(r.name)}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
       <td class="mono" style="text-align:right">${r.enanti>0?`<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`:fmt(r.amount)}</td>
       <td>${r.code?`<span class="code-badge" onclick="copyCode('${esc(r.code).replace(/'/g,"\\'")}');event.stopPropagation();" title="Κλικ για αντιγραφή" style="cursor:pointer">${esc(r.code)}</span>`:'<span class="muted">—</span>'}</td>
       <td class="muted">${esc(r.cat)}</td>
@@ -1503,7 +1503,7 @@ function renderIncPage(){
     ?'<tr class="empty-row"><td colspan="6">'+(q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν εγγραφές εσόδων')+'</td></tr>'
     :fInc.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
       <td class="mono">${fmtD(r.date)}</td>
-      <td>${esc(r.name)}</td>
+      <td>${esc(r.name)}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
       <td class="mono" style="text-align:right">${r.enanti>0
         ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
@@ -1525,7 +1525,7 @@ function renderOilPage(){
     ?'<tr class="empty-row"><td colspan="6">'+(q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν πωλήσεις λαδιού')+'</td></tr>'
     :fOil.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r._carryover?' carry-row':''}">
         <td class="mono">${fmtD(r.date)}</td>
-        <td>${esc(r.name)}${r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:''}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
+        <td>${esc(r.name)}${r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:''}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
         <td class="mono" style="text-align:right">${r.enanti>0
           ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
           : fmt(r.amount)}</td>
