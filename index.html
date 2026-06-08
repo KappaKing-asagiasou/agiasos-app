@@ -23,7 +23,8 @@
 :root{
   --bg:#2a2618;--surface:#3a3628;--surface2:#302c1e;
   --border:#484030;--border2:#5a5040;
-  --text:#e8e4d0;--text2:#b0a888;--text3:#786e58;
+  --text:#e8e4d0;--text2:#b0a888;--text3:#a29476;
+  --input-bg:#2a2618;
   --olive:#3a5626;--olive-mid:#567838;--olive-lt:#e4eed8;--olive-bg:#eef4e6;
   --gold:#7a5e14;--gold-lt:#f5edd0;--gold-mid:#c8a030;
   --red:#702020;--red-mid:#a83030;--red-lt:#f6e8e8;
@@ -184,8 +185,8 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 .modal-title.inc{color:var(--olive);}
 .field{margin-bottom:12px;}
 .field label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;}
-.field input,.field select,.field textarea{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);background:#252118;color:var(--text);outline:none;transition:border-color .15s;}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--olive-mid);box-shadow:0 0 0 3px rgba(86,120,56,.14);background:var(--surface);}
+.field input,.field select,.field textarea{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--input-bg);color:var(--text);outline:none;transition:border-color .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--olive-mid);box-shadow:0 0 0 3px rgba(86,120,56,.14);background:var(--input-bg);}
 .field textarea{resize:vertical;min-height:54px;}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:13px;border-top:1px solid var(--border);}
@@ -521,6 +522,15 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .home-tables .hide-btn{padding:2px 4px;font-size:10px;}
 
 
+
+/* EMPTY STATE */
+.empty-row td{padding:0!important;background:transparent!important;border:none!important;}
+.empty-row:hover td{background:transparent!important;}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;text-align:center;}
+.empty-icon{font-size:42px;margin-bottom:12px;opacity:.5;}
+.empty-title{font-size:15px;font-weight:500;color:var(--text2);margin-bottom:4px;}
+.empty-sub{font-size:12.5px;color:var(--text3);}
+
 /* CARRYOVER BADGE */
 .carry-badge{display:inline-block;font-size:9px;background:#e8a020;color:#fff;padding:1px 5px;border-radius:8px;margin-left:5px;vertical-align:middle;font-style:normal;}
 tr.carry-row td{background:#fdf5e0!important;font-style:italic;}
@@ -626,6 +636,8 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" onclick="doPrint();closeDropdowns()"><span class="di-icon">🖨</span>Εκτύπωση</button>
         <button class="hdr-drop-item" onclick="exportPDF();closeDropdowns()"><span class="di-icon">📄</span>Αποθήκευση PDF</button>
         <button class="hdr-drop-item" onclick="exportExcel();closeDropdowns()"><span class="di-icon">📊</span>Εξαγωγή Excel</button>
+        <div class="hdr-drop-sep"></div>
+        <button class="hdr-drop-item" onclick="exportMonthPDF();closeDropdowns()"><span class="di-icon">📄</span>Καρτέλα Μήνα (PDF)</button>
       </div>
     </div>
 
@@ -746,6 +758,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
     <div class="page-table-card">
       <div class="page-table-header exp">
         <div class="page-title-text exp"><div class="dot dot-r"></div>Έξοδα</div>
+        <select id="catFilterSel" class="no-print" onchange="setCatFilter(this.value)" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--hdr-exp-bd);background:var(--surface);color:var(--text);cursor:pointer;margin-left:auto;margin-right:10px;"></select>
         <span class="muted no-print" id="expPageCount"></span>
       </div>
       <div class="tbl-scroll">
@@ -1114,6 +1127,7 @@ const sortS={exp:{col:'date',dir:1},inc:{col:'date',dir:1},oil:{col:'date',dir:1
 const PAGE_SIZE=10;
 let homeExpPage=0,homeIncPage=0,homeOilPage=0;
 let showCarryover=safeGet('agiasos_carryover','0')==='1';
+let catFilter='';  // empty = all categories
 
 function homePage(type,delta){
   if(type==='exp') homeExpPage=Math.max(0,homeExpPage+delta);
@@ -1173,6 +1187,7 @@ function updateMonthNav(){
 
 // ── NAVIGATION ────────────────────────────────────────
 function goPage(p){
+  if(p!=='exp') catFilter='';  // reset filter when leaving exp page
   CPage=p;
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
@@ -1482,21 +1497,51 @@ function renderExpPage(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{exp}=ents(CY,CM);
   const carryExp=showCarryover?getCarryover(CY,CM,'exp'):[];
-  const allExp=[...carryExp,...exp.map((r,i)=>({...r,_i:i,_carryover:false}))];
+  let allExp=[...carryExp,...exp.map((r,i)=>({...r,_i:i,_carryover:false}))];
+  // Category filter
+  if(catFilter) allExp=allExp.filter(r=>r.cat===catFilter);
   const fExp=sorted(allExp,'exp',q);
+  // Populate filter dropdown
+  renderCatFilter('exp');
   document.getElementById('expPageCount').textContent=fExp.length+' / '+exp.length+' εγγραφές · '+MN[CM]+' '+CY;
   document.getElementById('expPageBody').innerHTML=fExp.length===0
-    ?'<tr class="empty-row"><td colspan="10">'+( q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν εγγραφές εξόδων')+'</td></tr>'
-    :fExp.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
+    ?emptyRow(10, q?'search':catFilter?'filter':'exp')
+    :fExp.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r._carryover?' carry-row':''}">
       <td class="mono">${fmtD(r.date)}</td>
-      <td>${esc(r.name)}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
+      <td>${esc(r.name)}${r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:''}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
       <td class="mono" style="text-align:right">${r.enanti>0?`<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`:fmt(r.amount)}</td>
       <td>${r.code?`<span class="code-badge" onclick="copyCode('${esc(r.code).replace(/'/g,"\\'")}');event.stopPropagation();" title="Κλικ για αντιγραφή" style="cursor:pointer">${esc(r.code)}</span>`:'<span class="muted">—</span>'}</td>
-      <td class="muted">${esc(r.cat)}</td>
+      <td class="muted">${r.cat?catIcon(r.cat)+' '+esc(r.cat):''}</td>
       <td>${instBadgeHtml(r,'exp',r._i)}</td>
       <td class="muted">${esc(r.notes)}</td>
-      <td class="no-print">${actHtml('exp',r._i)}</td>
+      <td class="no-print">${actHtml('exp',r._i,r.hidden,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
     </tr>`).join('');
+}
+
+// Empty state row
+function emptyRow(cols, type){
+  const msgs={
+    'search':['🔍','Δεν βρέθηκαν αποτελέσματα','Δοκίμασε διαφορετική αναζήτηση'],
+    'filter':['🏷️','Καμία εγγραφή σε αυτή την κατηγορία','Άλλαξε το φίλτρο'],
+    'exp':['📤','Δεν υπάρχουν έξοδα ακόμα','Πάτα + Έξοδο για να προσθέσεις'],
+    'inc':['📥','Δεν υπάρχουν έσοδα ακόμα','Πάτα + Έσοδο για να προσθέσεις'],
+    'oil':['🫒','Δεν υπάρχουν πωλήσεις λαδιού','Πάτα + Λάδι για να προσθέσεις'],
+  };
+  const[icon,title,sub]=msgs[type]||msgs['exp'];
+  return`<tr class="empty-row"><td colspan="${cols}"><div class="empty-state"><div class="empty-icon">${icon}</div><div class="empty-title">${title}</div><div class="empty-sub">${sub}</div></div></td></tr>`;
+}
+
+// Category filter dropdown
+function renderCatFilter(page){
+  const el=document.getElementById('catFilterSel');
+  if(!el) return;
+  const cats=getCats();
+  el.innerHTML='<option value="">Όλες οι κατηγορίες</option>'+cats.map(cat=>`<option value="${esc(cat)}"${cat===catFilter?' selected':''}>${catIcon(cat)} ${esc(cat)}</option>`).join('');
+}
+
+function setCatFilter(v){
+  catFilter=v;
+  renderCurrentPage();
 }
 
 // ── INCOME FULL PAGE ──────────────────────────────────
@@ -1508,16 +1553,17 @@ function renderIncPage(){
   const fInc=sorted(allInc,'inc',q);
   document.getElementById('incPageCount').textContent=fInc.length+' / '+inc.length+' εγγραφές · '+MN[CM]+' '+CY;
   document.getElementById('incPageBody').innerHTML=fInc.length===0
-    ?'<tr class="empty-row"><td colspan="6">'+(q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν εγγραφές εσόδων')+'</td></tr>'
-    :fInc.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
+    ?emptyRow(7, q?'search':'inc')
+    :fInc.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r._carryover?' carry-row':''}">
       <td class="mono">${fmtD(r.date)}</td>
-      <td>${esc(r.name)}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
+      <td>${esc(r.name)}${r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:''}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
+      <td class="muted">${r.incCat?catIcon(r.incCat)+' '+esc(r.incCat):''}</td>
       <td class="mono" style="text-align:right">${r.enanti>0
         ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
         : fmt(r.amount)}</td>
         <td>${ptHtml(r.paid,'inc',r._i,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
       <td class="muted">${esc(r.notes)}</td>
-      <td class="no-print">${actHtml('inc',r._i)}</td>
+      <td class="no-print">${actHtml('inc',r._i,false,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
     </tr>`).join('');
 }
 
@@ -1530,7 +1576,7 @@ function renderOilPage(){
   const fOil=sorted(allOil,'oil',q);
   document.getElementById('oilPageCount').textContent=fOil.length+' / '+oil.length+' εγγραφές · '+MN[CM]+' '+CY;
   document.getElementById('oilPageBody').innerHTML=fOil.length===0
-    ?'<tr class="empty-row"><td colspan="6">'+(q?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν πωλήσεις λαδιού')+'</td></tr>'
+    ?emptyRow(6, q?'search':'oil')
     :fOil.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r._carryover?' carry-row':''}">
         <td class="mono">${fmtD(r.date)}</td>
         <td>${esc(r.name)}${r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:''}${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-left:5px;text-decoration:none">📎</a>`:''}</td>
@@ -1883,6 +1929,21 @@ function confirmDel(){
 // ── CATEGORIES ────────────────────────────────────────
 const DCATS=['Καύσιμα','Μισθοδοσία','Πωλήσεις λαδιού','Ηλεκτρισμός / Νερό','Συντήρηση μηχανημάτων','Αναλώσιμα','Μεταφορικά','Λοιπά'];
 const DICATS=['Πωλήσεις Λαδιού','Επιδοτήσεις','Ενοίκια','Τόκοι','Λοιπά Έσοδα'];
+
+// ── CATEGORY ICONS (Chrome-safe) ──────────────────────
+const CAT_ICONS = {
+  'Καύσιμα':'⛽','Μισθοδοσία':'👷','Πωλήσεις λαδιού':'🫒','Πωλήσεις Λαδιού':'🫒',
+  'Ηλεκτρισμός / Νερό':'💡','Ηλεκτρισμός':'💡','Νερό':'💧','ΔΕΗ':'💡',
+  'Συντήρηση μηχανημάτων':'🔧','Συντήρηση':'🔧','Αναλώσιμα':'📦',
+  'Μεταφορικά':'🚚','Λοιπά':'📋','Λοιπά Έσοδα':'💶','Επιδοτήσεις':'🏛️',
+  'Ενοίκια':'🏠','Τόκοι':'🏦','Ασφάλιση':'🛡️','Φόροι':'🧾','ΦΠΑ':'🧾',
+  'Τηλέφωνο':'📞','Internet':'🌐','Πρώτες ύλες':'🌿'
+};
+function catIcon(cat){
+  if(!cat) return '';
+  return CAT_ICONS[cat] || '🏷️';
+}
+
 function getIncCats(){return data['__incats__']||DICATS;}
 function setIncCats(arr){data['__incats__']=arr;save();}
 function getCats(){return data['__cats__']||[...DCATS];}
@@ -2373,12 +2434,12 @@ function changePassword(role){
 
 // ── BACKGROUND PICKER ─────────────────────────────────
 const BG_THEMES = [
-  {id:'warm',    name:'Ζεστό Χαρτί',       bg:'#f0ebe0', surface:'#faf7f0', surface2:'#e8e2d6', text:'#1c1a14', text2:'#665c48', text3:'#9c9280', border:'#d8d0c0', border2:'#c4baaa', bodyGrad:'linear-gradient(160deg,#f5efe2 0%,#ede6d6 40%,#f2ece0 100%)'},
-  {id:'olive',   name:'Σκούρο Ελαιόλαδο',  bg:'#2a2618', surface:'#3a3628', surface2:'#302c1e', text:'#e8e4d0', text2:'#b0a888', text3:'#786e58', border:'#484030', border2:'#5a5040', bodyGrad:'linear-gradient(160deg,#2e2a1a 0%,#242010 40%,#2a261a 100%)'},
-  {id:'forest',  name:'Δάσος τη νύχτα',    bg:'#1e2018', surface:'#282c22', surface2:'#222618', text:'#dde0d4', text2:'#98a088', text3:'#687060', border:'#383e30', border2:'#48502a', bodyGrad:'linear-gradient(160deg,#1e2218 0%,#1a1e14 40%,#1e2018 100%)'},
-  {id:'earth',   name:'Σκούρο Γήινο',      bg:'#22201a', surface:'#2e2c24', surface2:'#28261e', text:'#e4e0d4', text2:'#a09880', text3:'#706858', border:'#403c30', border2:'#504840', bodyGrad:'linear-gradient(160deg,#262218 0%,#201e14 40%,#242018 100%)'},
-  {id:'neutral', name:'Ουδέτερο Σκούρο',   bg:'#1a1e1a', surface:'#242824', surface2:'#1e221e', text:'#e0e4e0', text2:'#90988e', text3:'#606860', border:'#343834', border2:'#444844', bodyGrad:'linear-gradient(160deg,#1c201c 0%,#181c18 40%,#1a1e1a 100%)'},
-  {id:'midnight',name:'Μεσονύκτιο Μπλε',   bg:'#1a1c24', surface:'#242830', surface2:'#1e2028', text:'#e0e2ec', text2:'#8890a8', text3:'#586070', border:'#303448', border2:'#404858', bodyGrad:'linear-gradient(160deg,#1c1e28 0%,#181a22 40%,#1a1c26 100%)'},
+  {id:'warm',    name:'Ζεστό Χαρτί',       bg:'#f0ebe0', surface:'#faf7f0', surface2:'#e8e2d6', text:'#1c1a14', text2:'#665c48', text3:'#7c7466', border:'#d8d0c0', border2:'#c4baaa', bodyGrad:'linear-gradient(160deg,#f5efe2 0%,#ede6d6 40%,#f2ece0 100%)'},
+  {id:'olive',   name:'Σκούρο Ελαιόλαδο',  bg:'#2a2618', surface:'#3a3628', surface2:'#302c1e', text:'#e8e4d0', text2:'#b0a888', text3:'#a29476', border:'#484030', border2:'#5a5040', bodyGrad:'linear-gradient(160deg,#2e2a1a 0%,#242010 40%,#2a261a 100%)'},
+  {id:'forest',  name:'Δάσος τη νύχτα',    bg:'#1e2018', surface:'#282c22', surface2:'#222618', text:'#dde0d4', text2:'#98a088', text3:'#828c78', border:'#383e30', border2:'#48502a', bodyGrad:'linear-gradient(160deg,#1e2218 0%,#1a1e14 40%,#1e2018 100%)'},
+  {id:'earth',   name:'Σκούρο Γήινο',      bg:'#22201a', surface:'#2e2c24', surface2:'#28261e', text:'#e4e0d4', text2:'#a09880', text3:'#978c76', border:'#403c30', border2:'#504840', bodyGrad:'linear-gradient(160deg,#262218 0%,#201e14 40%,#242018 100%)'},
+  {id:'neutral', name:'Ουδέτερο Σκούρο',   bg:'#1a1e1a', surface:'#242824', surface2:'#1e221e', text:'#e0e4e0', text2:'#90988e', text3:'#818c81', border:'#343834', border2:'#444844', bodyGrad:'linear-gradient(160deg,#1c201c 0%,#181c18 40%,#1a1e1a 100%)'},
+  {id:'midnight',name:'Μεσονύκτιο Μπλε',   bg:'#1a1c24', surface:'#242830', surface2:'#1e2028', text:'#e0e2ec', text2:'#8890a8', text3:'#7b869c', border:'#303448', border2:'#404858', bodyGrad:'linear-gradient(160deg,#1c1e28 0%,#181a22 40%,#1a1c26 100%)'},
 ];
 const BG_KEY = 'agiasos_bg_theme';
 
@@ -2411,6 +2472,8 @@ function applyBgTheme(id){
   r.setProperty('--border2',t.border2);
   // Derive accent colors based on whether theme is dark or light
   const isDark=t.bg.startsWith('#1')||t.bg.startsWith('#2');
+  // Input background — lighter than surface in dark themes, white in light
+  r.setProperty('--input-bg', isDark ? t.bg : '#ffffff');
   r.setProperty('--olive-bg',  isDark?'rgba(61,92,42,.25)' :'#eef4e6');
   r.setProperty('--olive-lt',  isDark?'rgba(61,92,42,.35)' :'#e4eed8');
   r.setProperty('--red-lt',    isDark?'rgba(168,48,48,.2)'  :'#f6e8e8');
@@ -2917,6 +2980,74 @@ function initHeaderOlives(){
   }
 }
 initHeaderOlives();
+
+
+function exportMonthPDF(){
+  const mn=MN[CM];
+  const{inc,exp,oil}=ents(CY,CM);
+  const cv=calc(CY,CM);
+  const fmtE=v=>fmt(v);
+  const dateStr=new Date().toLocaleDateString('el-GR');
+
+  let html=`<!DOCTYPE html><html lang="el"><head><meta charset="utf-8"><title>Καρτέλα ${mn} ${CY}</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Segoe UI',Arial,sans-serif;color:#1c1a14;padding:30px;font-size:12px;}
+    h1{font-size:20px;color:#2e5020;margin-bottom:4px;}
+    .sub{color:#888;font-size:12px;margin-bottom:20px;}
+    .summary{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+    .scard{flex:1;min-width:120px;border:1px solid #ddd;border-radius:8px;padding:12px;background:#f8f6f0;}
+    .scard .l{font-size:10px;text-transform:uppercase;color:#888;letter-spacing:.5px;}
+    .scard .v{font-size:18px;font-weight:bold;margin-top:4px;font-family:monospace;}
+    .green{color:#2e7d20;} .red{color:#a83030;} .gold{color:#9a7818;}
+    h2{font-size:14px;margin:24px 0 8px;padding-bottom:4px;border-bottom:2px solid #2e5020;}
+    table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+    th{background:#f0ece0;padding:6px 8px;text-align:left;font-size:10px;text-transform:uppercase;color:#666;border-bottom:1px solid #ccc;}
+    td{padding:5px 8px;border-bottom:1px solid #eee;font-size:11px;}
+    .r{text-align:right;font-family:monospace;}
+    .paid-y{color:#2e7d20;} .paid-n{color:#a83030;}
+    .total-row td{font-weight:bold;background:#f8f6f0;border-top:2px solid #2e5020;}
+    .footer{margin-top:30px;text-align:center;color:#aaa;font-size:10px;}
+    @media print{body{padding:10px;}}
+  </style></head><body>
+  <h1>🫒 Α.Σ Αγιάσου — Καρτέλα Μήνα</h1>
+  <div class="sub">${mn} ${CY} · Εκτυπώθηκε ${dateStr}</div>
+
+  <div class="summary">
+    <div class="scard"><div class="l">Σύνολο Εσόδων</div><div class="v green">${fmtE(cv.tI)}</div></div>
+    <div class="scard"><div class="l">Σύνολο Εξόδων</div><div class="v red">${fmtE(cv.tE)}</div></div>
+    <div class="scard"><div class="l">Πωλήσεις Λαδιού</div><div class="v gold">${fmtE(cv.tO||0)}</div></div>
+    <div class="scard"><div class="l">Κέρδος/Ζημία</div><div class="v ${cv.pr>=0?'green':'red'}">${fmtE(cv.pr)}</div></div>
+  </div>`;
+
+  // Expenses table
+  if(exp.length){
+    html+=`<h2>📤 Έξοδα (${exp.length})</h2><table><thead><tr><th>Ημ/νία</th><th>Προμηθευτής</th><th>Κατηγορία</th><th>Παραστατικό</th><th class="r">Ποσό</th><th>Πληρ.</th></tr></thead><tbody>`;
+    exp.forEach(r=>{ html+=`<tr><td>${fmtD(r.date)}</td><td>${esc(r.name)}</td><td>${esc(r.cat||'')}</td><td>${esc(r.invoice||r.code||'')}</td><td class="r">${fmtE(r.amount)}</td><td class="${r.paid==='ΝΑΙ'?'paid-y':'paid-n'}">${r.paid||'ΟΧΙ'}</td></tr>`; });
+    html+=`<tr class="total-row"><td colspan="4">ΣΥΝΟΛΟ</td><td class="r">${fmtE(cv.tE)}</td><td></td></tr></tbody></table>`;
+  }
+
+  // Oil table
+  if(oil.length){
+    html+=`<h2>🫒 Πωλήσεις Λαδιού (${oil.length})</h2><table><thead><tr><th>Ημ/νία</th><th>Πελάτης</th><th>Παραστατικό</th><th class="r">Ποσό</th><th>Πληρ.</th></tr></thead><tbody>`;
+    oil.forEach(r=>{ html+=`<tr><td>${fmtD(r.date)}</td><td>${esc(r.name)}</td><td>${esc(r.invoice||'')}</td><td class="r">${fmtE(r.amount)}</td><td class="${r.paid==='ΝΑΙ'?'paid-y':'paid-n'}">${r.paid||'ΟΧΙ'}</td></tr>`; });
+    html+=`<tr class="total-row"><td colspan="3">ΣΥΝΟΛΟ</td><td class="r">${fmtE(cv.tO||0)}</td><td></td></tr></tbody></table>`;
+  }
+
+  // Income table
+  if(inc.length){
+    html+=`<h2>📥 Έσοδα (${inc.length})</h2><table><thead><tr><th>Ημ/νία</th><th>Πελάτης</th><th>Κατηγορία</th><th>Παραστατικό</th><th class="r">Ποσό</th><th>Πληρ.</th></tr></thead><tbody>`;
+    inc.forEach(r=>{ html+=`<tr><td>${fmtD(r.date)}</td><td>${esc(r.name)}</td><td>${esc(r.incCat||'')}</td><td>${esc(r.invoice||'')}</td><td class="r">${fmtE(r.amount)}</td><td class="${r.paid==='ΝΑΙ'?'paid-y':'paid-n'}">${r.paid||'ΟΧΙ'}</td></tr>`; });
+    html+=`<tr class="total-row"><td colspan="4">ΣΥΝΟΛΟ</td><td class="r">${fmtE(cv.tI)}</td><td></td></tr></tbody></table>`;
+  }
+
+  html+=`<div class="footer">Δημιουργήθηκε από την εφαρμογή Α.Σ Αγιάσου</div></body></html>`;
+
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>w.print(),400);
+}
 
 function quickBackup(){
   const date=new Date();
