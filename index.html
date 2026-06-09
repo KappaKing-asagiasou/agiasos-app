@@ -979,6 +979,23 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 </div>
 </div>
 
+<!-- PAYMENT SOURCE PICKER -->
+<div class="overlay" id="paySrcOverlay" onclick="if(event.target===this)closePaySrcPicker()">
+<div class="del-box" style="max-width:340px">
+  <div class="icon">💳</div><h3>Από πού πληρώθηκε;</h3>
+  <p style="margin-bottom:16px">Επίλεξε την πηγή πληρωμής για τον λογιστή.</p>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <button class="btn btn-inc" onclick="selectPaySource('Τράπεζα 012')" style="width:100%">🏦 Τράπεζα 012</button>
+    <button class="btn btn-inc" onclick="selectPaySource('Τράπεζα 266')" style="width:100%">🏦 Τράπεζα 266</button>
+    <button class="btn btn-inc" onclick="selectPaySource('Μετρητά')" style="width:100%">💶 Μετρητά</button>
+    <button class="btn btn-ghost" onclick="selectPaySource('Άγνωστο')" style="width:100%;margin-top:4px">Άγνωστο / Αργότερα</button>
+  </div>
+  <div style="display:flex;justify-content:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+    <button class="btn btn-ghost" onclick="closePaySrcPicker()">Ακύρωση</button>
+  </div>
+</div>
+</div>
+
 <!-- CATEGORIES -->
 <div class="overlay" id="catOverlay" onclick="if(event.target===this)closeCats()">
 <div class="cat-box">
@@ -1749,16 +1766,45 @@ function togglePaid(type,i,oy,om){ if(isViewer()) return;
   const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
   const d=ents(y,m);
   const cur=d[type][i].paid;
-  d[type][i].paid=cur==='ΝΑΙ'?'ΟΧΙ':'ΝΑΙ';
-  if(d[type][i].paid==='ΝΑΙ'){
+  const newPaid=cur==='ΝΑΙ'?'ΟΧΙ':'ΝΑΙ';
+  // For expenses being marked as paid: ask for payment source
+  if(type==='exp' && newPaid==='ΝΑΙ'){
+    openPaySourcePicker(type,i,y,m);
+    return;
+  }
+  d[type][i].paid=newPaid;
+  if(newPaid==='ΝΑΙ'){
     d[type][i].enanti=0;
-    // Record payment date (today) when marking as paid
     d[type][i].paidDate=new Date().toISOString().slice(0,10);
   } else {
-    // Clear payment date when un-paying
     delete d[type][i].paidDate;
   }
   setEnts(y,m,d);renderCurrentPage();
+}
+
+// Quick payment source picker (when marking an expense as paid)
+let _paySrcCtx=null;
+function openPaySourcePicker(type,i,y,m){
+  _paySrcCtx={type,i,y,m};
+  document.getElementById('paySrcOverlay').classList.add('open');
+}
+function closePaySrcPicker(){
+  document.getElementById('paySrcOverlay').classList.remove('open');
+  _paySrcCtx=null;
+}
+function selectPaySource(src){
+  if(!_paySrcCtx) return;
+  const{type,i,y,m}=_paySrcCtx;
+  const d=ents(y,m);
+  if(!d[type][i]){closePaySrcPicker();return;}
+  d[type][i].paid='ΝΑΙ';
+  d[type][i].enanti=0;
+  d[type][i].paidDate=new Date().toISOString().slice(0,10);
+  d[type][i].paySource=src;
+  setEnts(y,m,d);
+  closePaySrcPicker();
+  renderCurrentPage();
+  showToast('✓ Πληρώθηκε από '+src);
 }
 
 // ── ENTRY MODAL ───────────────────────────────────────
