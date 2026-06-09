@@ -935,8 +935,8 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div id="enantiPreview" style="font-size:12px;color:var(--text2);font-style:italic;margin:-8px 0 8px 0;min-height:16px;"></div>
   <div class="field-row">
-    <div class="field" id="fCodeWrap"><label>Κωδ. Πληρωμής</label><input type="text" id="fCode" placeholder="ΤΙΜ-001"></div>
-    <div class="field"><label>Αρ. Παραστατικού</label><input type="text" id="fInvoice" placeholder="ΤΙΜ-2026-001"></div>
+    <div class="field" id="fCodeWrap"><label>Κωδ. Πληρωμής <span style="font-weight:400;color:var(--text3);font-size:10px">— RF / IBAN</span></label><input type="text" id="fCode" placeholder="π.χ. RF45 9031..."></div>
+    <div class="field"><label>Αρ. Παραστατικού <span style="font-weight:400;color:var(--text3);font-size:10px">— τιμολόγιο</span></label><input type="text" id="fInvoice" placeholder="π.χ. ΤΙΜ-2026-001"></div>
   </div>
   <div class="field" id="fCatWrap"><label>Κατηγορία</label><select id="fCat"><option value="">— Χωρίς —</option></select></div>
   <div class="field" id="fIncCatWrap" style="display:none"><label>Κατηγορία Εσόδου</label><select id="fIncCat"><option value="">— Χωρίς —</option></select></div>
@@ -3129,7 +3129,7 @@ function exportMonthPDF(){
   // Expenses table
   if(exp.length){
     html+=`<h2>📤 Έξοδα (${exp.length})</h2><table><thead><tr><th>Ημ/νία</th><th>Προμηθευτής</th><th>Κατηγορία</th><th>Παραστατικό</th><th class="r">Ποσό</th><th>Πληρ.</th></tr></thead><tbody>`;
-    exp.forEach(r=>{ html+=`<tr><td>${fmtD(r.date)}</td><td>${esc(r.name)}</td><td>${esc(r.cat||'')}</td><td>${esc(r.invoice||r.code||'')}</td><td class="r">${fmtE(r.amount)}</td><td class="${r.paid==='ΝΑΙ'?'paid-y':'paid-n'}">${r.paid||'ΟΧΙ'}</td></tr>`; });
+    exp.forEach(r=>{ html+=`<tr><td>${fmtD(r.date)}</td><td>${esc(r.name)}</td><td>${esc(r.cat||'')}</td><td>${esc(r.invoice||'')}</td><td class="r">${fmtE(r.amount)}</td><td class="${r.paid==='ΝΑΙ'?'paid-y':'paid-n'}">${r.paid||'ΟΧΙ'}</td></tr>`; });
     html+=`<tr class="total-row"><td colspan="4">ΣΥΝΟΛΟ</td><td class="r">${fmtE(cv.tE)}</td><td></td></tr></tbody></table>`;
   }
 
@@ -3175,7 +3175,8 @@ function exportAccountant(){
           name:r.name||'',
           afm:getContactAfm(r.name)||'',
           paySource:r.paySource||'',
-          invoice:r.invoice||r.code||'',
+          invoice:r.invoice||'',
+          code:r.code||'',
           amount:+r.amount||0
         });
       }
@@ -3196,10 +3197,10 @@ function exportAccountant(){
     ['Α.Σ Αγιάσου — Καρτέλα Πληρωμών Λογιστή'],
     [MN[CM]+' '+CY+' · Εκτυπώθηκε '+new Date().toLocaleDateString('el-GR')],
     [],
-    ['Ημ. Εγγραφής','Ημ. Πληρωμής','Προμηθευτής','ΑΦΜ','Πληρωμή από','Παραστατικό','Ποσό (€)']
+    ['Ημ. Εγγραφής','Ημ. Πληρωμής','Προμηθευτής','ΑΦΜ','Πληρωμή από','Αρ. Παραστατικού','Κωδ. Πληρωμής','Ποσό (€)']
   ];
   rows.forEach(r=>{
-    aoa.push([fmtD(r.entryDate),fmtD(r.paidDate),r.name,r.afm,r.paySource,r.invoice,r.amount]);
+    aoa.push([fmtD(r.entryDate),fmtD(r.paidDate),r.name,r.afm,r.paySource,r.invoice,r.code,r.amount]);
   });
   aoa.push([]);
 
@@ -3209,12 +3210,12 @@ function exportAccountant(){
   sources.forEach(src=>{
     const sum=rows.filter(r=>r.paySource===src).reduce((s,r)=>s+r.amount,0);
     grand+=sum;
-    if(sum>0) aoa.push(['','','','','Σύνολο '+src,'',sum]);
+    if(sum>0) aoa.push(['','','','','Σύνολο '+src,'','',sum]);
   });
-  aoa.push(['','','','','ΓΕΝΙΚΟ ΣΥΝΟΛΟ','',grand]);
+  aoa.push(['','','','','ΓΕΝΙΚΟ ΣΥΝΟΛΟ','','',grand]);
 
   const ws=XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols']=[{wch:14},{wch:14},{wch:28},{wch:12},{wch:16},{wch:20},{wch:13}];
+  ws['!cols']=[{wch:14},{wch:14},{wch:28},{wch:12},{wch:16},{wch:20},{wch:26},{wch:13}];
   XLSX.utils.book_append_sheet(wb,ws,'Πληρωμές '+MN[CM]);
   XLSX.writeFile(wb,'logistis_'+MN[CM]+'_'+CY+'.xlsx');
   showToast('✓ Καρτέλα λογιστή: '+rows.length+' πληρωμές');
@@ -3251,7 +3252,7 @@ function exportContactCard(name){
   txns.forEach(r=>{
     const type=r.type==='exp'?'Έξοδο':r.type==='oil'?'Λάδι':'Έσοδο';
     const remain=r.enanti>0?Math.max(0,(+r.amount||0)-(+r.enanti||0)):0;
-    rows.push([r.date||'',type,r.name||'',+r.amount||0,+r.enanti||0,remain,r.paid||'',r.invoice||r.code||'',r.notes||'']);
+    rows.push([r.date||'',type,r.name||'',+r.amount||0,+r.enanti||0,remain,r.paid||'',r.invoice||'',r.notes||'']);
   });
   rows.push([]);
   const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+(+r.amount||0),0);
@@ -3360,7 +3361,7 @@ async function scanInvoice(input){
           },
           {
             type: 'text',
-            text: 'Διάβασε αυτό το τιμολόγιο/λογαριασμό και επέστρεψε ΜΟΝΟ ένα JSON object (χωρίς markdown, χωρίς άλλο κείμενο).\nΠεδία:\n- name: όνομα εταιρείας που εξέδωσε (π.χ. COSMOTE, ΔΕΗ)\n- afm: ΑΦΜ του ΕΚΔΟΤΗ/προμηθευτή που έκοψε το τιμολόγιο (9 ψηφία). ΠΡΟΣΟΧΗ: αν υπάρχουν πολλά ΑΦΜ, θέλω του εκδότη/πωλητή ΟΧΙ του πελάτη/αγοραστή. Αν δεν υπάρχει, βάλε κενό.\n- amount: τελικό ποσό πληρωμής χωρίς € (π.χ. 37.42)\n- invoice: αριθμός τιμολογίου ή λογαριασμού\n- code: ΣΗΜΑΝΤΙΚΟ - ψάξε το πεδίο "Κωδικός Πληρωμής" ή "Payment Code" - συνήθως ξεκινά με RF ακολουθούμενο από αριθμούς (π.χ. RF45903118000000017151552)\n- date: ημερομηνία έκδοσης σε μορφή YYYY-MM-DD\n- notes: σύντομη περιγραφή υπηρεσίας\nΑπάντησε ΜΟΝΟ με JSON, τίποτα άλλο.'
+            text: 'Διάβασε αυτό το τιμολόγιο/λογαριασμό και επέστρεψε ΜΟΝΟ ένα JSON object (χωρίς markdown, χωρίς άλλο κείμενο).\nΠεδία (αν κάποιο ΔΕΝ υπάρχει στο έγγραφο, παρέλειψέ το εντελώς — μην βάζεις κενό ή placeholder):\n- name: όνομα εταιρείας/προμηθευτή που εξέδωσε το τιμολόγιο (π.χ. COSMOTE, ΔΕΗ)\n- afm: ΑΦΜ του ΕΚΔΟΤΗ/προμηθευτή (9 ψηφία). Αν υπάρχουν πολλά ΑΦΜ, θέλω του εκδότη/πωλητή ΟΧΙ του πελάτη/αγοραστή.\n- amount: τελικό ποσό πληρωμής χωρίς € (π.χ. 37.42)\n- invoice: ο ΑΡΙΘΜΟΣ ΤΙΜΟΛΟΓΙΟΥ/ΠΑΡΑΣΤΑΤΙΚΟΥ. Αυτός είναι ο αριθμός που χαρακτηρίζει το ίδιο το τιμολόγιο (π.χ. "Αρ. Τιμολογίου: 17171062026" ή "Σειρά/Αριθμός"). ΔΕΝ είναι ο κωδικός πληρωμής.\n- code: ο ΚΩΔΙΚΟΣ ΠΛΗΡΩΜΗΣ — αυτός που χρησιμοποιείς για να ΠΛΗΡΩΣΕΙΣ τον λογαριασμό. Ψάξε πεδίο "Κωδικός Πληρωμής"/"Payment Code"/"RF"/"IBAN". Συνήθως ξεκινά με RF και έχει πολλά ψηφία (π.χ. RF45903118000000017151552). ΕΙΝΑΙ ΔΙΑΦΟΡΕΤΙΚΟΣ από τον αριθμό τιμολογίου.\n- date: ημερομηνία έκδοσης σε μορφή YYYY-MM-DD\n- notes: σύντομη περιγραφή υπηρεσίας\nΠΡΟΣΟΧΗ: invoice και code είναι ΔΥΟ ΔΙΑΦΟΡΕΤΙΚΑ πράγματα. Μην βάζεις τον ίδιο αριθμό και στα δύο. Αν βρίσκεις μόνο το ένα, βάλε μόνο αυτό.\nΑπάντησε ΜΟΝΟ με JSON, τίποτα άλλο.'
           }
         ]
       }]
@@ -3435,8 +3436,8 @@ async function scanInvoice(input){
     const rows2 = [
       ['Προμηθευτής', _scanData.name],
       ['ΑΦΜ', _scanData.afm],
-      ['Ποσό', _scanData.amount ? _scanData.amount+'€' : '—'],
-      ['Παραστατικό', _scanData.invoice],
+      ['Ποσό', _scanData.amount ? _scanData.amount+'€' : ''],
+      ['Αρ. Παραστατικού', _scanData.invoice],
       ['Κωδ. Πληρωμής (RF)', _scanData.code],
       ['Ημερομηνία', _scanData.date],
       ['Σχόλια', _scanData.notes],
@@ -3460,6 +3461,10 @@ async function scanInvoice(input){
 
 function applyScanResult(){
   if(!_scanData) return;
+  // Safety: if AI returned same value for both invoice and code, keep only code (RF/IBAN takes priority)
+  if(_scanData.invoice && _scanData.code && _scanData.invoice===_scanData.code){
+    delete _scanData.invoice;
+  }
   if(_scanData.name)    document.getElementById('fName').value    = _scanData.name;
   if(_scanData.afm){const fa=document.getElementById('fAfm'); if(fa) fa.value=_scanData.afm;}
   if(_scanData.amount)  document.getElementById('fAmount').value  = parseFloat(_scanData.amount.replace(',','.').replace(/[^0-9.]/g,''))||'';
