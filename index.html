@@ -638,6 +638,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" onclick="exportExcel();closeDropdowns()"><span class="di-icon">📊</span>Εξαγωγή Excel</button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="exportMonthPDF();closeDropdowns()"><span class="di-icon">📄</span>Καρτέλα Μήνα (PDF)</button>
+        <button class="hdr-drop-item" onclick="exportAccountant();closeDropdowns()"><span class="di-icon">🧾</span>Καρτέλα Λογιστή (Excel)</button>
       </div>
     </div>
 
@@ -838,6 +839,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
           <thead id="contactsThead">
             <tr>
               <th onclick="sortContacts('name')">Όνομα</th>
+              <th onclick="sortContacts('afm')">ΑΦΜ</th>
               <th onclick="sortContacts('phone')">Τηλέφωνο</th>
               <th onclick="sortContacts('inc')" style="text-align:right">Σύν. Εσόδων</th>
               <th onclick="sortContacts('exp')" style="text-align:right">Σύν. Εξόδων</th>
@@ -913,12 +915,18 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
       <select id="fPaid" onchange="toggleInstFields()"><option value="ΟΧΙ">ΟΧΙ</option><option value="ΝΑΙ">ΝΑΙ</option><option value="ΔΟΣΕΙΣ">Δόσεις</option></select>
     </div>
   </div>
-  <div class="field">
-    <label>Όνομα</label>
-    <div class="ac-wrap">
-      <input type="text" id="fName" placeholder="Προμηθευτής / Πελάτης..." autocomplete="off"
-        oninput="acInput(this.value)" onkeydown="acKey(event)" onfocus="acInput(this.value)" onblur="setTimeout(acHide,180)">
-      <div class="ac-list" id="acList"></div>
+  <div class="field-row">
+    <div class="field" style="flex:2">
+      <label>Όνομα</label>
+      <div class="ac-wrap">
+        <input type="text" id="fName" placeholder="Προμηθευτής / Πελάτης..." autocomplete="off"
+          oninput="acInput(this.value)" onkeydown="acKey(event)" onfocus="acInput(this.value)" onblur="setTimeout(()=>{acHide();autofillAfm();},180)">
+        <div class="ac-list" id="acList"></div>
+      </div>
+    </div>
+    <div class="field" style="flex:1">
+      <label>ΑΦΜ <span style="font-weight:400;color:var(--text3);font-size:10px">— προαιρετικό</span></label>
+      <input type="text" id="fAfm" placeholder="π.χ. 094019245" autocomplete="off">
     </div>
   </div>
   <div class="field-row">
@@ -932,6 +940,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="field" id="fCatWrap"><label>Κατηγορία</label><select id="fCat"><option value="">— Χωρίς —</option></select></div>
   <div class="field" id="fIncCatWrap" style="display:none"><label>Κατηγορία Εσόδου</label><select id="fIncCat"><option value="">— Χωρίς —</option></select></div>
+  <div class="field" id="fPaySourceWrap"><label>Πληρωμή από</label><select id="fPaySource"><option value="Άγνωστο">Άγνωστο</option><option value="Τράπεζα 012">Τράπεζα 012</option><option value="Τράπεζα 266">Τράπεζα 266</option><option value="Μετρητά">Μετρητά</option></select></div>
   <div class="field"><label>Σχόλια</label><textarea id="fNotes" placeholder="Προαιρετικά..."></textarea></div>
   <div id="instFields" style="display:none;background:var(--surface2);border-radius:var(--r);padding:12px;margin-bottom:12px;border:1px solid var(--border);">
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">Ρύθμιση Δόσεων</div>
@@ -1116,6 +1125,30 @@ window.addEventListener('beforeunload',()=>{
 
 // No migration needed — fresh start with new model
 function migrateInstallments(){}
+
+// One-time migration: assign paySource + paidDate to old paid expenses
+function migratePaySource(){
+  if(safeGet('agiasos_paysrc_migrated','0')==='1') return;
+  let changed=false;
+  Object.keys(data).forEach(key=>{
+    if(!key.startsWith('y')) return;
+    const bucket=data[key];
+    if(!bucket||!bucket.exp) return;
+    bucket.exp.forEach(r=>{
+      if(r.paySource===undefined){
+        if(r.paid==='ΝΑΙ'){
+          r.paySource='Τράπεζα 266';
+          if(!r.paidDate) r.paidDate=r.date||'';  // Option A: payment date = entry date
+        } else {
+          r.paySource='Άγνωστο';
+        }
+        changed=true;
+      }
+    });
+  });
+  safeSet('agiasos_paysrc_migrated','1');
+  if(changed) save();
+}
 function setEntsSilent(y,m,d){data[mk(y,m)]=d;save();}function mk(y,m){return'y'+y+'m'+m;}
 function ents(y,m){const k=mk(y,m);if(!data[k])data[k]={inc:[],exp:[],oil:[]};if(!data[k].oil)data[k].oil=[];return data[k];}
 function getContacts(){return data['__contacts__']||[];}
@@ -1657,12 +1690,28 @@ function acInput(val){
 
 function acSelect(name){
   document.getElementById('fName').value = name;
+  // Auto-fill AFM if this contact has one stored
+  const fAfmEl=document.getElementById('fAfm');
+  if(fAfmEl){
+    const storedAfm=getContactAfm(name);
+    if(storedAfm) fAfmEl.value=storedAfm;
+  }
   acHide();
 }
 
 function acHide(){
   const list = document.getElementById('acList');
   if(list){ list.classList.remove('open'); acIdx = -1; }
+}
+
+// Auto-fill AFM if typed name exactly matches a known contact (and AFM field empty)
+function autofillAfm(){
+  const nameEl=document.getElementById('fName');
+  const afmEl=document.getElementById('fAfm');
+  if(!nameEl||!afmEl) return;
+  if(afmEl.value.trim()) return;  // don't overwrite if user already typed AFM
+  const stored=getContactAfm(nameEl.value);
+  if(stored) afmEl.value=stored;
 }
 
 function acKey(e){
@@ -1701,7 +1750,14 @@ function togglePaid(type,i,oy,om){ if(isViewer()) return;
   const d=ents(y,m);
   const cur=d[type][i].paid;
   d[type][i].paid=cur==='ΝΑΙ'?'ΟΧΙ':'ΝΑΙ';
-  if(d[type][i].paid==='ΝΑΙ') d[type][i].enanti=0;
+  if(d[type][i].paid==='ΝΑΙ'){
+    d[type][i].enanti=0;
+    // Record payment date (today) when marking as paid
+    d[type][i].paidDate=new Date().toISOString().slice(0,10);
+  } else {
+    // Clear payment date when un-paying
+    delete d[type][i].paidDate;
+  }
   setEnts(y,m,d);renderCurrentPage();
 }
 
@@ -1721,6 +1777,9 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
   document.getElementById('editM').value=modalM;
   document.getElementById('fCodeWrap').style.display=isExp?'':'none';
   document.getElementById('fCatWrap').style.display=isExp?'':'none';
+  // Πληρωμή από — only for expenses
+  const fPS=document.getElementById('fPaySourceWrap');
+  if(fPS) fPS.style.display=isExp?'':'none';
   const fIW=document.getElementById('fIncCatWrap');
   if(fIW) fIW.style.display=(isOil||type==='inc')?'':'none';
   if(isOil||type==='inc'){
@@ -1750,11 +1809,20 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
     document.getElementById('fCat').value=r.cat||'';
     document.getElementById('fNotes').value=r.notes||'';
     document.getElementById('fAttachment').value=r.attachment||'';
+    const fPSsel=document.getElementById('fPaySource');
+    if(fPSsel) fPSsel.value=r.paySource||'Άγνωστο';
+    // Load AFM (per-contact, fallback to entry's own afm)
+    const fAfmEl=document.getElementById('fAfm');
+    if(fAfmEl) fAfmEl.value=getContactAfm(r.name)||r.afm||'';
   }else{
     ['fDate','fName','fAmount','fEnanti','fCode','fInvoice','fNotes','fAttachment'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('fCat').value='';
     const fIC2=document.getElementById('fIncCat'); if(fIC2) fIC2.value='';
     document.getElementById('fPaid').value='ΟΧΙ';
+    const fPSsel2=document.getElementById('fPaySource');
+    if(fPSsel2) fPSsel2.value='Άγνωστο';
+    const fAfmEl2=document.getElementById('fAfm');
+    if(fAfmEl2) fAfmEl2.value='';
     document.getElementById('enantiPreview').textContent='';
     document.getElementById('fCat').value='';
     document.getElementById('fInstAmt').value='';
@@ -1782,6 +1850,19 @@ function saveEntry(){
   const instTotalCount=paid==='ΔΟΣΕΙΣ'?parseInt(document.getElementById('fInstTotal').value)||1:0;
   const groupId=paid==='ΔΟΣΕΙΣ'?Date.now().toString(36):'';
   const enantiVal=parseFloat(document.getElementById('fEnanti').value)||0;
+  // Payment source (expenses only) + payment date
+  const paySourceEl=document.getElementById('fPaySource');
+  const paySource=(type==='exp'&&paySourceEl)?paySourceEl.value:'';
+  // Preserve existing paidDate if editing, otherwise set today if paid=ΝΑΙ
+  let paidDate='';
+  if(paid==='ΝΑΙ'){
+    if(eid!==''){
+      const existing=ents(saveY,saveM)[type][+eid];
+      paidDate=(existing&&existing.paidDate)?existing.paidDate:new Date().toISOString().slice(0,10);
+    } else {
+      paidDate=new Date().toISOString().slice(0,10);
+    }
+  }
   const entry={
     date:document.getElementById('fDate').value,
     name:document.getElementById('fName').value.trim(),
@@ -1794,10 +1875,15 @@ function saveEntry(){
     incCat:document.getElementById('fIncCat').value||'',
     notes:document.getElementById('fNotes').value.trim(),
     attachment:document.getElementById('fAttachment').value||'',
+    paySource:paySource,
+    paidDate:paidDate,
     instPlan:paid==='ΔΟΣΕΙΣ'?{amt:instAmt,total:instTotalCount,groupId}:null,
     instGroupId:paid==='ΔΟΣΕΙΣ'?groupId:''
   };
   if(!entry.name&&!entry.amount){closeModal();return;}
+  // Save/update AFM per-contact (all types)
+  const afmVal=(document.getElementById('fAfm')?document.getElementById('fAfm').value.trim():'');
+  if(entry.name && afmVal) setContactAfm(entry.name, afmVal);
   const moveType=document.getElementById('fMoveType').value;
   const sy=saveY, sm=saveM;
   const d=ents(sy,sm);
@@ -2521,17 +2607,13 @@ function applyBgTheme(id){
 let activeContactName = null;
 
 function getAllContacts(){
-  // Returns [{name, phone}] — merging manual contacts (with phone) + auto from entries
-  const map = {}; // name.lower -> {name, phone}
-  // Manual contacts first (they have phone + notes)
+  // Returns [{name, phone, afm}] — merging manual contacts + auto from entries
+  const map = {};
   (data['__contacts__']||[]).forEach(ct=>{
     const key=(ct.name||ct).trim().toLowerCase();
     const name=ct.name||ct;
-    const phone=ct.phone||'';
-    const notes=ct.notes||'';
-    map[key]={name:name.trim(),phone,notes};
+    map[key]={name:name.trim(),phone:ct.phone||'',notes:ct.notes||'',afm:ct.afm||''};
   });
-  // Auto from entries (add if not already there)
   Object.keys(data).forEach(mk=>{
     if(!mk.startsWith('y')) return;
     const d=data[mk];
@@ -2540,11 +2622,32 @@ function getAllContacts(){
       d[type].forEach(r=>{
         if(!r.name||!r.name.trim()) return;
         const key=r.name.trim().toLowerCase();
-        if(!map[key]) map[key]={name:r.name.trim(),phone:'',notes:''};
+        if(!map[key]) map[key]={name:r.name.trim(),phone:'',notes:'',afm:''};
       });
     });
   });
   return Object.values(map).sort((a,b)=>a.name.localeCompare(b.name,'el'));
+}
+
+// Get AFM for a contact name
+function getContactAfm(name){
+  if(!name) return '';
+  const key=name.trim().toLowerCase();
+  const ct=(data['__contacts__']||[]).find(c=>(c.name||'').trim().toLowerCase()===key);
+  return ct?(ct.afm||''):'';
+}
+
+// Save/update AFM for a contact
+function setContactAfm(name, afm){
+  if(!name||!afm) return;
+  const key=name.trim().toLowerCase();
+  if(!data['__contacts__']) data['__contacts__']=[];
+  let ct=data['__contacts__'].find(c=>(c.name||'').trim().toLowerCase()===key);
+  if(ct){
+    ct.afm=afm;  // update existing
+  } else {
+    data['__contacts__'].push({name:name.trim(),phone:'',notes:'',afm:afm});
+  }
 }
 
 function getManualContacts(){ return data['__contacts__']||[]; }
@@ -2573,12 +2676,13 @@ function renderContactsPage(){
   const q=(document.getElementById('contactSearch')||{}).value||'';
   const ql=q.trim().toLowerCase();
   const all=getAllContacts();
-  const filtered=ql?all.filter(ct=>ct.name.toLowerCase().includes(ql)||(ct.phone||'').includes(ql)):all;
+  const filtered=ql?all.filter(ct=>ct.name.toLowerCase().includes(ql)||(ct.phone||'').includes(ql)||(ct.afm||'').includes(ql)):all;
 
   // Apply sort
   filtered.sort((a,b)=>{
     const col=contactsSort.col, dir=contactsSort.dir;
     if(col==='name') return dir*a.name.localeCompare(b.name,'el');
+    if(col==='afm') return dir*(a.afm||'').localeCompare(b.afm||'');
     if(col==='phone') return dir*(a.phone||'').localeCompare(b.phone||'');
     if(col==='notes') return dir*(a.notes||'').localeCompare(b.notes||'');
     // numeric cols: need txns
@@ -2618,7 +2722,7 @@ function renderContactsPage(){
   if(!tbody) return;
 
   if(filtered.length===0){
-    tbody.innerHTML=`<tr class="empty-row"><td colspan="8">${ql?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν πελάτες ακόμα'}</td></tr>`;
+    tbody.innerHTML=`<tr class="empty-row"><td colspan="11">${ql?'Δεν βρέθηκαν αποτελέσματα':'Δεν υπάρχουν πελάτες ακόμα'}</td></tr>`;
     return;
   }
 
@@ -2626,7 +2730,7 @@ function renderContactsPage(){
   const thead=document.getElementById('contactsThead');
   if(thead){
     thead.querySelectorAll('th').forEach(th=>{th.classList.remove('sa','sd');});
-    const cols=['name','phone','inc','exp','oil','unpaid','last','code','notes'];
+    const cols=['name','afm','phone','inc','exp','oil','unpaid','last','code','notes'];
     const idx=cols.indexOf(contactsSort.col);
     const ths=thead.querySelectorAll('th');
     if(ths[idx]) ths[idx].classList.add(contactsSort.dir===1?'sa':'sd');
@@ -2643,6 +2747,7 @@ function renderContactsPage(){
     const isActive=ct.name===activeContactName;
     return`<tr class="${isActive?'ry':'r0'}" style="cursor:pointer" onclick="selectContact('${esc(ct.name).replace(/'/g,"\'")}')">
       <td><strong style="font-size:13px">${esc(ct.name)}</strong></td>
+      <td class="mono muted" style="font-size:12px">${ct.afm?esc(ct.afm):'—'}</td>
       <td class="muted">${ct.phone?'📞 '+esc(ct.phone):'—'}</td>
       <td class="mono" style="text-align:right;color:var(--olive)">${totalInc>0?fmt(totalInc):'—'}</td>
       <td class="mono" style="text-align:right;color:var(--red-mid)">${totalExp>0?fmt(totalExp):'—'}</td>
@@ -2716,13 +2821,14 @@ function renderContactDetail(name){
 
   const ctObj=getAllContacts().find(c=>c.name===name)||{name,phone:''};
   const phoneHtml=ctObj.phone?`<span style="font-size:13px;color:var(--text2)">📞 ${esc(ctObj.phone)}</span>`:'';
+  const afmHtml=ctObj.afm?`<span style="font-size:13px;color:var(--text2)">ΑΦΜ: ${esc(ctObj.afm)}</span>`:'';
   const editPhoneBtn=isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="editContactPhone('${esc(name).replace(/'/g,"\'")}','${esc(ctObj.phone||'').replace(/'/g,"\'")}')">✏ Τηλ.</button>`:'';
   document.getElementById('contactDetail').innerHTML=`
     <div class="cd-header">
       <div class="cd-avatar">👤</div>
       <div style="flex:1">
         <div class="cd-name">${esc(name)}</div>
-        <div style="display:flex;align-items:center;gap:10px;margin-top:3px">${phoneHtml}</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:3px;flex-wrap:wrap">${afmHtml}${phoneHtml}</div>
       </div>
       <div style="display:flex;gap:6px">${editPhoneBtn}${deleteBtn}</div>
     </div>
@@ -3049,6 +3155,71 @@ function exportMonthPDF(){
   setTimeout(()=>w.print(),400);
 }
 
+function exportAccountant(){
+  // Collect ALL paid expenses across all months whose paidDate falls in current month
+  const targetY=CY, targetM=CM;
+  const rows=[];
+  Object.keys(data).forEach(key=>{
+    if(!key.startsWith('y')) return;
+    const bucket=data[key];
+    if(!bucket||!bucket.exp) return;
+    bucket.exp.forEach(r=>{
+      if(r.paid!=='ΝΑΙ') return;            // only completed payments
+      if(!r.paidDate) return;                // must have payment date
+      if(r.paySource==='Άγνωστο'||!r.paySource) return;  // exclude unknown
+      const pd=new Date(r.paidDate);
+      if(pd.getFullYear()===targetY && pd.getMonth()===targetM){
+        rows.push({
+          entryDate:r.date||'',
+          paidDate:r.paidDate||'',
+          name:r.name||'',
+          afm:getContactAfm(r.name)||'',
+          paySource:r.paySource||'',
+          invoice:r.invoice||r.code||'',
+          amount:+r.amount||0
+        });
+      }
+    });
+  });
+
+  if(rows.length===0){
+    showToast('⚠ Δεν υπάρχουν πληρωμές για '+MN[CM]+' '+CY);
+    return;
+  }
+
+  // Sort by payment date
+  rows.sort((a,b)=>a.paidDate.localeCompare(b.paidDate));
+
+  // Build worksheet
+  const wb=XLSX.utils.book_new();
+  const aoa=[
+    ['Α.Σ Αγιάσου — Καρτέλα Πληρωμών Λογιστή'],
+    [MN[CM]+' '+CY+' · Εκτυπώθηκε '+new Date().toLocaleDateString('el-GR')],
+    [],
+    ['Ημ. Εγγραφής','Ημ. Πληρωμής','Προμηθευτής','ΑΦΜ','Πληρωμή από','Παραστατικό','Ποσό (€)']
+  ];
+  rows.forEach(r=>{
+    aoa.push([fmtD(r.entryDate),fmtD(r.paidDate),r.name,r.afm,r.paySource,r.invoice,r.amount]);
+  });
+  aoa.push([]);
+
+  // Totals per source
+  const sources=['Τράπεζα 012','Τράπεζα 266','Μετρητά'];
+  let grand=0;
+  sources.forEach(src=>{
+    const sum=rows.filter(r=>r.paySource===src).reduce((s,r)=>s+r.amount,0);
+    grand+=sum;
+    if(sum>0) aoa.push(['','','','','Σύνολο '+src,'',sum]);
+  });
+  aoa.push(['','','','','ΓΕΝΙΚΟ ΣΥΝΟΛΟ','',grand]);
+
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:14},{wch:14},{wch:28},{wch:12},{wch:16},{wch:20},{wch:13}];
+  XLSX.utils.book_append_sheet(wb,ws,'Πληρωμές '+MN[CM]);
+  XLSX.writeFile(wb,'logistis_'+MN[CM]+'_'+CY+'.xlsx');
+  showToast('✓ Καρτέλα λογιστή: '+rows.length+' πληρωμές');
+}
+
 function quickBackup(){
   const date=new Date();
   const stamp=date.getFullYear()+'-'+
@@ -3068,9 +3239,11 @@ function quickBackup(){
 
 function exportContactCard(name){
   const txns=getTxnsForContact(name);
+  const afm=getContactAfm(name);
   const wb=XLSX.utils.book_new();
   const rows=[
     ['Καρτέλα Πελάτη — '+name],
+    afm?['ΑΦΜ: '+afm]:[''],
     ['Εκτυπώθηκε: '+new Date().toLocaleDateString('el-GR')],
     [],
     ['Ημερομηνία','Κατηγορία','Περιγραφή','Ποσό (€)','Έναντι (€)','Υπόλοιπο (€)','Πληρώθηκε','Παραστατικό','Σχόλια']
@@ -3187,7 +3360,7 @@ async function scanInvoice(input){
           },
           {
             type: 'text',
-            text: 'Διάβασε αυτό το τιμολόγιο/λογαριασμό και επέστρεψε ΜΟΝΟ ένα JSON object (χωρίς markdown, χωρίς άλλο κείμενο).\nΠεδία:\n- name: όνομα εταιρείας που εξέδωσε (π.χ. COSMOTE, ΔΕΗ)\n- amount: τελικό ποσό πληρωμής χωρίς € (π.χ. 37.42)\n- invoice: αριθμός τιμολογίου ή λογαριασμού\n- code: ΣΗΜΑΝΤΙΚΟ - ψάξε το πεδίο "Κωδικός Πληρωμής" ή "Payment Code" - συνήθως ξεκινά με RF ακολουθούμενο από αριθμούς (π.χ. RF45903118000000017151552)\n- date: ημερομηνία έκδοσης σε μορφή YYYY-MM-DD\n- notes: σύντομη περιγραφή υπηρεσίας\nΑπάντησε ΜΟΝΟ με JSON, τίποτα άλλο.'
+            text: 'Διάβασε αυτό το τιμολόγιο/λογαριασμό και επέστρεψε ΜΟΝΟ ένα JSON object (χωρίς markdown, χωρίς άλλο κείμενο).\nΠεδία:\n- name: όνομα εταιρείας που εξέδωσε (π.χ. COSMOTE, ΔΕΗ)\n- afm: ΑΦΜ του ΕΚΔΟΤΗ/προμηθευτή που έκοψε το τιμολόγιο (9 ψηφία). ΠΡΟΣΟΧΗ: αν υπάρχουν πολλά ΑΦΜ, θέλω του εκδότη/πωλητή ΟΧΙ του πελάτη/αγοραστή. Αν δεν υπάρχει, βάλε κενό.\n- amount: τελικό ποσό πληρωμής χωρίς € (π.χ. 37.42)\n- invoice: αριθμός τιμολογίου ή λογαριασμού\n- code: ΣΗΜΑΝΤΙΚΟ - ψάξε το πεδίο "Κωδικός Πληρωμής" ή "Payment Code" - συνήθως ξεκινά με RF ακολουθούμενο από αριθμούς (π.χ. RF45903118000000017151552)\n- date: ημερομηνία έκδοσης σε μορφή YYYY-MM-DD\n- notes: σύντομη περιγραφή υπηρεσίας\nΑπάντησε ΜΟΝΟ με JSON, τίποτα άλλο.'
           }
         ]
       }]
@@ -3261,6 +3434,7 @@ async function scanInvoice(input){
     const body2 = document.getElementById('scanResultBody');
     const rows2 = [
       ['Προμηθευτής', _scanData.name],
+      ['ΑΦΜ', _scanData.afm],
       ['Ποσό', _scanData.amount ? _scanData.amount+'€' : '—'],
       ['Παραστατικό', _scanData.invoice],
       ['Κωδ. Πληρωμής (RF)', _scanData.code],
@@ -3287,6 +3461,7 @@ async function scanInvoice(input){
 function applyScanResult(){
   if(!_scanData) return;
   if(_scanData.name)    document.getElementById('fName').value    = _scanData.name;
+  if(_scanData.afm){const fa=document.getElementById('fAfm'); if(fa) fa.value=_scanData.afm;}
   if(_scanData.amount)  document.getElementById('fAmount').value  = parseFloat(_scanData.amount.replace(',','.').replace(/[^0-9.]/g,''))||'';
   if(_scanData.invoice) document.getElementById('fInvoice').value = _scanData.invoice;
   if(_scanData.code)    document.getElementById('fCode').value    = _scanData.code;
@@ -3362,6 +3537,7 @@ function bootApp(){
   loadFromSupabase().then(()=>{
     const lb=document.getElementById('loadingBar');
     if(lb) lb.remove();
+    migratePaySource();  // migrate old expenses after data loaded
     renderHome();
   });
 }
