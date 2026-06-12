@@ -657,6 +657,8 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" id="darkMenuItem" onclick="toggleDark()"><span class="di-icon">🌙</span><span id="darkMenuLabel">Dark mode</span></button>
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
+        <div class="hdr-drop-sep"></div>
+        <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
       </div>
     </div>
 
@@ -3054,6 +3056,41 @@ function applyRole(){
 }
 
 // ── DARK MODE ─────────────────────────────────────────
+// Check for app update — clears cache (NOT data) and reloads latest version
+async function checkForUpdate(){
+  closeDropdowns();
+  if(!confirm('Θα γίνει έλεγχος για νέα έκδοση και επανεκκίνηση.\n\nΤα δεδομένα σου ΔΕΝ θα χαθούν.\n\nΣυνέχεια;')) return;
+  showToast('⏳ Έλεγχος για ενημέρωση…');
+  // 1. Force-save any pending data first (only if logged in & data exists)
+  try{
+    if(typeof data==='object' && data && Object.keys(data).length>0){
+      save();  // saves to localStorage (STORE key) immediately + triggers Supabase
+      if(typeof saveToSupabase==='function') await saveToSupabase();
+    }
+  }catch(e){ console.warn('Save before update failed:', e); }
+  // 2. Clear all caches (HTML/CSS/JS only — NOT localStorage where data lives)
+  try{
+    if('caches' in window){
+      const names = await caches.keys();
+      await Promise.all(names.map(n=>caches.delete(n)));
+      console.log('Caches cleared:', names);
+    }
+  }catch(e){ console.warn('Cache clear failed:', e); }
+  // 3. Tell service worker to update
+  try{
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r=>r.update()));
+    }
+  }catch(e){ console.warn('SW update failed:', e); }
+  // 4. Hard reload with cache bust
+  showToast('✓ Ενημέρωση! Επανεκκίνηση…');
+  setTimeout(()=>{
+    const url = location.href.split('?')[0] + '?v=' + Date.now();
+    location.replace(url);
+  }, 600);
+}
+
 function toggleCarryover(){
   showCarryover=!showCarryover;
   safeSet('agiasos_carryover', showCarryover?'1':'0');
@@ -3754,6 +3791,7 @@ function safeReload(){
     <input class="login-input" type="password" id="loginPass" placeholder="Κωδικός πρόσβασης" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
+    <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
   </div>
 </div>
 
