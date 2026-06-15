@@ -1207,8 +1207,8 @@ function changeYear(d){
 
 function changeMonth(d){
   CM+=d;
-  if(CM>11){CM=0;CY++;document.getElementById('yearLabel').textContent=CY;document.getElementById('headerSub').textContent='Έσοδα & Έξοδα · '+CY;}
-  if(CM<0){CM=11;CY--;document.getElementById('yearLabel').textContent=CY;document.getElementById('headerSub').textContent='Έσοδα & Έξοδα · '+CY;}
+  if(CM>11){CM=0;CY++;updateYearPicker();document.getElementById('headerSub').textContent='Έσοδα & Έξοδα · '+CY;}
+  if(CM<0){CM=11;CY--;updateYearPicker();document.getElementById('headerSub').textContent='Έσοδα & Έξοδα · '+CY;}
   document.getElementById('monthSel').value=CM;
   homeExpPage=0;homeIncPage=0;
   updateMonthNav();
@@ -3259,16 +3259,21 @@ function exportAccountant(){
   // Collect ALL paid expenses across all months whose paidDate falls in current month
   const targetY=CY, targetM=CM;
   const rows=[];
+  // Diagnostics
+  let totalPaid=0, noPaidDate=0, unknownSrc=0, otherMonth=0, included=0;
+  const skippedDetails=[];
   Object.keys(data).forEach(key=>{
     if(!key.startsWith('y')) return;
     const bucket=data[key];
     if(!bucket||!bucket.exp) return;
     bucket.exp.forEach(r=>{
       if(r.paid!=='ΝΑΙ') return;            // only completed payments
-      if(!r.paidDate) return;                // must have payment date
-      if(r.paySource==='Άγνωστο'||!r.paySource) return;  // exclude unknown
+      totalPaid++;
+      if(!r.paidDate){ noPaidDate++; skippedDetails.push((r.name||'?')+' (χωρίς ημ.πληρωμής)'); return; }
+      if(r.paySource==='Άγνωστο'||!r.paySource){ unknownSrc++; skippedDetails.push((r.name||'?')+' (Άγνωστη πηγή)'); return; }
       const pd=new Date(r.paidDate);
       if(pd.getFullYear()===targetY && pd.getMonth()===targetM){
+        included++;
         rows.push({
           entryDate:r.date||'',
           paidDate:r.paidDate||'',
@@ -3279,9 +3284,28 @@ function exportAccountant(){
           code:r.code||'',
           amount:+r.amount||0
         });
+      } else {
+        otherMonth++;
       }
     });
   });
+
+  // Show diagnostics if some paid expenses were excluded
+  const excluded=noPaidDate+unknownSrc;
+  if(excluded>0){
+    let msg='ℹ Διαγνωστικά εξαγωγής λογιστή:\n\n';
+    msg+='• Πληρωμένα έξοδα (ΝΑΙ) συνολικά: '+totalPaid+'\n';
+    msg+='• Μπήκαν στην εξαγωγή ('+MN[CM]+'): '+included+'\n';
+    msg+='• Πληρώθηκαν άλλο μήνα: '+otherMonth+'\n';
+    if(unknownSrc>0) msg+='• ⚠ Με «Άγνωστη» πηγή (εξαιρέθηκαν): '+unknownSrc+'\n';
+    if(noPaidDate>0) msg+='• ⚠ Χωρίς ημ. πληρωμής (εξαιρέθηκαν): '+noPaidDate+'\n';
+    msg+='\nΤα εξαιρεθέντα χρειάζονται διόρθωση: άνοιξέ τα και όρισε «Πληρωμή από» (τράπεζα/μετρητά).\n\n';
+    if(skippedDetails.length){
+      msg+='Εγγραφές που εξαιρέθηκαν:\n'+skippedDetails.slice(0,15).join('\n');
+      if(skippedDetails.length>15) msg+='\n…και '+(skippedDetails.length-15)+' ακόμα';
+    }
+    alert(msg);
+  }
 
   if(rows.length===0){
     showToast('⚠ Δεν υπάρχουν πληρωμές για '+MN[CM]+' '+CY);
