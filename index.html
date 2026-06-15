@@ -988,7 +988,11 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 <div class="overlay" id="paySrcOverlay" onclick="if(event.target===this)closePaySrcPicker()">
 <div class="del-box" style="max-width:340px">
   <div class="icon">💳</div><h3>Από πού πληρώθηκε;</h3>
-  <p style="margin-bottom:16px">Επίλεξε την πηγή πληρωμής για τον λογιστή.</p>
+  <p style="margin-bottom:12px">Επίλεξε πηγή & ημερομηνία πληρωμής για τον λογιστή.</p>
+  <div class="field" style="margin-bottom:14px;text-align:left">
+    <label style="font-size:12px">Ημερομηνία πληρωμής</label>
+    <input type="date" id="paySrcDate" style="width:100%">
+  </div>
   <div style="display:flex;flex-direction:column;gap:8px">
     <button class="btn btn-inc" onclick="selectPaySource('Τράπεζα 012')" style="width:100%">🏦 Τράπεζα 012</button>
     <button class="btn btn-inc" onclick="selectPaySource('Τράπεζα 266')" style="width:100%">🏦 Τράπεζα 266</button>
@@ -1791,6 +1795,11 @@ function togglePaid(type,i,oy,om){ if(isViewer()) return;
 let _paySrcCtx=null;
 function openPaySourcePicker(type,i,y,m){
   _paySrcCtx={type,i,y,m};
+  // Default payment date: the entry's own date (more likely correct than today)
+  const ent=ents(y,m)[type][i];
+  const defaultDate=(ent&&ent.date)?ent.date:new Date().toISOString().slice(0,10);
+  const dateInput=document.getElementById('paySrcDate');
+  if(dateInput) dateInput.value=defaultDate;
   document.getElementById('paySrcOverlay').classList.add('open');
 }
 function closePaySrcPicker(){
@@ -1802,14 +1811,18 @@ function selectPaySource(src){
   const{type,i,y,m}=_paySrcCtx;
   const d=ents(y,m);
   if(!d[type][i]){closePaySrcPicker();return;}
+  // Use the chosen payment date (defaults to entry date, user can change)
+  const dateInput=document.getElementById('paySrcDate');
+  const payDate=(dateInput&&dateInput.value)?dateInput.value:new Date().toISOString().slice(0,10);
   d[type][i].paid='ΝΑΙ';
   d[type][i].enanti=0;
-  d[type][i].paidDate=new Date().toISOString().slice(0,10);
+  d[type][i].paidDate=payDate;
   d[type][i].paySource=src;
   setEnts(y,m,d);
   closePaySrcPicker();
   renderCurrentPage();
-  showToast('✓ Πληρώθηκε από '+src);
+  const mIdx=parseInt(payDate.split('-')[1])-1;
+  showToast('✓ Πληρώθηκε από '+src+' ('+(MN[mIdx]||'')+')');
 }
 
 // ── ENTRY MODAL ───────────────────────────────────────
