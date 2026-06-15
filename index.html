@@ -3295,7 +3295,8 @@ function exportAccountant(){
           paySource:r.paySource||'',
           invoice:r.invoice||'',
           code:r.code||'',
-          amount:+r.amount||0
+          amount:+r.amount||0,
+          notes:r.notes||''
         });
       } else {
         otherMonth++;
@@ -3334,10 +3335,10 @@ function exportAccountant(){
     ['Α.Σ Αγιάσου — Καρτέλα Πληρωμών Λογιστή'],
     [MN[CM]+' '+CY+' · Εκτυπώθηκε '+new Date().toLocaleDateString('el-GR')],
     [],
-    ['Ημ. Εγγραφής','Ημ. Πληρωμής','Προμηθευτής','ΑΦΜ','Πληρωμή από','Αρ. Παραστατικού','Κωδ. Πληρωμής','Ποσό (€)']
+    ['Ημ. Εγγραφής','Ημ. Πληρωμής','Προμηθευτής','ΑΦΜ','Πληρωμή από','Αρ. Παραστατικού','Κωδ. Πληρωμής','Ποσό (€)','Σχόλια']
   ];
   rows.forEach(r=>{
-    aoa.push([fmtD(r.entryDate),fmtD(r.paidDate),r.name,r.afm,r.paySource,r.invoice,r.code,r.amount]);
+    aoa.push([fmtD(r.entryDate),fmtD(r.paidDate),r.name,r.afm,r.paySource,r.invoice,r.code,r.amount,r.notes]);
   });
   aoa.push([]);
 
@@ -3347,12 +3348,12 @@ function exportAccountant(){
   sources.forEach(src=>{
     const sum=rows.filter(r=>r.paySource===src).reduce((s,r)=>s+r.amount,0);
     grand+=sum;
-    if(sum>0) aoa.push(['','','','','Σύνολο '+src,'','',sum]);
+    if(sum>0) aoa.push(['','','','','Σύνολο '+src,'','',sum,'']);
   });
-  aoa.push(['','','','','ΓΕΝΙΚΟ ΣΥΝΟΛΟ','','',grand]);
+  aoa.push(['','','','','ΓΕΝΙΚΟ ΣΥΝΟΛΟ','','',grand,'']);
 
   const ws=XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols']=[{wch:14},{wch:14},{wch:28},{wch:12},{wch:16},{wch:20},{wch:26},{wch:13}];
+  ws['!cols']=[{wch:14},{wch:14},{wch:28},{wch:12},{wch:16},{wch:20},{wch:26},{wch:13},{wch:30}];
   XLSX.utils.book_append_sheet(wb,ws,'Πληρωμές '+MN[CM]);
   XLSX.writeFile(wb,'logistis_'+MN[CM]+'_'+CY+'.xlsx');
   showToast('✓ Καρτέλα λογιστή: '+rows.length+' πληρωμές');
