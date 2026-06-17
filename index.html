@@ -89,16 +89,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 /* ── MAIN ─── */
 .main{max-width:1440px;margin:0 auto;padding:20px;}
 .page{display:none;}
-.page.active{display:block;}
+.page.active{display:block;animation:pageIn .28s cubic-bezier(.22,.8,.36,1);}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
 /* ── SUMMARY CARDS ─── */
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:9px;margin-bottom:14px;}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:13px 15px;transition:transform .15s,box-shadow .15s;}
-.stat-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.07);}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:14px 16px;transition:transform .2s cubic-bezier(.34,1.2,.64,1),box-shadow .2s;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.06);}
 .stat-card.g{border-left:3px solid var(--olive-mid);background:#e8e2d2;}
 .stat-card.r{border-left:3px solid var(--red-mid);background:#e8e2d2;}
 .stat-card.a{border-left:3px solid var(--gold-mid);background:#e8e2d2;}
-.stat-card .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:4px;}
+.stat-card .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.stat-card .sc-ic{font-size:11px;opacity:.85;}
+.stat-card .val{transition:color .2s;}
 .stat-card .val{font-size:19px;font-family:'DM Mono',monospace;letter-spacing:-.4px;}
 .stat-card.g .val{color:#2e4a1a;}
 .stat-card.r .val{color:#7a2020;}
@@ -106,7 +109,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .stat-card .lbl{color:#6a6050;}
 
 /* ── PROFIT BAR ─── */
-.profit-bar{background:#e8e2d2;border:1px solid var(--border);border-left:4px solid var(--olive-mid);border-radius:var(--rl);padding:14px 20px;display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(61,92,42,.06);}
+.profit-bar{background:#e8e2d2;border:1px solid var(--border);border-left:4px solid var(--olive-mid);border-radius:var(--rl);padding:15px 20px;display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;box-shadow:0 4px 14px rgba(61,92,42,.1),0 1px 4px rgba(0,0,0,.05);transition:box-shadow .2s;}
 .profit-bar.neg{border-left-color:#a83030;background:#e8e2d2;box-shadow:0 2px 8px rgba(176,48,48,.06);}
 .pbadge{font-size:11px;padding:2px 8px;border-radius:20px;}
 .pbadge.pos{background:var(--olive-lt);color:var(--olive);}
@@ -117,7 +120,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .pval.neg{color:var(--red-mid);}
 
 /* ── CHART ─── */
-.chart-card{background:#e8e2d2;border:1px solid var(--border);border-top:3px solid var(--olive-mid);border-radius:var(--rl);padding:16px 18px;margin-top:16px;}
+.chart-card{background:#e8e2d2;border:1px solid var(--border);border-top:3px solid var(--olive-mid);border-radius:var(--rl);padding:18px 20px;margin-top:16px;box-shadow:0 2px 8px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);}
 .chart-hdr{font-family:'Lora',serif;font-size:13px;color:#665c48;font-style:italic;margin-bottom:12px;}
 
 /* ── HOME: side-by-side mini tables ─── */
@@ -126,8 +129,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 @media(max-width:860px){.home-tables{grid-template-columns:1fr;}}
 
 /* ── FULL PAGE TABLE ─── */
-.page-table-card{background:#e8e2d2;border:1px solid #c0b898;border-radius:var(--rl);overflow:hidden;}
+.page-table-card{background:#e8e2d2;border:1px solid #c0b898;border-radius:var(--rl);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);}
 .page-table-card+.tbl-pager{margin-top:-1px;}
+/* Table row hover */
+tbody tr{transition:background .12s;}
+tbody tr:hover td{background:rgba(86,120,56,.07);}
+[data-theme="dark"] tbody tr:hover td{background:rgba(140,170,90,.08);}
+.empty-row:hover td{background:transparent!important;}
 /* Home mini table card — no bottom radius when pager follows */
 .home-tables .page-table-card{border-radius:var(--rl) var(--rl) 0 0;}
 .page-table-header{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
@@ -1361,12 +1369,12 @@ function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE,tO,pO,uO){
     return`<span style="font-size:10px;${cl};margin-left:5px">${arrow}${Math.abs(pct)}%</span>`;
   }
   document.getElementById(id).innerHTML=`
-    <div class="stat-card g"><div class="lbl">Σύνολο Εσόδων</div><div class="val">${fmt(tI)}${diff(tI,prevTI)}</div></div>
-    <div class="stat-card g"><div class="lbl">Εισπραχθέντα</div><div class="val">${fmt(pI)}</div></div>
-    <div class="stat-card a"><div class="lbl">Εκκρεμή Έσοδα</div><div class="val">${fmt(uI)}</div></div>
-    <div class="stat-card r"><div class="lbl">Λοιπά Έξοδα</div><div class="val">${fmt(tE)}${diff(tE,prevTE)}</div></div>
-    <div class="stat-card r"><div class="lbl">Πληρωθέντα Εξ.</div><div class="val">${fmt(pE)}</div></div>
-    <div class="stat-card o"><div class="lbl">🫒 Πωλήσεις Λαδιού</div><div class="val">${fmt(tO||0)}</div></div>`;
+    <div class="stat-card g"><div class="lbl"><span class="sc-ic">📥</span>Σύνολο Εσόδων</div><div class="val">${fmt(tI)}${diff(tI,prevTI)}</div></div>
+    <div class="stat-card g"><div class="lbl"><span class="sc-ic">✓</span>Εισπραχθέντα</div><div class="val">${fmt(pI)}</div></div>
+    <div class="stat-card a"><div class="lbl"><span class="sc-ic">⏳</span>Εκκρεμή Έσοδα</div><div class="val">${fmt(uI)}</div></div>
+    <div class="stat-card r"><div class="lbl"><span class="sc-ic">📤</span>Λοιπά Έξοδα</div><div class="val">${fmt(tE)}${diff(tE,prevTE)}</div></div>
+    <div class="stat-card r"><div class="lbl"><span class="sc-ic">✓</span>Πληρωθέντα Εξ.</div><div class="val">${fmt(pE)}</div></div>
+    <div class="stat-card o"><div class="lbl"><span class="sc-ic">🫒</span>Πωλήσεις Λαδιού</div><div class="val">${fmt(tO||0)}</div></div>`;
   setTimeout(()=>animateVals(id),10);
 }
 function renderProfit(id,pr,lbl){
