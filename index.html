@@ -686,6 +686,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   <!-- ── HOME PAGE ─── -->
   <div class="page active" id="page-home">
     <div id="pendingAlert" class="pending-alert hidden">⚠ Υπάρχουν εκκρεμείς πληρωμές αυτό το μήνα.</div>
+    <div id="overdueAlert" class="pending-alert hidden" onclick="openPending()" style="cursor:pointer;background:#5a2820;border-color:#8a4030;color:#f0d0c0"></div>
     <div class="summary-grid" id="homeSummary"></div>
     <div class="profit-bar" id="homeProfitBar"></div>
     <div class="home-tables">
@@ -1455,6 +1456,37 @@ function getCarryover(y, m, type){
 }
 
 // ── HOME PAGE ─────────────────────────────────────────
+// Count unpaid expenses older than 30 days across ALL months
+function renderOverdueAlert(){
+  const el=document.getElementById('overdueAlert');
+  if(!el) return;
+  const now=new Date();
+  const cutoff=30; // days
+  let count=0, totalAmt=0;
+  Object.keys(data).forEach(key=>{
+    const mt=key.match(/^y(\d+)m(\d+)$/);
+    if(!mt) return;
+    const bucket=data[key];
+    if(!bucket||!bucket.exp) return;
+    bucket.exp.forEach(r=>{
+      if(r.paid!=='ΟΧΙ') return;
+      if(!r.date) return;
+      const entryDate=new Date(r.date);
+      const days=Math.floor((now-entryDate)/(1000*60*60*24));
+      if(days>cutoff){
+        count++;
+        totalAmt+=(+r.amount||0)-(+r.enanti||0);
+      }
+    });
+  });
+  if(count>0){
+    el.innerHTML=`⏰ <strong>${count}</strong> ${count===1?'εκκρεμής πληρωμή':'εκκρεμείς πληρωμές'} άνω των 30 ημερών · σύνολο ${fmt(totalAmt)} <span style="opacity:.7;font-size:11px">(πάτα για λίστα)</span>`;
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+}
+
 function renderHome(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{inc,exp,oil,tI,pI,uI,tE,pE,uE,tO,pO,uO,pr}=calc(CY,CM);
@@ -1467,6 +1499,9 @@ function renderHome(){
 
   const hasPending=inc.some(r=>r.paid==='ΟΧΙ')||exp.some(r=>r.paid==='ΟΧΙ');
   document.getElementById('pendingAlert').classList.toggle('hidden',!hasPending);
+
+  // Overdue pending across ALL months (>30 days unpaid expenses)
+  renderOverdueAlert();
 
   // Exp with pagination
   const expWithIdx=exp.map((r,i)=>({...r,_i:i,_carryover:false}));
@@ -1555,6 +1590,17 @@ function renderHome(){
 function renderExpPage(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{exp}=ents(CY,CM);
+  // Cross-year search: when searching, gather matches from ALL months/years
+  if(q){
+    let allMatches=globalSearch(q,'exp');
+    if(catFilter) allMatches=allMatches.filter(r=>r.cat===catFilter);
+    renderCatFilter('exp');
+    document.getElementById('expPageCount').textContent=allMatches.length+' αποτελέσματα σε όλα τα έτη';
+    document.getElementById('expPageBody').innerHTML=allMatches.length===0
+      ?emptyRow(10,'search')
+      :allMatches.map(r=>expRowHtml(r,true)).join('');
+    return;
+  }
   const carryExp=showCarryover?getCarryover(CY,CM,'exp'):[];
   let allExp=[...carryExp,...exp.map((r,i)=>({...r,_i:i,_carryover:false}))];
   // Category filter
@@ -1565,16 +1611,67 @@ function renderExpPage(){
   document.getElementById('expPageCount').textContent=fExp.length+' / '+exp.length+' εγγραφές · '+MN[CM]+' '+CY;
   document.getElementById('expPageBody').innerHTML=fExp.length===0
     ?emptyRow(10, q?'search':catFilter?'filter':'exp')
-    :fExp.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r._carryover?' carry-row':''}">
+    :fExp.map(r=>expRowHtml(r,false)).join('');
+}
+
+// Shared expense row HTML (used by normal render + global search)
+function expRowHtml(r,isSearch){
+  const oy=r._carryover?r._origY:-1, om=r._carryover?r._origM:-1;
+  const monthBadge=isSearch&&r._srchY!==undefined
+    ? `<span class="carry-badge" style="background:var(--olive-lt);color:var(--olive)">${MN[r._srchM].slice(0,3)} ${r._srchY}</span>`
+    : (r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:'');
+  const sy=isSearch?r._srchY:oy, sm=isSearch?r._srchM:om;
+  return`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r._carryover?' carry-row':''}">
       <td class="mono">${fmtD(r.date)}</td>
-      <td>${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-right:4px;text-decoration:none">📎</a>`:''}${esc(r.name)}${r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:''}</td>
+      <td>${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-right:4px;text-decoration:none">📎</a>`:''}${esc(r.name)}${monthBadge}</td>
       <td class="mono" style="text-align:right">${r.enanti>0?`<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`:fmt(r.amount)}</td>
       <td>${r.code?`<span class="code-badge" onclick="copyCode('${esc(r.code).replace(/'/g,"\\'")}');event.stopPropagation();" title="Κλικ για αντιγραφή" style="cursor:pointer">${esc(r.code)}</span>`:'<span class="muted">—</span>'}</td>
       <td class="muted">${r.cat?catIcon(r.cat)+' '+esc(r.cat):''}</td>
       <td>${instBadgeHtml(r,'exp',r._i)}</td>
       <td class="muted">${esc(r.notes)}</td>
-      <td class="no-print">${actHtml('exp',r._i,r.hidden,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
-    </tr>`).join('');
+      <td class="no-print">${payEditBtn(isSearch?{...r,_carryover:true,_origY:sy,_origM:sm}:r)}${actHtml('exp',r._i,r.hidden,isSearch?sy:oy,isSearch?sm:om)}</td>
+    </tr>`;
+}
+
+// Search across ALL years/months for a given type
+function globalSearch(q,type){
+  const ql=q.toLowerCase();
+  const results=[];
+  Object.keys(data).forEach(key=>{
+    const mt=key.match(/^y(\d+)m(\d+)$/);
+    if(!mt) return;
+    const yy=+mt[1], mm=+mt[2];
+    const bucket=data[key];
+    if(!bucket||!bucket[type]) return;
+    bucket[type].forEach((r,i)=>{
+      const hay=((r.name||'')+' '+(r.notes||'')+' '+(r.code||'')+' '+(r.invoice||'')+' '+(r.cat||'')).toLowerCase();
+      if(hay.includes(ql)){
+        results.push({...r,_i:i,_srchY:yy,_srchM:mm,_carryover:false});
+      }
+    });
+  });
+  // Sort newest first
+  results.sort((a,b)=>(b._srchY-a._srchY)||(b._srchM-a._srchM)||((b.date||'').localeCompare(a.date||'')));
+  return results;
+}
+
+// Payment-edit button (only for paid expenses) — opens the bank/date picker directly
+function payEditBtn(r){
+  if(r.paid!=='ΝΑΙ') return '';
+  const oy=r._carryover?r._origY:-1, om=r._carryover?r._origM:-1;
+  return`<button class="btn btn-ghost btn-sm" onclick="openPayEdit('exp',${r._i},${oy},${om})" title="Επεξεργασία πληρωμής (τράπεζα/ημ.)" style="color:var(--olive-mid)">💳</button>`;
+}
+
+// Open the pay-source picker for an ALREADY paid entry (to fix bank/date)
+function openPayEdit(type,i,oy,om){
+  if(isViewer()) return;
+  const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
+  const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
+  _paySrcCtx={type,i,y,m};
+  const ent=ents(y,m)[type][i];
+  const dateInput=document.getElementById('paySrcDate');
+  if(dateInput) dateInput.value=(ent&&ent.paidDate)?ent.paidDate:(ent&&ent.date)?ent.date:new Date().toISOString().slice(0,10);
+  document.getElementById('paySrcOverlay').classList.add('open');
 }
 
 // Empty state row
@@ -2084,10 +2181,49 @@ function confirmDel(){
   }
 
   // Delete the main entry itself
+  const deletedEntry=d[type][i];
   d[type].splice(i,1);
   setEnts(y,m,d);
+  // Store for undo (single entries only, not installment plans)
+  if(!(r.instPlan && r.instPlan.groupId)){
+    _lastDeleted={entry:deletedEntry,type,y,m,index:i};
+    showUndoToast();
+  }
   cancelDel();
   renderCurrentPage();
+}
+
+// ── UNDO DELETE ───────────────────────────────────────
+let _lastDeleted=null;
+let _undoTimer=null;
+function showUndoToast(){
+  let t=document.getElementById('undoToast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='undoToast';
+    t.style.cssText="position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#3a3026;color:#f0e8d8;padding:11px 16px;border-radius:12px;font-size:13px;font-family:'DM Sans',sans-serif;z-index:10000;display:flex;align-items:center;gap:14px;box-shadow:0 6px 24px rgba(0,0,0,.35);border:1px solid rgba(200,160,80,.25);";
+    document.body.appendChild(t);
+  }
+  t.innerHTML=`<span>🗑 Διαγράφηκε</span><button onclick="undoDelete()" style="background:var(--olive-mid);color:#fff;border:none;padding:5px 14px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">↩ Αναίρεση</button>`;
+  t.style.display='flex';
+  clearTimeout(_undoTimer);
+  _undoTimer=setTimeout(()=>{ t.style.display='none'; _lastDeleted=null; },6000);
+}
+function undoDelete(){
+  if(!_lastDeleted) return;
+  const{entry,type,y,m,index}=_lastDeleted;
+  const d=ents(y,m);
+  if(!d[type]) d[type]=[];
+  // Re-insert at original position if possible
+  if(index<=d[type].length) d[type].splice(index,0,entry);
+  else d[type].push(entry);
+  setEnts(y,m,d);
+  _lastDeleted=null;
+  clearTimeout(_undoTimer);
+  const t=document.getElementById('undoToast');
+  if(t) t.style.display='none';
+  renderCurrentPage();
+  showToast('✓ Επαναφέρθηκε');
 }
 
 // ── CATEGORIES ────────────────────────────────────────
