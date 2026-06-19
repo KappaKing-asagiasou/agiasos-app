@@ -557,16 +557,16 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .cal-wrap{background:#e8e2d2;border:1px solid var(--border);border-radius:var(--rl);padding:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
 .cal-wd{text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;padding:4px 0;letter-spacing:.5px;}
-.cal-cell{border-radius:8px;padding:4px;display:flex;flex-direction:column;background:rgba(255,255,255,.4);border:1px solid transparent;min-height:74px;transition:all .15s;overflow:hidden;}
-.cal-cell.cal-empty{background:transparent;min-height:74px;}
+.cal-cell{border-radius:9px;padding:7px;display:flex;flex-direction:column;background:rgba(255,255,255,.4);border:1px solid transparent;min-height:110px;transition:all .15s;overflow:hidden;}
+.cal-cell.cal-empty{background:transparent;min-height:110px;}
 .cal-cell.cal-has{cursor:pointer;background:rgba(255,255,255,.78);border-color:var(--border);}
 .cal-cell.cal-has:hover{border-color:var(--accent-mid);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
 .cal-cell.cal-today{box-shadow:inset 0 0 0 2px var(--accent);}
-.cal-num{font-size:12px;font-weight:600;color:var(--text);line-height:1;margin-bottom:3px;}
+.cal-num{font-size:15px;font-weight:600;color:var(--text);line-height:1;margin-bottom:5px;}
 .cal-cell.cal-empty .cal-num{display:none;}
-.cal-chips{display:flex;flex-direction:column;gap:2px;overflow:hidden;}
-.cal-chip{background:#f0dcd8;color:#8a3530;font-size:9.5px;line-height:1.2;padding:2px 4px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:2px solid #c0504d;}
-.cal-more{font-size:9px;color:var(--text3);padding:1px 4px;font-style:italic;}
+.cal-chips{display:flex;flex-direction:column;gap:3px;overflow:hidden;}
+.cal-chip{background:#f0dcd8;color:#8a3530;font-size:12px;line-height:1.3;padding:3px 6px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:2px solid #c0504d;}
+.cal-more{font-size:11px;color:var(--text3);padding:2px 5px;font-style:italic;}
 .cal-dots{display:flex;gap:2px;flex-wrap:wrap;margin-top:auto;}
 .cal-day-detail{margin-top:16px;}
 .cal-detail-hdr{font-size:14px;font-weight:600;color:var(--olive);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--olive-mid);}
@@ -580,7 +580,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .cal-row-amt{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;white-space:nowrap;}
 .cal-paid-y{color:#5a8040;font-weight:700;}
 .cal-paid-n{color:#c0504d;font-size:10px;}
-@media(max-width:560px){.cal-cell{min-height:64px;padding:2px;}.cal-num{font-size:11px;}.cal-chip{font-size:8px;padding:1px 3px;}.cal-more{font-size:8px;}}
+@media(max-width:560px){.cal-cell,.cal-cell.cal-empty{min-height:78px;padding:4px;}.cal-num{font-size:12px;margin-bottom:3px;}.cal-chip{font-size:10px;padding:2px 4px;line-height:1.2;}.cal-more{font-size:9.5px;}.cal-chips{gap:2px;}}
 
 /* EMPTY STATE */
 .empty-row td{padding:0!important;background:transparent!important;border:none!important;}
@@ -717,7 +717,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17d</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17e</div>
       </div>
     </div>
 
@@ -1862,6 +1862,12 @@ function renderOilPage(){
 // ── ANNUAL ────────────────────────────────────────────
 // ── CALENDAR VIEW ─────────────────────────────────────
 let _calSelectedDay=null;
+let _calResizeTimer=null;
+window.addEventListener('resize',()=>{
+  if(CPage!=='calendar') return;
+  clearTimeout(_calResizeTimer);
+  _calResizeTimer=setTimeout(renderCalendar,200);
+});
 function renderCalendar(){
   document.getElementById('calTitle').textContent='Ημερολόγιο Εξόδων · '+MN[CM]+' '+CY;
   const {exp}=ents(CY,CM);
@@ -1890,7 +1896,7 @@ function renderCalendar(){
   let html='<div class="cal-grid">';
   weekdays.forEach(w=>html+=`<div class="cal-wd">${w}</div>`);
   for(let i=0;i<startWeekday;i++) html+='<div class="cal-cell cal-empty"></div>';
-  const MAX_SHOWN=3; // how many expense chips to show before "+N"
+  const MAX_SHOWN=(window.innerWidth>560)?5:3; // more chips on desktop, fewer on mobile
   for(let d=1;d<=daysInMonth;d++){
     const list=dayMap[d]||[];
     const isToday=isThisMonth&&d===todayDate;
@@ -4351,7 +4357,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17d</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17e</div>
   </div>
 </div>
 
