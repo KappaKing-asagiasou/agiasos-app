@@ -557,13 +557,16 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .cal-wrap{background:#e8e2d2;border:1px solid var(--border);border-radius:var(--rl);padding:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
 .cal-wd{text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;padding:4px 0;letter-spacing:.5px;}
-.cal-cell{aspect-ratio:1;border-radius:8px;padding:4px;display:flex;flex-direction:column;background:rgba(255,255,255,.4);border:1px solid transparent;min-height:42px;transition:all .15s;}
-.cal-cell.cal-empty{background:transparent;}
-.cal-cell.cal-has{cursor:pointer;background:rgba(255,255,255,.75);border-color:var(--border);}
+.cal-cell{border-radius:8px;padding:4px;display:flex;flex-direction:column;background:rgba(255,255,255,.4);border:1px solid transparent;min-height:74px;transition:all .15s;overflow:hidden;}
+.cal-cell.cal-empty{background:transparent;min-height:74px;}
+.cal-cell.cal-has{cursor:pointer;background:rgba(255,255,255,.78);border-color:var(--border);}
 .cal-cell.cal-has:hover{border-color:var(--accent-mid);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
 .cal-cell.cal-today{box-shadow:inset 0 0 0 2px var(--accent);}
-.cal-num{font-size:13px;font-weight:600;color:var(--text);line-height:1;}
+.cal-num{font-size:12px;font-weight:600;color:var(--text);line-height:1;margin-bottom:3px;}
 .cal-cell.cal-empty .cal-num{display:none;}
+.cal-chips{display:flex;flex-direction:column;gap:2px;overflow:hidden;}
+.cal-chip{background:#f0dcd8;color:#8a3530;font-size:9.5px;line-height:1.2;padding:2px 4px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:2px solid #c0504d;}
+.cal-more{font-size:9px;color:var(--text3);padding:1px 4px;font-style:italic;}
 .cal-dots{display:flex;gap:2px;flex-wrap:wrap;margin-top:auto;}
 .cal-day-detail{margin-top:16px;}
 .cal-detail-hdr{font-size:14px;font-weight:600;color:var(--olive);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--olive-mid);}
@@ -577,7 +580,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .cal-row-amt{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;white-space:nowrap;}
 .cal-paid-y{color:#5a8040;font-weight:700;}
 .cal-paid-n{color:#c0504d;font-size:10px;}
-@media(max-width:560px){.cal-cell{min-height:38px;padding:3px;}.cal-num{font-size:12px;}.cal-dot{width:6px;height:6px;}}
+@media(max-width:560px){.cal-cell{min-height:64px;padding:2px;}.cal-num{font-size:11px;}.cal-chip{font-size:8px;padding:1px 3px;}.cal-more{font-size:8px;}}
 
 /* EMPTY STATE */
 .empty-row td{padding:0!important;background:transparent!important;border:none!important;}
@@ -714,7 +717,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17c</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17d</div>
       </div>
     </div>
 
@@ -958,9 +961,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   <div class="page" id="page-calendar">
     <div class="view-label"><h2 id="calTitle">Ημερολόγιο</h2></div>
     <div class="cal-legend">
-      <span class="cal-lg"><span class="cal-dot cal-exp"></span>Έξοδα</span>
-      <span class="cal-lg"><span class="cal-dot cal-oil"></span>Λάδι</span>
-      <span class="cal-lg"><span class="cal-dot cal-inc"></span>Έσοδα</span>
+      <span class="cal-lg"><span class="cal-dot cal-exp"></span>Έξοδα ανά ημέρα · πάτα μια μέρα για λεπτομέρειες</span>
     </div>
     <div class="cal-wrap" id="calGrid"></div>
     <div class="cal-day-detail" id="calDayDetail"></div>
@@ -1048,13 +1049,13 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 
 <!-- MOVE TO MONTH -->
 <div class="overlay" id="moveMonthOverlay" onclick="if(event.target===this)closeMoveMonth()">
-<div class="del-box" style="max-width:360px">
-  <div class="icon">📅</div><h3>Μετακίνηση σε άλλο μήνα</h3>
+<div class="del-box" style="max-width:340px">
+  <div class="icon">📅</div><h3>Μετακίνηση εγγραφής</h3>
   <p style="margin-bottom:6px;font-size:12px" id="moveEntryInfo"></p>
-  <p style="margin-bottom:14px;font-size:11px;color:var(--text3)">Η ημερομηνία της εγγραφής παραμένει ως έχει.</p>
-  <div style="display:flex;gap:8px;margin-bottom:16px">
-    <div class="field" style="flex:1;text-align:left"><label style="font-size:11px">Μήνας</label><select id="moveMonthSel" style="width:100%"></select></div>
-    <div class="field" style="width:90px;text-align:left"><label style="font-size:11px">Έτος</label><select id="moveYearSel" style="width:100%"></select></div>
+  <p style="margin-bottom:14px;font-size:11px;color:var(--text3)">Διάλεξε τη νέα ημερομηνία. Η εγγραφή θα μετακινηθεί στον μήνα της και θα πάρει αυτή την ημερομηνία.</p>
+  <div class="field" style="text-align:left;margin-bottom:16px">
+    <label style="font-size:12px">Νέα ημερομηνία</label>
+    <input type="date" id="moveDateInput" style="width:100%">
   </div>
   <div style="display:flex;gap:8px;justify-content:center">
     <button class="btn btn-ghost" onclick="closeMoveMonth()">Ακύρωση</button>
@@ -1862,28 +1863,24 @@ function renderOilPage(){
 // ── CALENDAR VIEW ─────────────────────────────────────
 let _calSelectedDay=null;
 function renderCalendar(){
-  document.getElementById('calTitle').textContent='Ημερολόγιο · '+MN[CM]+' '+CY;
-  const {inc,exp,oil}=ents(CY,CM);
-  // Map day → {exp,oil,inc} totals/counts
+  document.getElementById('calTitle').textContent='Ημερολόγιο Εξόδων · '+MN[CM]+' '+CY;
+  const {exp}=ents(CY,CM);
+  // Map day → array of expense entries dated that day
   const dayMap={};
-  function addToDay(arr,kind){
-    arr.forEach(r=>{
-      if(!r.date) return;
-      const p=r.date.split('-');
-      if(p.length!==3) return;
-      const dy=+p[0], dm=+p[1]-1, dd=+p[2];
-      if(dy!==CY||dm!==CM) return; // only entries dated in this month
-      if(!dayMap[dd]) dayMap[dd]={exp:0,oil:0,inc:0,expSum:0,oilSum:0,incSum:0};
-      dayMap[dd][kind]++;
-      dayMap[dd][kind+'Sum']+=(+r.amount||0);
-    });
-  }
-  addToDay(exp,'exp'); addToDay(oil,'oil'); addToDay(inc,'inc');
+  exp.forEach(r=>{
+    if(!r.date) return;
+    const p=r.date.split('-');
+    if(p.length!==3) return;
+    const dy=+p[0], dm=+p[1]-1, dd=+p[2];
+    if(dy!==CY||dm!==CM) return; // only entries dated in this month
+    if(!dayMap[dd]) dayMap[dd]=[];
+    dayMap[dd].push(r);
+  });
 
   // Build calendar grid
   const firstDay=new Date(CY,CM,1);
-  let startWeekday=firstDay.getDay(); // 0=Sun
-  startWeekday=(startWeekday===0)?6:startWeekday-1; // make Monday=0
+  let startWeekday=firstDay.getDay();
+  startWeekday=(startWeekday===0)?6:startWeekday-1; // Monday=0
   const daysInMonth=new Date(CY,CM+1,0).getDate();
   const today=new Date();
   const isThisMonth=(today.getFullYear()===CY&&today.getMonth()===CM);
@@ -1892,60 +1889,62 @@ function renderCalendar(){
   const weekdays=['Δε','Τρ','Τε','Πε','Πα','Σα','Κυ'];
   let html='<div class="cal-grid">';
   weekdays.forEach(w=>html+=`<div class="cal-wd">${w}</div>`);
-  // Empty cells before first day
   for(let i=0;i<startWeekday;i++) html+='<div class="cal-cell cal-empty"></div>';
+  const MAX_SHOWN=3; // how many expense chips to show before "+N"
   for(let d=1;d<=daysInMonth;d++){
-    const info=dayMap[d];
+    const list=dayMap[d]||[];
     const isToday=isThisMonth&&d===todayDate;
-    let dots='';
-    if(info){
-      if(info.exp>0) dots+='<span class="cal-dot cal-exp"></span>';
-      if(info.oil>0) dots+='<span class="cal-dot cal-oil"></span>';
-      if(info.inc>0) dots+='<span class="cal-dot cal-inc"></span>';
+    const hasData=list.length>0;
+    let chips='';
+    list.slice(0,MAX_SHOWN).forEach(r=>{
+      chips+=`<div class="cal-chip" title="${esc(r.name)}">${esc(r.name||'—')}</div>`;
+    });
+    if(list.length>MAX_SHOWN){
+      chips+=`<div class="cal-more">+${list.length-MAX_SHOWN} ακόμα</div>`;
     }
-    const hasData=!!info;
     html+=`<div class="cal-cell${isToday?' cal-today':''}${hasData?' cal-has':''}" ${hasData?`onclick="showCalDay(${d})"`:''}>
       <div class="cal-num">${d}</div>
-      <div class="cal-dots">${dots}</div>
+      <div class="cal-chips">${chips}</div>
     </div>`;
   }
   html+='</div>';
   document.getElementById('calGrid').innerHTML=html;
 
-  // Re-show previously selected day, or clear
   if(_calSelectedDay&&dayMap[_calSelectedDay]) showCalDay(_calSelectedDay);
   else { _calSelectedDay=null; document.getElementById('calDayDetail').innerHTML=''; }
 }
 
 function showCalDay(d){
   _calSelectedDay=d;
-  const {inc,exp,oil}=ents(CY,CM);
+  const {exp}=ents(CY,CM);
   const rows=[];
-  function collect(arr,kind,label,icon){
-    arr.forEach((r,i)=>{
-      if(!r.date) return;
-      const p=r.date.split('-');
-      if(p.length!==3) return;
-      if(+p[0]!==CY||(+p[1]-1)!==CM||+p[2]!==d) return;
-      rows.push({kind,label,icon,name:r.name||'',amount:+r.amount||0,paid:r.paid,cat:r.cat||''});
-    });
-  }
-  collect(exp,'exp','Έξοδο','📤'); collect(oil,'oil','Λάδι','🫒'); collect(inc,'inc','Έσοδο','📥');
+  exp.forEach((r,i)=>{
+    if(!r.date) return;
+    const p=r.date.split('-');
+    if(p.length!==3) return;
+    if(+p[0]!==CY||(+p[1]-1)!==CM||+p[2]!==d) return;
+    rows.push({name:r.name||'',amount:+r.amount||0,paid:r.paid,cat:r.cat||''});
+  });
 
   const dateStr=String(d).padStart(2,'0')+'/'+String(CM+1).padStart(2,'0')+'/'+CY;
-  let html=`<div class="cal-detail-hdr">📅 ${dateStr} · ${rows.length} ${rows.length===1?'εγγραφή':'εγγραφές'}</div>`;
+  let html=`<div class="cal-detail-hdr">📅 ${dateStr} · ${rows.length} ${rows.length===1?'έξοδο':'έξοδα'}</div>`;
   if(rows.length===0){
-    html+='<div class="muted" style="padding:12px;text-align:center">Καμία εγγραφή</div>';
+    html+='<div class="muted" style="padding:12px;text-align:center">Κανένα έξοδο</div>';
   } else {
     html+='<div class="cal-detail-list">';
+    let total=0;
     rows.forEach(r=>{
+      total+=r.amount;
       const paidBadge=r.paid==='ΝΑΙ'?'<span class="cal-paid-y">✓</span>':r.paid==='ΟΧΙ'?'<span class="cal-paid-n">●</span>':'';
-      html+=`<div class="cal-detail-row cal-row-${r.kind}">
-        <span class="cal-row-ic">${r.icon}</span>
+      html+=`<div class="cal-detail-row cal-row-exp">
+        <span class="cal-row-ic">📤</span>
         <span class="cal-row-name">${esc(r.name)}${r.cat?'<span class="muted" style="font-size:11px"> · '+esc(r.cat)+'</span>':''}</span>
         <span class="cal-row-amt">${fmt(r.amount)} ${paidBadge}</span>
       </div>`;
     });
+    html+=`<div class="cal-detail-row" style="border-left-color:var(--olive-mid);font-weight:600">
+      <span class="cal-row-ic">Σ</span><span class="cal-row-name">Σύνολο ημέρας</span>
+      <span class="cal-row-amt">${fmt(total)}</span></div>`;
     html+='</div>';
   }
   document.getElementById('calDayDetail').innerHTML=html;
@@ -2322,14 +2321,9 @@ function openMoveMonth(type,i,oy,om){
     return;
   }
   _moveCtx={type,i,y,m};
-  // Build month picker
-  const sel=document.getElementById('moveMonthSel');
-  const yearSel=document.getElementById('moveYearSel');
-  sel.innerHTML=MN.map((nm,idx)=>`<option value="${idx}"${idx===m?' selected':''}>${nm}</option>`).join('');
-  // Year options: current year ±2
-  const years=[];
-  for(let yy=CY-2;yy<=CY+2;yy++) years.push(yy);
-  yearSel.innerHTML=years.map(yy=>`<option value="${yy}"${yy===y?' selected':''}>${yy}</option>`).join('');
+  // Set date picker to entry's current date
+  const dateInput=document.getElementById('moveDateInput');
+  if(dateInput) dateInput.value=ent.date||new Date().toISOString().slice(0,10);
   // Show entry info
   document.getElementById('moveEntryInfo').textContent=`${ent.name||'(χωρίς όνομα)'} · ${fmt(ent.amount)} · ${fmtD(ent.date)}`;
   document.getElementById('moveMonthOverlay').classList.add('open');
@@ -2341,16 +2335,27 @@ function closeMoveMonth(){
 function confirmMoveMonth(){
   if(!_moveCtx) return;
   const{type,i,y,m}=_moveCtx;
-  const destM=+document.getElementById('moveMonthSel').value;
-  const destY=+document.getElementById('moveYearSel').value;
-  if(destY===y && destM===m){ closeMoveMonth(); showToast('Ίδιος μήνας — καμία αλλαγή'); return; }
+  const newDate=document.getElementById('moveDateInput').value;
+  if(!newDate){ showToast('⚠ Διάλεξε ημερομηνία'); return; }
+  const dp=newDate.split('-');
+  const destY=+dp[0], destM=+dp[1]-1;
   const d=ents(y,m);
   const ent=d[type][i];
   if(!ent){ closeMoveMonth(); return; }
-  // Remove from source, keep original date intact
+  // Update the entry's date to the chosen date
+  ent.date=newDate;
+  if(destY===y && destM===m){
+    // Same month — just update date in place
+    d[type][i]=ent;
+    setEnts(y,m,d);
+    closeMoveMonth();
+    renderCurrentPage();
+    showToast('✓ Ημερομηνία ενημερώθηκε');
+    return;
+  }
+  // Different month — remove from source, add to destination
   d[type].splice(i,1);
   setEnts(y,m,d);
-  // Add to destination
   const dd=ents(destY,destM);
   if(!dd[type]) dd[type]=[];
   dd[type].push(ent);
@@ -4346,7 +4351,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17c</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17d</div>
   </div>
 </div>
 
