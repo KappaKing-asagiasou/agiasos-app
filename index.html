@@ -681,6 +681,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17b</div>
       </div>
     </div>
 
@@ -710,7 +711,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   <!-- ── HOME PAGE ─── -->
   <div class="page active" id="page-home">
     <div id="pendingAlert" class="pending-alert hidden">⚠ Υπάρχουν εκκρεμείς πληρωμές αυτό το μήνα.</div>
-    <div id="overdueAlert" class="pending-alert hidden" onclick="openPending()" style="cursor:pointer;background:#5a2820;border-color:#8a4030;color:#f0d0c0"></div>
+    <div id="overdueAlert" class="pending-alert hidden" onclick="openOverdue()" style="cursor:pointer;background:#5a2820;border-color:#8a4030;color:#f0d0c0"></div>
     <div class="summary-grid" id="homeSummary"></div>
     <div class="profit-bar" id="homeProfitBar"></div>
     <div class="home-tables">
@@ -1081,7 +1082,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 <!-- PENDING BY SUPPLIER -->
 <div class="overlay" id="pendingOverlay" onclick="if(event.target===this)closePending()">
 <div class="pending-box">
-  <h3>⏳ Εκκρεμείς Πληρωμές ανά Προμηθευτή</h3>
+  <h3 id="pendingTitle">⏳ Εκκρεμείς Πληρωμές ανά Προμηθευτή</h3>
   <p class="sub" id="pendingSub"></p>
   <div class="total-bar" id="pendingTotal"></div>
   <div id="pendingBody"></div>
@@ -2334,6 +2335,7 @@ function openPending(){
       const _ip=(r.installments||[]).reduce((s,p)=>s+ +p.amt,0);const _rem=r.installments&&r.installments.length>0?Math.max(0,(+r.amount||0)-_ip):+r.amount||0;map[n].push({...r,month:MNS[mi],_remaining:_rem});
     });
   });
+  document.getElementById('pendingTitle').textContent='⏳ Όλες οι Εκκρεμείς Πληρωμές';
   document.getElementById('pendingSub').textContent='Έτος '+CY+' · Έξοδα με "ΟΧΙ"';
   const sup=Object.entries(map).sort((a,b)=>b[1].reduce((s,r)=>s+ +r.amount,0)-a[1].reduce((s,r)=>s+ +r.amount,0));
   const grand=sup.reduce((s,[,rows])=>s+rows.reduce((a,r)=>a+ +r.amount,0),0);
@@ -2351,6 +2353,48 @@ function openPending(){
   document.getElementById('pendingOverlay').classList.add('open');
 }
 function closePending(){document.getElementById('pendingOverlay').classList.remove('open');}
+
+// Open list of ONLY overdue (>30 days) unpaid expenses across ALL months/years
+function openOverdue(){
+  const now=new Date();
+  const cutoff=30;
+  const map={};
+  let grand=0;
+  Object.keys(data).forEach(key=>{
+    const mt=key.match(/^y(\d+)m(\d+)$/);
+    if(!mt) return;
+    const yy=+mt[1], mm=+mt[2];
+    const bucket=data[key];
+    if(!bucket||!bucket.exp) return;
+    bucket.exp.forEach(r=>{
+      if(r.paid!=='ΟΧΙ') return;       // only plain unpaid (excludes ΔΟΣΕΙΣ which are 'ΝΑΙ'/'ΔΟΣΕΙΣ')
+      if(!r.date) return;
+      const entryDate=new Date(r.date);
+      const days=Math.floor((now-entryDate)/(1000*60*60*24));
+      if(days<=cutoff) return;          // ONLY older than 30 days
+      const n=(r.name||'(Χωρίς όνομα)').trim();
+      if(!map[n]) map[n]=[];
+      const remaining=(+r.amount||0)-(+r.enanti||0);
+      grand+=remaining;
+      map[n].push({...r, _monthLabel:MNS[mm]+' '+yy, _days:days, _remaining:remaining});
+    });
+  });
+  document.getElementById('pendingTitle').textContent='⏰ Καθυστερημένες Πληρωμές (>30 ημ.)';
+  document.getElementById('pendingSub').textContent='⏰ Εκκρεμείς πληρωμές άνω των 30 ημερών (όλοι οι μήνες)';
+  const sup=Object.entries(map).sort((a,b)=>b[1].reduce((s,r)=>s+r._remaining,0)-a[1].reduce((s,r)=>s+r._remaining,0));
+  document.getElementById('pendingTotal').innerHTML=`<span>Σύνολο καθυστερημένων</span><strong>${fmt(grand)}</strong>`;
+  document.getElementById('pendingBody').innerHTML=sup.length===0
+    ?'<p style="text-align:center;color:var(--text3);font-style:italic;padding:24px">Καμία καθυστερημένη πληρωμή 🎉</p>'
+    :sup.map(([name,rows])=>{
+      const tot=rows.reduce((s,r)=>s+r._remaining,0);
+      return`<div class="supplier-block">
+        <div class="supplier-hdr"><span class="supplier-name">${esc(name)}</span><span class="supplier-total">${fmt(tot)}</span></div>
+        <table><thead><tr><th>Μήνας</th><th>Καθυστ.</th><th style="text-align:right">Ποσό</th><th>Κωδ.</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr><td class="muted">${r._monthLabel}</td><td class="muted" style="color:#c06030">${r._days} ημ.</td><td class="mono" style="text-align:right">${fmt(r._remaining)}</td><td>${r.code?`<span class="code-badge" onclick="copyCode('${esc(r.code).replace(/'/g,"\\'")}');event.stopPropagation();" title="Κλικ για αντιγραφή" style="cursor:pointer">${esc(r.code)}</span>`:'<span class="muted">—</span>'}</td></tr>`).join('')}</tbody></table>
+      </div>`;
+    }).join('');
+  document.getElementById('pendingOverlay').classList.add('open');
+}
 
 // ── BACKUP ────────────────────────────────────────────
 function openBackup(){ if(isViewer()) return;document.getElementById('backupOut').value=JSON.stringify(data,null,2);document.getElementById('backupIn').value='';document.getElementById('backupOverlay').classList.add('open');}
@@ -4111,6 +4155,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17b</div>
   </div>
 </div>
 
