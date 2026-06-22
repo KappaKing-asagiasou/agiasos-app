@@ -717,7 +717,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17f</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17g</div>
       </div>
     </div>
 
@@ -4136,14 +4136,24 @@ function applyScanResult(){
   if(_scanData.invoice && _scanData.code && _scanData.invoice===_scanData.code){
     delete _scanData.invoice;
   }
-  if(_scanData.name)    document.getElementById('fName').value    = _scanData.name;
-  if(_scanData.afm){const fa=document.getElementById('fAfm'); if(fa) fa.value=_scanData.afm;}
-  if(_scanData.amount)  document.getElementById('fAmount').value  = parseFloat(_scanData.amount.replace(',','.').replace(/[^0-9.]/g,''))||'';
-  if(_scanData.invoice) document.getElementById('fInvoice').value = _scanData.invoice;
-  if(_scanData.code)    document.getElementById('fCode').value    = _scanData.code;
-  if(_scanData.date)    document.getElementById('fDate').value    = _scanData.date;
-  if(_scanData.notes)   document.getElementById('fNotes').value   = _scanData.notes;
-  if(_scanDataAttachment) document.getElementById('fAttachment').value=_scanDataAttachment;
+  try{
+    if(_scanData.name)    document.getElementById('fName').value    = _scanData.name;
+    if(_scanData.afm){const fa=document.getElementById('fAfm'); if(fa) fa.value=_scanData.afm;}
+    if(_scanData.amount!==undefined && _scanData.amount!==null && _scanData.amount!==''){
+      // amount may be a number OR a string — handle both safely
+      const amtStr = String(_scanData.amount);
+      const amtNum = parseFloat(amtStr.replace(',','.').replace(/[^0-9.]/g,''));
+      if(!isNaN(amtNum)) document.getElementById('fAmount').value = amtNum;
+    }
+    if(_scanData.invoice) document.getElementById('fInvoice').value = String(_scanData.invoice);
+    if(_scanData.code)    document.getElementById('fCode').value    = String(_scanData.code);
+    if(_scanData.date)    document.getElementById('fDate').value    = String(_scanData.date);
+    if(_scanData.notes)   document.getElementById('fNotes').value   = String(_scanData.notes);
+    if(_scanDataAttachment) document.getElementById('fAttachment').value=_scanDataAttachment;
+  }catch(applyErr){
+    console.error('applyScanResult error:', applyErr);
+    showToast('⚠ Σφάλμα εφαρμογής: '+applyErr.message);
+  }
   document.getElementById('scanResult').classList.remove('show');
   updateEnantiPreview();
   showToast('✓ Στοιχεία εφαρμόστηκαν!'+(_scanDataAttachment?' · PDF συνημμένο 📎':''));
@@ -4363,7 +4373,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17f</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17g</div>
   </div>
 </div>
 
