@@ -717,7 +717,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17e</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17f</div>
       </div>
     </div>
 
@@ -4034,6 +4034,7 @@ async function scanInvoice(input){
 
     // Upload PDF/image to Supabase Storage
     let attachmentUrl = null;
+    let uploadErrMsg = null;
     try{
       const ext = isPDF ? 'pdf' : 'jpg';
       const fname = 'inv_' + Date.now() + '.' + ext;
@@ -4041,6 +4042,9 @@ async function scanInvoice(input){
       const byteArr = new Uint8Array(byteStr.length);
       for(let i=0;i<byteStr.length;i++) byteArr[i]=byteStr.charCodeAt(i);
       const blob = new Blob([byteArr], {type: mediaType});
+      // Size check — warn if file is large
+      const sizeMB = (blob.size/(1024*1024)).toFixed(1);
+      console.log('Upload size:', sizeMB, 'MB');
       const uploadResp = await fetch(
         `https://akpqfjewlyygngfpvcid.supabase.co/storage/v1/object/invoices/${fname}`,
         {
@@ -4061,9 +4065,11 @@ async function scanInvoice(input){
       } else {
         const errTxt = await uploadResp.text();
         console.warn('Upload failed:', uploadResp.status, errTxt);
+        uploadErrMsg = 'Αποθήκευση PDF απέτυχε ('+uploadResp.status+'): '+errTxt.slice(0,120)+' · Μέγεθος: '+sizeMB+'MB';
       }
     }catch(uploadErr){
       console.warn('Upload error:', uploadErr);
+      uploadErrMsg = 'Σφάλμα αποθήκευσης PDF: '+(uploadErr.message||uploadErr);
     }
 
     const resp = await fetch('https://akpqfjewlyygngfpvcid.supabase.co/functions/v1/scan-invoice',{
@@ -4111,7 +4117,7 @@ async function scanInvoice(input){
     ).join('');
     const attachRow = _scanDataAttachment
       ? `<div class="sr-row"><span class="muted">Συνημμένο</span><a href="${_scanDataAttachment}" target="_blank" style="color:var(--olive)">📎 Άνοιγμα PDF</a></div>`
-      : '';
+      : (uploadErrMsg ? `<div class="sr-row" style="background:#fbe8e8;border-radius:6px;padding:6px"><span style="color:#a02020;font-size:11px">⚠ ${esc(uploadErrMsg)}</span></div>` : '');
     body2.innerHTML = rows2 + attachRow;
 
     loading.classList.remove('show');
@@ -4357,7 +4363,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17e</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17f</div>
   </div>
 </div>
 
