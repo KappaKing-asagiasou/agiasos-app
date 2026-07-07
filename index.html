@@ -582,6 +582,12 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .cal-paid-n{color:#c0504d;font-size:10px;}
 @media(max-width:560px){.cal-cell,.cal-cell.cal-empty{min-height:78px;padding:4px;}.cal-num{font-size:12px;margin-bottom:3px;}.cal-chip{font-size:10px;padding:2px 4px;line-height:1.2;}.cal-more{font-size:9.5px;}.cal-chips{gap:2px;}}
 
+/* HOME EXPENSE SELECTION */
+.exp-select-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:linear-gradient(90deg,#f0e4d0,#e8ddc8);border-bottom:1px solid var(--border);font-size:13px;flex-wrap:wrap;}
+.exp-select-bar #expSelectInfo{color:var(--text2);font-weight:500;}
+.exp-select-total{font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;font-size:14px;margin-right:auto;}
+.exp-chk{width:17px;height:17px;cursor:pointer;accent-color:var(--olive-mid);}
+
 /* EMPTY STATE */
 .empty-row td{padding:0!important;background:transparent!important;border:none!important;}
 .empty-row:hover td{background:transparent!important;}
@@ -717,7 +723,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17g</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17h</div>
       </div>
     </div>
 
@@ -758,8 +764,15 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
           <span class="muted no-print" id="homeExpCount"></span>
           <button class="btn btn-ghost btn-sm no-print" onclick="goPage('exp')">Όλα →</button>
         </div>
+        <div class="exp-select-bar no-print" id="expSelectBar" style="display:none">
+          <span id="expSelectInfo">0 επιλεγμένα</span>
+          <span class="exp-select-total" id="expSelectTotal"></span>
+          <button class="btn btn-inc btn-sm" onclick="paySelectedExp()">💳 Πλήρωσε επιλεγμένα</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearExpSelection()">Καθαρισμός</button>
+        </div>
         <div class="tbl-scroll">
           <table><thead><tr>
+            <th class="no-print" style="width:30px"></th>
             <th style="width:80px">Ημερομηνία</th>
             <th>Προμηθευτής</th>
             <th style="text-align:right;width:85px">Ποσό</th>
@@ -1355,6 +1368,8 @@ function updateYearPicker(){
 
 function updateMonthNav(){
   // no hard limits — can go any direction
+  // Clear expense selection when navigating months (indices differ per month)
+  if(typeof _expSelected!=='undefined') _expSelected.clear();
 }
 
 // ── NAVIGATION ────────────────────────────────────────
@@ -1601,6 +1616,41 @@ function renderOverdueAlert(){
   }
 }
 
+// ── HOME EXPENSE SELECTION (calculate total + bulk pay) ──
+let _expSelected=new Set(); // stores _i (index in current month's exp array)
+function toggleExpSelect(i){
+  if(_expSelected.has(i)) _expSelected.delete(i);
+  else _expSelected.add(i);
+  updateExpSelectBar();
+}
+function clearExpSelection(){
+  _expSelected.clear();
+  renderHome();
+}
+function updateExpSelectBar(){
+  const bar=document.getElementById('expSelectBar');
+  if(!bar) return;
+  if(_expSelected.size===0){ bar.style.display='none'; return; }
+  bar.style.display='';
+  const {exp}=ents(CY,CM);
+  let total=0;
+  _expSelected.forEach(i=>{
+    const r=exp[i];
+    if(r) total+=(+r.amount||0)-(+r.enanti||0); // remaining amount
+  });
+  document.getElementById('expSelectInfo').textContent=_expSelected.size+' επιλεγμένα';
+  document.getElementById('expSelectTotal').textContent='Σύνολο: '+fmt(total);
+}
+function paySelectedExp(){
+  if(isViewer()) return;
+  if(_expSelected.size===0) return;
+  // Open the pay-source picker; on confirm, apply to ALL selected
+  _bulkPayMode=true;
+  const dateInput=document.getElementById('paySrcDate');
+  if(dateInput) dateInput.value=new Date().toISOString().slice(0,10);
+  document.getElementById('paySrcOverlay').classList.add('open');
+}
+
 function renderHome(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{inc,exp,oil,tI,pI,uI,tE,pE,uE,tO,pO,uO,pr}=calc(CY,CM);
@@ -1625,8 +1675,9 @@ function renderHome(){
   const expSlice=fExp.slice(homeExpPage*PAGE_SIZE,(homeExpPage+1)*PAGE_SIZE);
   document.getElementById('homeExpCount').textContent=fExp.length+' / '+exp.length+' εγγρ.';
   document.getElementById('homeExpBody').innerHTML=expSlice.length===0
-    ?'<tr class="empty-row"><td colspan="5">Δεν υπάρχουν εγγραφές</td></tr>'
+    ?'<tr class="empty-row"><td colspan="6">Δεν υπάρχουν εγγραφές</td></tr>'
     :expSlice.filter(r=>isAdmin()||!r.hidden).map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r.hidden?' row-hidden':''}">
+      <td class="no-print" style="text-align:center">${r.paid!=='ΝΑΙ'?`<input type="checkbox" class="exp-chk" data-i="${r._i}" ${_expSelected.has(r._i)?'checked':''} onchange="toggleExpSelect(${r._i})">`:''}</td>
       <td class="mono">${fmtD(r.date)}</td>
       <td>${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-right:4px;text-decoration:none">📎</a>`:''}${esc(r.name)}${r.cat?'<br><span class="muted">'+esc(r.cat)+'</span>':''}</td>
       <td class="mono" style="text-align:right">${r.enanti>0
@@ -1635,6 +1686,7 @@ function renderHome(){
       <td>${instBadgeHtml(r,'exp',r._i)}</td>
       <td class="no-print">${actHtml('exp',r._i,r.hidden,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
     </tr>`).join('');
+  updateExpSelectBar();
 
 
   // exp pager
@@ -2100,6 +2152,7 @@ function togglePaid(type,i,oy,om){ if(isViewer()) return;
 
 // Quick payment source picker (when marking an expense as paid)
 let _paySrcCtx=null;
+let _bulkPayMode=false;
 function openPaySourcePicker(type,i,y,m){
   _paySrcCtx={type,i,y,m};
   // Default payment date: the entry's own date (more likely correct than today)
@@ -2112,8 +2165,30 @@ function openPaySourcePicker(type,i,y,m){
 function closePaySrcPicker(){
   document.getElementById('paySrcOverlay').classList.remove('open');
   _paySrcCtx=null;
+  _bulkPayMode=false;
 }
 function selectPaySource(src){
+  // Bulk mode: apply to all selected home expenses
+  if(_bulkPayMode){
+    const dateInput=document.getElementById('paySrcDate');
+    const payDate=(dateInput&&dateInput.value)?dateInput.value:new Date().toISOString().slice(0,10);
+    const d=ents(CY,CM);
+    let count=0;
+    _expSelected.forEach(i=>{
+      const r=d.exp[i];
+      if(r && r.paid!=='ΝΑΙ'){
+        r.paid='ΝΑΙ'; r.enanti=0; r.paidDate=payDate; r.paySource=src;
+        count++;
+      }
+    });
+    setEnts(CY,CM,d);
+    _expSelected.clear();
+    _bulkPayMode=false;
+    closePaySrcPicker();
+    renderCurrentPage();
+    showToast('✓ Πληρώθηκαν '+count+' έξοδα από '+src);
+    return;
+  }
   if(!_paySrcCtx) return;
   const{type,i,y,m}=_paySrcCtx;
   const d=ents(y,m);
@@ -4373,7 +4448,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17g</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17h</div>
   </div>
 </div>
 
