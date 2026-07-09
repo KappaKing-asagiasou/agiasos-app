@@ -588,6 +588,11 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .exp-select-total{font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;font-size:14px;margin-right:auto;}
 .exp-chk{width:17px;height:17px;cursor:pointer;accent-color:var(--olive-mid);}
 
+/* SAVE PAYMENT CODE CHECKBOX */
+.save-code-lbl{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11.5px;color:var(--text2);cursor:pointer;font-weight:400;text-transform:none;letter-spacing:0;user-select:none;}
+.save-code-lbl input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(--olive-mid);margin:0;flex-shrink:0;}
+.save-code-lbl:hover{color:var(--olive);}
+
 /* EMPTY STATE */
 .empty-row td{padding:0!important;background:transparent!important;border:none!important;}
 .empty-row:hover td{background:transparent!important;}
@@ -723,7 +728,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17h</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17i</div>
       </div>
     </div>
 
@@ -1025,7 +1030,9 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div id="enantiPreview" style="font-size:12px;color:var(--text2);font-style:italic;margin:-8px 0 8px 0;min-height:16px;"></div>
   <div class="field-row">
-    <div class="field" id="fCodeWrap"><label>Κωδ. Πληρωμής <span style="font-weight:400;color:var(--text3);font-size:10px">— RF / IBAN</span></label><input type="text" id="fCode" placeholder="π.χ. RF45 9031..."></div>
+    <div class="field" id="fCodeWrap"><label>Κωδ. Πληρωμής <span style="font-weight:400;color:var(--text3);font-size:10px">— RF / IBAN</span></label><input type="text" id="fCode" placeholder="π.χ. RF45 9031..." oninput="updateSaveCodeHint()">
+      <label class="save-code-lbl" id="fSaveCodeWrap"><input type="checkbox" id="fSaveCode"><span id="fSaveCodeTxt">💾 Αποθήκευση κωδικού για αυτόν τον προμηθευτή</span></label>
+    </div>
     <div class="field"><label>Αρ. Παραστατικού <span style="font-weight:400;color:var(--text3);font-size:10px">— τιμολόγιο</span></label><input type="text" id="fInvoice" placeholder="π.χ. ΤΙΜ-2026-001"></div>
   </div>
   <div class="field" id="fCatWrap"><label>Κατηγορία</label><select id="fCat"><option value="">— Χωρίς —</option></select></div>
@@ -2081,6 +2088,8 @@ function acSelect(name){
     const storedAfm=getContactAfm(name);
     if(storedAfm) fAfmEl.value=storedAfm;
   }
+  // Auto-fill saved payment code (RF/IBAN) for this contact
+  autofillPayCode(name);
   acHide();
 }
 
@@ -2089,14 +2098,51 @@ function acHide(){
   if(list){ list.classList.remove('open'); acIdx = -1; }
 }
 
-// Auto-fill AFM if typed name exactly matches a known contact (and AFM field empty)
+// Auto-fill AFM + payment code if typed name matches a known contact (empty fields only)
 function autofillAfm(){
   const nameEl=document.getElementById('fName');
+  if(!nameEl) return;
+  const nm=nameEl.value;
   const afmEl=document.getElementById('fAfm');
-  if(!nameEl||!afmEl) return;
-  if(afmEl.value.trim()) return;  // don't overwrite if user already typed AFM
-  const stored=getContactAfm(nameEl.value);
-  if(stored) afmEl.value=stored;
+  if(afmEl && !afmEl.value.trim()){
+    const storedAfm=getContactAfm(nm);
+    if(storedAfm) afmEl.value=storedAfm;
+  }
+  autofillPayCode(nm);
+}
+
+// Auto-fill saved payment code for a known contact (only if code field is empty)
+function autofillPayCode(name){
+  const codeEl=document.getElementById('fCode');
+  if(!codeEl) return;
+  if(codeEl.value.trim()) { updateSaveCodeHint(); return; }  // don't overwrite user input
+  const storedCode=getContactCode(name);
+  if(storedCode){
+    codeEl.value=storedCode;
+    const chk=document.getElementById('fSaveCode');
+    if(chk) chk.checked=true;  // it's already saved for this contact
+  }
+  updateSaveCodeHint();
+}
+
+// Update the checkbox label to reflect whether a code is already stored
+function updateSaveCodeHint(){
+  const nameEl=document.getElementById('fName');
+  const codeEl=document.getElementById('fCode');
+  const wrap=document.getElementById('fSaveCodeWrap');
+  const txt=document.getElementById('fSaveCodeTxt');
+  if(!wrap||!txt||!codeEl) return;
+  // Only show the option when there's a code typed
+  wrap.style.display=codeEl.value.trim()?'':'none';
+  const nm=nameEl?nameEl.value.trim():'';
+  const stored=getContactCode(nm);
+  if(stored && stored===codeEl.value.trim()){
+    txt.textContent='💾 Αποθηκευμένος κωδικός για «'+nm+'»';
+  } else if(stored){
+    txt.textContent='💾 Ενημέρωση αποθηκευμένου κωδικού για «'+nm+'»';
+  } else {
+    txt.textContent='💾 Αποθήκευση κωδικού για αυτόν τον προμηθευτή';
+  }
 }
 
 function acKey(e){
@@ -2258,6 +2304,10 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
     // Load AFM (per-contact, fallback to entry's own afm)
     const fAfmEl=document.getElementById('fAfm');
     if(fAfmEl) fAfmEl.value=getContactAfm(r.name)||r.afm||'';
+    // Tick the save-code box if this contact already has a stored code
+    const sc=document.getElementById('fSaveCode');
+    if(sc) sc.checked=!!getContactCode(r.name);
+    updateSaveCodeHint();
   }else{
     ['fDate','fName','fAmount','fEnanti','fCode','fInvoice','fNotes','fAttachment'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('fCat').value='';
@@ -2267,6 +2317,9 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
     if(fPSsel2) fPSsel2.value='Άγνωστο';
     const fAfmEl2=document.getElementById('fAfm');
     if(fAfmEl2) fAfmEl2.value='';
+    const sc2=document.getElementById('fSaveCode');
+    if(sc2) sc2.checked=false;
+    updateSaveCodeHint();
     document.getElementById('enantiPreview').textContent='';
     document.getElementById('fCat').value='';
     document.getElementById('fInstAmt').value='';
@@ -2326,6 +2379,16 @@ function saveEntry(){
   // Save/update AFM per-contact (all types)
   const afmVal=(document.getElementById('fAfm')?document.getElementById('fAfm').value.trim():'');
   if(entry.name && afmVal) setContactAfm(entry.name, afmVal);
+  // Save/update payment code (RF/IBAN) per-contact — only when the user opted in
+  const saveCodeChk=document.getElementById('fSaveCode');
+  const codeVal=(document.getElementById('fCode')?document.getElementById('fCode').value.trim():'');
+  if(type==='exp' && entry.name){
+    if(saveCodeChk && saveCodeChk.checked && codeVal){
+      setContactCode(entry.name, codeVal);
+    } else if(saveCodeChk && !saveCodeChk.checked && getContactCode(entry.name)){
+      clearContactCode(entry.name);  // user unticked → forget it
+    }
+  }
   const sy=saveY, sm=saveM;
   const d=ents(sy,sm);
   if(eid!==''){
@@ -3240,6 +3303,35 @@ function setContactAfm(name, afm){
   } else {
     data['__contacts__'].push({name:name.trim(),phone:'',notes:'',afm:afm});
   }
+}
+
+// Get saved payment code (RF/IBAN) for a contact name
+function getContactCode(name){
+  if(!name) return '';
+  const key=name.trim().toLowerCase();
+  const ct=(data['__contacts__']||[]).find(c=>(c.name||'').trim().toLowerCase()===key);
+  return ct?(ct.payCode||''):'';
+}
+
+// Save/update payment code for a contact
+function setContactCode(name, code){
+  if(!name||!code) return;
+  const key=name.trim().toLowerCase();
+  if(!data['__contacts__']) data['__contacts__']=[];
+  let ct=data['__contacts__'].find(c=>(c.name||'').trim().toLowerCase()===key);
+  if(ct){
+    ct.payCode=code;  // update existing
+  } else {
+    data['__contacts__'].push({name:name.trim(),phone:'',notes:'',afm:'',payCode:code});
+  }
+}
+
+// Remove saved payment code for a contact (when user unchecks)
+function clearContactCode(name){
+  if(!name) return;
+  const key=name.trim().toLowerCase();
+  const ct=(data['__contacts__']||[]).find(c=>(c.name||'').trim().toLowerCase()===key);
+  if(ct) delete ct.payCode;
 }
 
 function getManualContacts(){ return data['__contacts__']||[]; }
@@ -4225,6 +4317,7 @@ function applyScanResult(){
     if(_scanData.date)    document.getElementById('fDate').value    = String(_scanData.date);
     if(_scanData.notes)   document.getElementById('fNotes').value   = String(_scanData.notes);
     if(_scanDataAttachment) document.getElementById('fAttachment').value=_scanDataAttachment;
+    updateSaveCodeHint();  // reveal the "save code for supplier" option if a code was found
   }catch(applyErr){
     console.error('applyScanResult error:', applyErr);
     showToast('⚠ Σφάλμα εφαρμογής: '+applyErr.message);
@@ -4448,7 +4541,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17h</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17i</div>
   </div>
 </div>
 
