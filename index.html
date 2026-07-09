@@ -39,34 +39,56 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 @keyframes shimmer{0%{background-position:0% 0%}100%{background-position:200% 0%}}
 
 /* ── HEADER ─── */
-.site-header{background:linear-gradient(160deg,rgba(36,61,24,.92) 0%,rgba(46,80,32,.9) 40%,rgba(58,92,40,.9) 70%,rgba(42,74,28,.92) 100%);backdrop-filter:blur(12px) saturate(1.3);-webkit-backdrop-filter:blur(12px) saturate(1.3);padding:0 22px;display:flex;align-items:center;gap:10px;min-height:64px;position:sticky;top:0;z-index:100;flex-wrap:wrap;padding-top:6px;padding-bottom:6px;row-gap:6px;box-shadow:0 3px 20px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);}
-.header-brand{display:flex;align-items:center;gap:10px;flex:1;min-width:150px;}
-.olive-icon{width:38px;height:38px;background:linear-gradient(135deg,rgba(216,148,86,.28) 0%,rgba(200,160,48,.15) 60%,rgba(255,255,255,.08) 100%);border-radius:50%;box-shadow:0 0 0 1px rgba(216,148,86,.2),0 2px 8px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;border:1.5px solid rgba(212,172,60,.5);box-shadow:0 0 0 3px rgba(200,160,48,.14),inset 0 1px 0 rgba(255,255,255,.1);}
-.brand-name{font-family:'Lora',serif;font-size:16px;font-weight:500;color:#fff;letter-spacing:.4px;text-shadow:0 1px 4px rgba(0,0,0,.3);}
-.brand-sub{font-size:10.5px;color:rgba(255,255,255,.45);letter-spacing:.3px;}
+.site-header{background:var(--surface);backdrop-filter:blur(10px) saturate(1.2);-webkit-backdrop-filter:blur(10px) saturate(1.2);padding:8px 18px;display:flex;align-items:center;gap:8px;min-height:56px;position:sticky;top:0;z-index:100;flex-wrap:wrap;row-gap:6px;border-bottom:1px solid var(--border);}
 
-.hc{display:flex;align-items:center;gap:6px;flex-wrap:wrap;row-gap:5px;}
-.div-v{width:1px;height:20px;background:rgba(255,255,255,.2);flex-shrink:0;}
+/* ── APP SHELL + SIDEBAR ─────────────────────────── */
+.app-shell{display:flex;align-items:flex-start;min-height:100vh;}
+.app-body{flex:1;min-width:0;}
+.sidebar{width:194px;flex-shrink:0;background:#2e5020;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:14px 10px;box-shadow:2px 0 14px rgba(0,0,0,.14);z-index:110;overflow:hidden;}
+.header-olives{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
+.sidebar>*:not(.header-olives){position:relative;z-index:1;}
+.sb-brand .olive-icon{width:32px;height:32px;}
+.sb-brand{display:flex;align-items:center;gap:9px;padding:0 6px 13px;border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:11px;}
+.sb-brand-name{font-family:'Lora',serif;font-size:14px;font-weight:500;color:#f0ebdc;line-height:1.2;letter-spacing:.3px;}
+.sb-brand-sub{font-size:10.5px;color:rgba(240,235,220,.55);}
+.sb-nav{display:flex;flex-direction:column;gap:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(240,235,220,.78);background:transparent;border:none;cursor:pointer;text-align:left;width:100%;transition:background .15s,color .15s;}
+.sb-item:hover{background:rgba(255,255,255,.09);color:#fff;}
+.sb-item.active{background:var(--accent);color:#fff;font-weight:500;}
+.sb-item .ic{width:17px;height:17px;flex-shrink:0;}
+.sb-foot{margin-top:auto;padding-top:11px;border-top:1px solid rgba(255,255,255,.14);}
+.sb-ver{padding:5px 10px 0;font-size:10px;color:rgba(240,235,220,.35);letter-spacing:.3px;}
+.sb-save{padding:0 10px;font-size:10.5px;color:rgba(240,235,220,.5);min-height:14px;}
+
+/* ── ICONS ───────────────────────────────────────── */
+.ic{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;flex-shrink:0;}
+
+/* ── BOTTOM NAV (mobile) ─────────────────────────── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:120;padding:5px 2px calc(5px + env(safe-area-inset-bottom,0px));box-shadow:0 -2px 12px rgba(0,0,0,.1);}
+.bn-item{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 1px;background:transparent;border:none;cursor:pointer;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:9px;border-radius:8px;transition:color .15s;}
+.bn-item .ic{width:19px;height:19px;}
+.bn-item.active{color:var(--accent);}
+.bn-item span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.olive-icon{width:38px;height:38px;background:linear-gradient(135deg,rgba(216,148,86,.28) 0%,rgba(200,160,48,.15) 60%,rgba(255,255,255,.08) 100%);border-radius:50%;box-shadow:0 0 0 1px rgba(216,148,86,.2),0 2px 8px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;border:1.5px solid rgba(212,172,60,.5);box-shadow:0 0 0 3px rgba(200,160,48,.14),inset 0 1px 0 rgba(255,255,255,.1);}
+
+.hc{display:flex;align-items:center;gap:6px;flex-wrap:wrap;row-gap:5px;width:100%;}
+.div-v{width:1px;height:20px;background:var(--border);flex-shrink:0;}
 
 /* ── NAV TABS ─── */
-.nav-tabs{display:flex;align-items:center;gap:2px;background:rgba(0,0,0,.15);border-radius:8px;padding:3px;}
-.nav-tab{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.7);padding:5px 13px;border-radius:6px;cursor:pointer;border:none;background:transparent;transition:all .15s;white-space:nowrap;}
-.nav-tab:hover{color:#fff;background:rgba(216,148,86,.18);}
-.nav-tab.active{color:#fff;background:rgba(255,255,255,.16);font-weight:500;box-shadow:inset 0 -2.5px 0 var(--accent-mid),0 2px 8px rgba(200,121,65,.2);text-shadow:0 1px 2px rgba(0,0,0,.15);}
 
 /* ── CONTROLS ─── */
 .year-sw{display:flex;align-items:center;gap:3px;}
-.yr-btn{font-size:13px;border-radius:6px;padding:4px 8px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;}
-.yr-btn:hover{background:rgba(255,255,255,.25);}
+.yr-btn{font-size:13px;border-radius:6px;padding:4px 8px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);}
+.yr-btn:hover{background:var(--accent-lt);color:var(--accent);}
 .yr-lbl{font-family:'Lora',serif;font-size:13px;color:#fff;min-width:36px;text-align:center;font-style:italic;}
-.month-select{font-family:'DM Sans',sans-serif;font-size:12.5px;border:1px solid rgba(255,255,255,.3);border-radius:var(--r);padding:5px 9px;background:rgba(255,255,255,.14);color:#fff;cursor:pointer;outline:none;min-width:130px;}
-.month-select option{background:#3d5c2a;color:#fff;}
+.month-select{font-family:'DM Sans',sans-serif;font-size:12.5px;border:1px solid var(--border);border-radius:var(--r);padding:5px 9px;background:var(--input-bg);color:var(--text);cursor:pointer;outline:none;min-width:130px;}
+.month-select option{background:var(--input-bg);color:var(--text);}
 .month-select:disabled{opacity:.4;cursor:default;}
 .search-wrap{position:relative;display:flex;align-items:center;}
-.search-box{font-family:'DM Sans',sans-serif;font-size:12.5px;border:1px solid rgba(255,255,255,.3);border-radius:var(--r);padding:5px 9px 5px 28px;background:rgba(255,255,255,.14);color:#fff;outline:none;width:148px;}
-.search-box::placeholder{color:rgba(255,255,255,.45);}
-.search-box:focus{border-color:rgba(255,255,255,.6);}
-.search-icon{position:absolute;left:8px;color:rgba(255,255,255,.5);font-size:13px;pointer-events:none;}
+.search-box{font-family:'DM Sans',sans-serif;font-size:12.5px;border:1px solid var(--border);border-radius:var(--r);padding:5px 9px 5px 28px;background:var(--input-bg);color:var(--text);outline:none;width:148px;}
+.search-box::placeholder{color:var(--text3);}
+.search-box:focus{border-color:var(--accent-mid);box-shadow:0 0 0 3px var(--accent-glow);}
+.search-icon{position:absolute;left:8px;color:var(--text3);font-size:13px;pointer-events:none;}
 
 /* ── BUTTONS ─── */
 .btn{font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:400;border-radius:var(--r);padding:5px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;border:1px solid transparent;}
@@ -88,7 +110,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .btn-sm{padding:3px 7px;font-size:11px;}
 
 /* ── MAIN ─── */
-.main{max-width:1440px;margin:0 auto;padding:20px;}
+.main{max-width:1440px;margin:0 auto;padding:18px;}
 .page{display:none;}
 .page.active{display:block;animation:pageIn .28s cubic-bezier(.22,.8,.36,1);}
 @keyframes pageIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
@@ -279,8 +301,8 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 
 /* month nav arrows */
 .month-nav{display:flex;align-items:center;gap:2px;}
-.mn-btn{font-size:14px;border-radius:6px;padding:4px 7px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;line-height:1;transition:background .15s;}
-.mn-btn:hover{background:rgba(255,255,255,.25);}
+.mn-btn{font-size:14px;border-radius:6px;padding:4px 7px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);line-height:1;transition:background .15s;}
+.mn-btn:hover{background:var(--accent-lt);color:var(--accent);}
 .mn-btn:disabled{opacity:.3;cursor:default;}
 /* home table pagination */
 .tbl-pager{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border:1px solid #c0b898;border-top:none;border-radius:0 0 var(--rl) var(--rl);background:#d8d2c0;font-size:12px;color:#665c48;}
@@ -297,12 +319,8 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 
 /* Mobile responsive improvements */
 @media(max-width:600px){
-  .site-header{padding:0 12px;min-height:auto;padding-top:8px;padding-bottom:8px;}
-  .header-brand .brand-name{font-size:13px;}
-  .header-brand .brand-sub{display:none;}
-  .nav-tabs{gap:1px;}
-  .nav-tab{font-size:11px;padding:4px 8px;}
   .hc{gap:5px;}
+  .hdr-drop-btn{font-size:11.5px;padding:5px 8px;}
   .year-sw .yr-lbl{font-size:12px;min-width:30px;}
   .month-select{min-width:100px;font-size:11.5px;}
   .search-box{width:100px;}
@@ -318,7 +336,6 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 }
 @media(max-width:380px){
   .summary-grid{grid-template-columns:repeat(2,1fr);}
-  .nav-tab{font-size:10px;padding:3px 6px;}
 }
 
 
@@ -368,8 +385,8 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 
 /* NOTIFICATION BELL */
 .notif-wrap{position:relative;display:inline-flex;}
-.notif-btn{font-size:16px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--r);padding:5px 10px;cursor:pointer;color:#fff;transition:background .15s;position:relative;}
-.notif-btn:hover{background:rgba(255,255,255,.25);}
+.notif-btn{font-size:16px;background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;cursor:pointer;color:var(--text2);transition:background .15s;position:relative;}
+.notif-btn:hover{background:var(--accent-lt);}
 .notif-badge{position:absolute;top:-5px;right:-5px;background:#c85858;color:#fff;font-size:10px;font-weight:500;border-radius:50%;width:17px;height:17px;display:flex;align-items:center;justify-content:center;border:2px solid #2e5020;display:none;}
 .notif-badge.show{display:flex;}
 .notif-panel{position:absolute;top:calc(100% + 8px);right:0;width:300px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 12px 40px rgba(0,0,0,.2);z-index:500;display:none;overflow:hidden;}
@@ -495,8 +512,8 @@ tr.row-hidden td .hide-btn{opacity:1;}
 
 /* HEADER DROPDOWNS */
 .hdr-dropdown{position:relative;display:inline-flex;}
-.hdr-drop-btn{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.85);padding:5px 11px;border-radius:var(--r);cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px;}
-.hdr-drop-btn:hover{background:rgba(255,255,255,.22);}
+.hdr-drop-btn{font-family:'DM Sans',sans-serif;font-size:12.5px;color:var(--text2);padding:5px 11px;border-radius:var(--r);cursor:pointer;border:1px solid var(--border);background:transparent;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+.hdr-drop-btn:hover{background:var(--accent-lt);color:var(--accent);}
 .hdr-drop-btn .arrow{font-size:9px;opacity:.7;transition:transform .15s;}
 .hdr-drop-btn.open .arrow{transform:rotate(180deg);}
 .hdr-drop-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);min-width:190px;box-shadow:0 12px 36px rgba(0,0,0,.18);z-index:500;display:none;animation:up .15s ease;overflow:hidden;}
@@ -622,12 +639,28 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 [data-theme="dark"] .scan-btn{background:#221a06;border-color:#6a5010;color:#e0c060;}
 [data-theme="dark"] .scan-result{background:var(--olive-bg);border-color:var(--hdr-inc-bd);}
 
+/* ── RESPONSIVE: sidebar -> bottom nav ───────────── */
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .bottom-nav{display:flex;}
+  body{padding-bottom:62px;}
+  .site-header{padding:8px 12px;min-height:52px;}
+  .main{padding:12px;}
+  .app-shell{display:block;}
+}
+@media(max-width:420px){
+  .bn-item{font-size:8.5px;}
+  .bn-item .ic{width:18px;height:18px;}
+}
+
 /* PRINT */
 .print-hdr{display:none;text-align:center;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--border);}
 .print-hdr h1{font-family:'Lora',serif;font-size:19px;}
 .print-hdr p{font-size:12px;color:var(--text2);margin-top:4px;}
 @media print{
-  .site-header,.olive-strip,.no-print{display:none!important;}
+  .site-header,.olive-strip,.no-print,.sidebar,.bottom-nav{display:none!important;}
+  .app-shell{display:block;}
+  body{padding-bottom:0;}
   body{background:#fff!important;font-size:11px;background-image:none!important;}
   .main{padding:0;max-width:100%;}
   .print-hdr{display:block!important;}
@@ -647,33 +680,51 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 </head>
 <body>
 <div class="olive-strip"></div>
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+<symbol id="ic-home" viewBox="0 0 24 24"><path d="M5 12H3l9-9 9 9h-2M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7M9 21v-6h6v6"/></symbol>
+<symbol id="ic-exp" viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></symbol>
+<symbol id="ic-oil" viewBox="0 0 24 24"><path d="M12 3.2l5.2 8a6 6 0 11-10.4 0z"/></symbol>
+<symbol id="ic-inc" viewBox="0 0 24 24"><path d="M17 17L7 7M16 17H7V8"/></symbol>
+<symbol id="ic-chart" viewBox="0 0 24 24"><path d="M3 20h18M7 20v-6M12 20V6M17 20v-9"/></symbol>
+<symbol id="ic-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 11h16"/></symbol>
+<symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 015-5h2a5 5 0 015 5v1M16 5.5a3 3 0 010 5.9M18.5 14A4 4 0 0121 17.8V20"/></symbol>
+<symbol id="ic-cog" viewBox="0 0 24 24"><path d="M4 7h6M14 7h6M4 17h10M18 17h2"/><circle cx="12" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></symbol>
+<symbol id="ic-olive" viewBox="0 0 24 24"><ellipse cx="12" cy="14" rx="5.5" ry="7"/><path d="M12 6.5Q15 3 18 5"/></symbol>
+</svg>
 
-<header class="site-header">
+
+<div class="app-shell">
+<aside class="sidebar no-print">
   <div class="header-olives" id="headerOlives"></div>
-  <div class="header-brand">
+  <div class="sb-brand">
     <div class="olive-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="13" rx="6" ry="8" fill="#5a8a40" opacity="0.9"/><ellipse cx="12" cy="13" rx="3.5" ry="5" fill="#3d6b28"/><path d="M12 5 Q15 2 18 4" stroke="#5a8a40" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle cx="12" cy="10" r="1.5" fill="#c8d870" opacity="0.7"/></svg></div>
     <div>
-      <div class="brand-name">Α.Σ Αγιάσου</div>
-      <span id="saveIndicator" style="font-size:11px;margin-left:6px;transition:color .3s;"></span>
-          <div class="brand-sub" id="headerSub">Έσοδα &amp; Έξοδα · 2026</div>
+      <div class="sb-brand-name">Α.Σ Αγιάσου</div>
+      <div class="sb-brand-sub" id="headerSub">Έσοδα &amp; Έξοδα · 2026</div>
     </div>
   </div>
+  <nav class="sb-nav">
+      <button class="sb-item active" data-page="home" onclick="goPage('home')"><svg class="ic"><use href="#ic-home"/></svg>Αρχική</button>
+      <button class="sb-item" data-page="exp" onclick="goPage('exp')"><svg class="ic"><use href="#ic-exp"/></svg>Έξοδα</button>
+      <button class="sb-item" data-page="oil" onclick="goPage('oil')"><svg class="ic"><use href="#ic-oil"/></svg>Λάδι</button>
+      <button class="sb-item" data-page="inc" onclick="goPage('inc')"><svg class="ic"><use href="#ic-inc"/></svg>Έσοδα</button>
+      <button class="sb-item" data-page="annual" onclick="goPage('annual')"><svg class="ic"><use href="#ic-chart"/></svg>Έτος</button>
+      <button class="sb-item" data-page="calendar" onclick="goPage('calendar')"><svg class="ic"><use href="#ic-cal"/></svg>Ημ/γιο</button>
+      <button class="sb-item" data-page="contacts" onclick="goPage('contacts')"><svg class="ic"><use href="#ic-users"/></svg>Πελάτες</button>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-save"><span id="saveIndicator"></span></div>
+    <div class="sb-ver">έκδοση 2026.06.17j</div>
+  </div>
+</aside>
+<div class="app-body">
+
+<header class="site-header">
   <div class="hc">
-    <!-- Page nav -->
-    <div class="nav-tabs">
-      <button class="nav-tab active" onclick="goPage('home')">🏠 Αρχική</button>
-      <button class="nav-tab" onclick="goPage('exp')">📤 Έξοδα</button>
-      <button class="nav-tab" onclick="goPage('oil')">🫒 Λάδι</button>
-      <button class="nav-tab" onclick="goPage('inc')">📥 Έσοδα</button>
-      <button class="nav-tab" onclick="goPage('annual')">📊 Έτος</button>
-      <button class="nav-tab" onclick="goPage('calendar')">📅 Ημ/γιο</button>
-      <button class="nav-tab" onclick="goPage('contacts')">👥 Πελάτες</button>
-    </div>
-    <div class="div-v"></div>
     <!-- Year + month -->
     <div class="year-sw">
       <button class="yr-btn" onclick="changeYear(-1)">&#8249;</button>
-      <select id="yearPicker" onchange="jumpToYear(this.value)" style="font-family:'Lora',serif;font-size:13px;border:none;background:transparent;color:rgba(255,255,255,.9);cursor:pointer;font-weight:500;min-width:50px;text-align:center;"></select>
+      <select id="yearPicker" onchange="jumpToYear(this.value)" style="font-family:'Lora',serif;font-size:13px;border:none;background:transparent;color:var(--text);cursor:pointer;font-weight:500;min-width:50px;text-align:center;"></select>
       <button class="yr-btn" onclick="changeYear(1)">&#8250;</button>
     </div>
     <div class="month-nav">
@@ -686,7 +737,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
       <span class="search-icon">🔍</span>
       <input class="search-box" id="searchBox" placeholder="Αναζήτηση..." oninput="renderCurrentPage()" autocomplete="off">
     </div>
-    <div class="div-v"></div>
+    <div style="flex:1;min-width:6px"></div>
 
     <!-- Notifications (admin only) -->
     <div class="notif-wrap no-print" id="notifWrap" style="display:none">
@@ -728,7 +779,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17i</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17j</div>
       </div>
     </div>
 
@@ -985,6 +1036,19 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
     <div class="cal-day-detail" id="calDayDetail"></div>
   </div>
 </div>
+
+</div><!-- /app-body -->
+</div><!-- /app-shell -->
+
+<nav class="bottom-nav no-print" id="bottomNav">
+  <button class="bn-item active" data-page="home" onclick="goPage('home')"><svg class="ic"><use href="#ic-home"/></svg><span>Αρχική</span></button>
+  <button class="bn-item" data-page="exp" onclick="goPage('exp')"><svg class="ic"><use href="#ic-exp"/></svg><span>Έξοδα</span></button>
+  <button class="bn-item" data-page="oil" onclick="goPage('oil')"><svg class="ic"><use href="#ic-oil"/></svg><span>Λάδι</span></button>
+  <button class="bn-item" data-page="inc" onclick="goPage('inc')"><svg class="ic"><use href="#ic-inc"/></svg><span>Έσοδα</span></button>
+  <button class="bn-item" data-page="annual" onclick="goPage('annual')"><svg class="ic"><use href="#ic-chart"/></svg><span>Έτος</span></button>
+  <button class="bn-item" data-page="calendar" onclick="goPage('calendar')"><svg class="ic"><use href="#ic-cal"/></svg><span>Ημ/γιο</span></button>
+  <button class="bn-item" data-page="contacts" onclick="goPage('contacts')"><svg class="ic"><use href="#ic-users"/></svg><span>Πελάτες</span></button>
+</nav>
 
 <!-- ENTRY MODAL -->
 <div class="overlay" id="entryOverlay">
@@ -1385,10 +1449,10 @@ function goPage(p){
   CPage=p;
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach((t,i)=>{
-    const pages=['home','exp','oil','inc','annual','calendar','contacts'];
-    t.classList.toggle('active',pages[i]===p);
+  document.querySelectorAll('.sb-item,.bn-item').forEach(t=>{
+    t.classList.toggle('active', t.dataset.page===p);
   });
+  window.scrollTo({top:0,behavior:'instant'});
   // Hide search & add buttons on annual/contacts/calendar pages
   const isAnnual=p==='annual'||p==='contacts'||p==='calendar';
   document.getElementById('searchWrap').style.display=isAnnual?'none':'';
@@ -4541,7 +4605,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17i</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17j</div>
   </div>
 </div>
 
