@@ -120,14 +120,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .summary-grid{display:grid;grid-template-columns:1.6fr repeat(auto-fit,minmax(126px,1fr));gap:10px;margin-bottom:12px;}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 14px;transition:border-color .18s,transform .18s;box-shadow:none;}
 .stat-card:hover{transform:none;border-color:var(--border2);}
-.stat-card.g,.stat-card.r,.stat-card.a,.stat-card.o{background:var(--surface);border-left:1px solid var(--border);}
+.stat-card.g,.stat-card.r,.stat-card.a{background:var(--surface);border-left:1px solid var(--border);}
 .stat-card .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:4px;display:flex;align-items:center;gap:5px;}
 .stat-card .sc-ic{width:13px;height:13px;opacity:.6;stroke-width:2;}
 .stat-card .val{font-size:16px;font-family:'DM Mono',monospace;letter-spacing:-.3px;font-weight:500;color:var(--text);transition:color .2s;}
 .stat-card.g .val{color:var(--olive);}
 .stat-card.r .val{color:#8a2a24;}
 .stat-card.a .val{color:var(--amber);}
-.stat-card.o .val{color:var(--gold);}
 /* first card is the headline metric */
 .summary-grid .stat-card:first-child{grid-row:span 1;padding:14px 16px;}
 .summary-grid .stat-card:first-child .val{font-size:26px;}
@@ -164,9 +163,9 @@ tbody tr:hover td{background:rgba(86,120,56,.07);}
 /* Home mini table card — no bottom radius when pager follows */
 .home-tables .page-table-card{border-radius:var(--rl) var(--rl) 0 0;}
 .page-table-header{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border2);flex-wrap:wrap;background:transparent;}
-.page-table-header.exp,.page-table-header.inc,.page-table-header.oil{background:transparent;border-bottom:1px solid var(--border2);}
+.page-table-header.exp,.page-table-header.inc{background:transparent;border-bottom:1px solid var(--border2);}
 .page-title-text{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;display:flex;align-items:center;gap:7px;flex:1;color:var(--text);}
-.page-title-text.exp,.page-title-text.inc,.page-title-text.oil{color:var(--text);}
+.page-title-text.exp,.page-title-text.inc{color:var(--text);}
 
 /* ── TABLE ─── */
 .tbl-scroll{overflow-x:auto;}
@@ -377,7 +376,6 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 /* VIEWER MODE — hide all edit/delete controls */
 .viewer-mode .no-print .act-cell { display: none !important; }
 .viewer-mode #btnAddExp,
-.viewer-mode #btnAddOil,
 .viewer-mode #btnAddInc { display: none !important; }
 .viewer-mode #scanWrap { display: none !important; }
 .viewer-mode .btn-exp:not(.paid-toggle),
@@ -418,18 +416,8 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 
 
 /* OIL SALES TABLE */
-.table-header.oil{background:transparent;border-bottom:1px solid var(--border);}
-.table-title.oil{color:var(--hdr-oil-tx,#7a5e14);}
-.dot-oil{background:var(--gold-mid);}
-.stat-card.o .val{color:var(--gold);}
-.stat-card.o{background:var(--surface);}
-.stat-card.o .val{color:#6e4408;}
-.stat-card.o .lbl{color:#6a6050;}
 
 
-.modal-title.oil{color:var(--gold);}
-.btn-oil{background:#f5edd0;color:#7a5e14;border-color:#c8a850;}
-.btn-oil:hover{background:#ede0b8;}
 
 
 /* HIDE FROM VIEWER */
@@ -477,7 +465,6 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .cd-stat .csv{font-family:'DM Mono',monospace;font-size:14px;}
 .cd-stat.g .csv{color:var(--olive);}
 .cd-stat.r .csv{color:var(--red-mid);}
-.cd-stat.o .csv{color:var(--gold);}
 .cd-txn-hdr{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px;}
 .cd-txn{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;}
 .cd-txn-row{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--border);font-size:12.5px;}
@@ -486,7 +473,6 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .cd-txn-type{font-size:10px;padding:2px 6px;border-radius:10px;white-space:nowrap;}
 .cd-txn-type.exp{background:var(--red-lt);color:var(--red);}
 .cd-txn-type.inc{background:var(--olive-lt);color:var(--olive);}
-.cd-txn-type.oil{background:var(--gold-lt);color:var(--gold);}
 .cd-edit-form{display:flex;flex-direction:column;gap:10px;}
 .cd-field label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;}
 .cd-field input,.cd-field textarea{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;}
@@ -574,7 +560,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .modal-form .field{margin-bottom:11px;}
 .modal-form .field label{font-size:10px;letter-spacing:.4px;}
 .modal-form .modal-title{font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:500;color:var(--text);}
-.modal-form .modal-title.exp,.modal-form .modal-title.inc,.modal-form .modal-title.oil{color:var(--text);}
+.modal-form .modal-title.exp,.modal-form .modal-title.inc{color:var(--text);}
 .modal-form .field-row{grid-template-columns:repeat(auto-fit,minmax(196px,1fr));}
 .modal-form .fr-2-1{grid-template-columns:2fr 1fr;}
 @media(max-width:640px){.modal-form{width:100%;}.modal-form .field-row,.modal-form .fr-2-1{grid-template-columns:1fr;}}
@@ -584,7 +570,6 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .cal-lg{display:flex;align-items:center;gap:5px;}
 .cal-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
 .cal-exp{background:#c0504d;}
-.cal-oil{background:#c8a030;}
 .cal-inc{background:#5a8040;}
 .cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
@@ -605,7 +590,6 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .cal-detail-list{display:flex;flex-direction:column;gap:6px;}
 .cal-detail-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface);border-radius:10px;border-left:3px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.05);}
 .cal-row-exp{border-left-color:#c0504d;}
-.cal-row-oil{border-left-color:#c8a030;}
 .cal-row-inc{border-left-color:#5a8040;}
 .cal-row-ic{font-size:16px;}
 .cal-row-name{flex:1;font-size:13px;}
@@ -783,13 +767,10 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
 <symbol id="ic-home" viewBox="0 0 24 24"><path d="M5 12H3l9-9 9 9h-2M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7M9 21v-6h6v6"/></symbol>
 <symbol id="ic-exp" viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></symbol>
-<symbol id="ic-oil" viewBox="0 0 24 24"><path d="M12 3.2l5.2 8a6 6 0 11-10.4 0z"/></symbol>
 <symbol id="ic-inc" viewBox="0 0 24 24"><path d="M17 17L7 7M16 17H7V8"/></symbol>
 <symbol id="ic-chart" viewBox="0 0 24 24"><path d="M3 20h18M7 20v-6M12 20V6M17 20v-9"/></symbol>
 <symbol id="ic-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 11h16"/></symbol>
 <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 015-5h2a5 5 0 015 5v1M16 5.5a3 3 0 010 5.9M18.5 14A4 4 0 0121 17.8V20"/></symbol>
-<symbol id="ic-cog" viewBox="0 0 24 24"><path d="M4 7h6M14 7h6M4 17h10M18 17h2"/><circle cx="12" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></symbol>
-<symbol id="ic-olive" viewBox="0 0 24 24"><ellipse cx="12" cy="14" rx="5.5" ry="7"/><path d="M12 6.5Q15 3 18 5"/></symbol>
 <symbol id="ic-dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></symbol>
 <symbol id="ic-edit" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 00-3-3L5 17v3z"/></symbol>
 <symbol id="ic-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></symbol>
@@ -821,7 +802,6 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   <nav class="sb-nav">
       <button class="sb-item active" data-page="home" onclick="goPage('home')"><svg class="ic"><use href="#ic-home"/></svg>Αρχική</button>
       <button class="sb-item" data-page="exp" onclick="goPage('exp')"><svg class="ic"><use href="#ic-exp"/></svg>Έξοδα</button>
-      <button class="sb-item" data-page="oil" onclick="goPage('oil')"><svg class="ic"><use href="#ic-oil"/></svg>Λάδι</button>
       <button class="sb-item" data-page="inc" onclick="goPage('inc')"><svg class="ic"><use href="#ic-inc"/></svg>Έσοδα</button>
       <button class="sb-item" data-page="annual" onclick="goPage('annual')"><svg class="ic"><use href="#ic-chart"/></svg>Έτος</button>
       <button class="sb-item" data-page="calendar" onclick="goPage('calendar')"><svg class="ic"><use href="#ic-cal"/></svg>Ημ/γιο</button>
@@ -829,7 +809,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </nav>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17o</div>
+    <div class="sb-ver">έκδοση 2026.06.17p</div>
   </div>
 </aside>
 <div class="app-body">
@@ -894,7 +874,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17o</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17p</div>
       </div>
     </div>
 
@@ -913,7 +893,6 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 
     <div class="div-v no-print"></div>
     <button class="btn btn-exp no-print" id="btnAddExp" onclick="openModal('exp')">+ Έξοδο</button>
-    <button class="btn btn-oil no-print" id="btnAddOil" onclick="openModal('oil')">+ Λάδι</button>
     <button class="btn btn-inc no-print" id="btnAddInc" onclick="openModal('inc')">+ Έσοδο</button>
   </div>
 </header>
@@ -958,25 +937,6 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
           <button onclick="homePage('exp',-1)" id="expPrev">&#8249;</button>
           <span id="expPagerInfo"></span>
           <button onclick="homePage('exp',1)" id="expNext">&#8250;</button>
-        </div>
-      </div>
-      <!-- oil mini -->
-      <div class="page-table-card">
-        <div class="page-table-header oil">
-          <div class="page-title-text oil"><div class="dot dot-oil"></div>Πωλήσεις Λαδιού</div>
-          <span class="muted no-print" id="homeOilCount"></span>
-          <button class="btn btn-ghost btn-sm no-print" onclick="goPage('oil')">Όλα →</button>
-        </div>
-        <div class="tbl-scroll">
-          <table class="dtbl"><thead><tr>
-            <th class="c-date">Ημ/νία</th><th class="c-name">Πελάτης</th><th class="c-meta"></th>
-            <th class="c-status">Κατάσταση</th><th class="c-amt">Ποσό</th><th class="no-print c-act"></th>
-          </tr></thead><tbody id="homeOilBody"></tbody></table>
-        </div>
-        <div class="tbl-pager no-print" id="oilPager">
-          <button onclick="homePage('oil',-1)" id="oilPrev">&#8249;</button>
-          <span id="oilPagerInfo"></span>
-          <button onclick="homePage('oil',1)" id="oilNext">&#8250;</button>
         </div>
       </div>
       <!-- inc mini -->
@@ -1029,26 +989,6 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
           <th class="c-amt sortable" onclick="sort('exp','amount')">Ποσό</th>
           <th class="no-print c-act"></th>
         </tr></thead><tbody id="expPageBody"></tbody></table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── OIL SALES PAGE ─── -->
-  <div class="page" id="page-oil">
-    <div class="page-table-card">
-      <div class="page-table-header oil">
-        <div class="page-title-text oil"><div class="dot dot-oil"></div>Πωλήσεις Λαδιού</div>
-        <span class="muted no-print" id="oilPageCount"></span>
-      </div>
-      <div class="tbl-scroll">
-        <table id="oilTable"><thead><tr>
-          <th onclick="sort('oil','date')">Ημερομηνία</th>
-          <th onclick="sort('oil','name')">Πελάτης</th>
-          <th onclick="sort('oil','amount')" style="text-align:right">Ποσό</th>
-          <th onclick="sort('oil','paid')">Πληρώθηκε</th>
-          <th>Σχόλια</th>
-          <th class="no-print"></th>
-        </tr></thead><tbody id="oilPageBody"></tbody></table>
       </div>
     </div>
   </div>
@@ -1159,7 +1099,6 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 <nav class="bottom-nav no-print" id="bottomNav">
   <button class="bn-item active" data-page="home" onclick="goPage('home')"><svg class="ic"><use href="#ic-home"/></svg><span>Αρχική</span></button>
   <button class="bn-item" data-page="exp" onclick="goPage('exp')"><svg class="ic"><use href="#ic-exp"/></svg><span>Έξοδα</span></button>
-  <button class="bn-item" data-page="oil" onclick="goPage('oil')"><svg class="ic"><use href="#ic-oil"/></svg><span>Λάδι</span></button>
   <button class="bn-item" data-page="inc" onclick="goPage('inc')"><svg class="ic"><use href="#ic-inc"/></svg><span>Έσοδα</span></button>
   <button class="bn-item" data-page="annual" onclick="goPage('annual')"><svg class="ic"><use href="#ic-chart"/></svg><span>Έτος</span></button>
   <button class="bn-item" data-page="calendar" onclick="goPage('calendar')"><svg class="ic"><use href="#ic-cal"/></svg><span>Ημ/γιο</span></button>
@@ -1522,21 +1461,21 @@ function migratePaySource(){
   if(changed) save();
 }
 function setEntsSilent(y,m,d){data[mk(y,m)]=d;save();}function mk(y,m){return'y'+y+'m'+m;}
-function ents(y,m){const k=mk(y,m);if(!data[k])data[k]={inc:[],exp:[],oil:[]};if(!data[k].oil)data[k].oil=[];return data[k];}
+// Note: legacy 'oil' arrays may still exist in old data/backups. They are never read or shown.
+function ents(y,m){const k=mk(y,m);if(!data[k])data[k]={inc:[],exp:[]};return data[k];}
 function getContacts(){return data['__contacts__']||[];}
 function setContacts(arr){data['__contacts__']=arr;save();}
 function genContactId(){return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 function setEnts(y,m,d){data[mk(y,m)]=d;save();}
 
-const sortS={exp:{col:'date',dir:1},inc:{col:'date',dir:1},oil:{col:'date',dir:1}};
+const sortS={exp:{col:'date',dir:1},inc:{col:'date',dir:1}};
 const PAGE_SIZE=10;
-let homeExpPage=0,homeIncPage=0,homeOilPage=0;
+let homeExpPage=0,homeIncPage=0;
 let showCarryover=safeGet('agiasos_carryover','0')==='1';
 let catFilter='';  // empty = all categories
 
 function homePage(type,delta){
   if(type==='exp') homeExpPage=Math.max(0,homeExpPage+delta);
-  else if(type==='oil') homeOilPage=Math.max(0,homeOilPage+delta);
   else homeIncPage=Math.max(0,homeIncPage+delta);
   renderHome();
 }
@@ -1545,7 +1484,7 @@ function homePage(type,delta){
 const sel=document.getElementById('monthSel');
 MN.forEach((m,i)=>{const o=document.createElement('option');o.value=i;o.textContent=m;sel.appendChild(o);});
 sel.value=CM;
-sel.onchange=()=>{CM=+sel.value;homeExpPage=0;homeIncPage=0;homeOilPage=0;homeOilPage=0;updateMonthNav();renderCurrentPage();};
+sel.onchange=()=>{CM=+sel.value;homeExpPage=0;homeIncPage=0;updateMonthNav();renderCurrentPage();};
 
 function changeYear(d){
   CY+=d;
@@ -1567,7 +1506,7 @@ function changeMonth(d){
 
 function jumpToYear(y){
   CY=+y;
-  homeExpPage=0;homeIncPage=0;homeOilPage=0;
+  homeExpPage=0;homeIncPage=0;
   updateMonthNav();
   renderCurrentPage();
 }
@@ -1606,7 +1545,6 @@ function goPage(p){
   const isAnnual=p==='annual'||p==='contacts'||p==='calendar';
   document.getElementById('searchWrap').style.display=isAnnual?'none':'';
   document.getElementById('btnAddExp').style.display=isAnnual?'none':'';
-  document.getElementById('btnAddOil').style.display=isAnnual?'none':'';
   document.getElementById('btnAddInc').style.display=isAnnual?'none':'';
   document.getElementById('monthSel').disabled=isAnnual;
   renderCurrentPage();
@@ -1615,7 +1553,6 @@ function goPage(p){
 function renderCurrentPage(){
   if(CPage==='home')renderHome();
   else if(CPage==='exp')renderExpPage();
-  else if(CPage==='oil')renderOilPage();
   else if(CPage==='inc')renderIncPage();
   else if(CPage==='annual')renderAnnual();
   else if(CPage==='calendar')renderCalendar();
@@ -1653,9 +1590,7 @@ function calc(y,m,annualMode=false){
     const tE=s(annualExp);
     const pE=s(annualExp,r=>r.paid==='ΝΑΙ');
     const uE=s(annualExp,r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ');
-    const{oil:oilA}=ents(y,m);
-    const tOa=s(oilA),pOa=s(oilA,r=>r.paid==='ΝΑΙ'),uOa=s(oilA,r=>r.paid==='ΟΧΙ');
-    return{inc,exp,oil:oilA,tI,pI,uI,tE,pE,uE,tO:tOa,pO:pOa,uO:uOa,pr:pI-pE};
+    return{inc,exp,tI,pI,uI,tE,pE,uE,pr:pI-pE};
   } else {
     // Monthly: same — main entry counts as installment amount only
     const monthExp=exp.filter(r=>!r.hidden||isAdmin()).map(r=>{
@@ -1675,21 +1610,8 @@ function calc(y,m,annualMode=false){
       if(r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ') return sum+(+r.amount||0);
       return sum;
     },0);
-    // Oil sales
-    const oil=ents(y,m).oil||[];
-    const tO=s(oil);
-    const pO=oil.reduce((sum,r)=>{
-      if(r.paid==='ΝΑΙ') return sum+(+r.amount||0);
-      if(r.enanti>0) return sum+(+r.enanti||0);
-      return sum;
-    },0);
-    const uO=oil.reduce((sum,r)=>{
-      if(r.paid==='ΝΑΙ') return sum;
-      if(r.enanti>0) return sum+Math.max(0,(+r.amount||0)-(+r.enanti||0));
-      if(r.paid==='ΟΧΙ') return sum+(+r.amount||0);
-      return sum;
-    },0);
-    return{inc,exp,oil,tI,pI,uI,tE,pE,uE,tO,pO,uO,pr:pI-pE};
+    return{inc,exp,tI,pI,uI,tE,pE,uE,pr:pI-pE};
+
   }
 }
 
@@ -1700,7 +1622,7 @@ function animateVals(id){
     el.classList.add('val-anim');
   });
 }
-function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE,tO,pO,uO){
+function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE){
   function diff(cur,prev){
     if(prev===undefined||prev===0) return '';
     const d=cur-prev, pct=Math.round(d/prev*100);
@@ -1715,8 +1637,7 @@ function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE,tO,pO,uO){
     <div class="stat-card g"><div class="lbl">${ic('ic-check')}Εισπραχθέντα</div><div class="val">${fmt(pI)}</div></div>
     <div class="stat-card a"><div class="lbl">${ic('ic-clock')}Εκκρεμή Έσοδα</div><div class="val">${fmt(uI)}</div></div>
     <div class="stat-card r"><div class="lbl">${ic('ic-exp')}Λοιπά Έξοδα</div><div class="val">${fmt(tE)}${diff(tE,prevTE)}</div></div>
-    <div class="stat-card r"><div class="lbl">${ic('ic-check')}Πληρωθέντα Εξ.</div><div class="val">${fmt(pE)}</div></div>
-    <div class="stat-card o"><div class="lbl">${ic('ic-oil')}Πωλήσεις Λαδιού</div><div class="val">${fmt(tO||0)}</div></div>`;
+    <div class="stat-card r"><div class="lbl">${ic('ic-check')}Πληρωθέντα Εξ.</div><div class="val">${fmt(pE)}</div></div>`;
   setTimeout(()=>animateVals(id),10);
 }
 function renderProfit(id,pr,lbl){
@@ -1805,7 +1726,7 @@ function sort(type,col){
   const ss=sortS[type];
   ss.dir=ss.col===col?-ss.dir:1;ss.col=col;
   document.querySelectorAll(`#${type}Table th`).forEach(th=>{th.classList.remove('sa','sd');});
-  const cols={exp:{date:0,name:1,amount:2,cat:4,paid:5},inc:{date:0,name:1,amount:2,paid:3},oil:{date:0,name:1,amount:2,paid:3}};
+  const cols={exp:{date:0,name:1,amount:2,cat:4,paid:5},inc:{date:0,name:1,amount:2,paid:3}};
   const idx=cols[type][col];
   const ths=document.querySelectorAll(`#${type}Table th`);
   if(ths[idx])ths[idx].classList.add(ss.dir===1?'sa':'sd');
@@ -1937,12 +1858,12 @@ function paySelectedExp(){
 
 function renderHome(){
   const q=(document.getElementById('searchBox').value||'').trim();
-  const{inc,exp,oil,tI,pI,uI,tE,pE,uE,tO,pO,uO,pr}=calc(CY,CM);
+  const{inc,exp,tI,pI,uI,tE,pE,uE,pr}=calc(CY,CM);
   const mn=MN[CM];
   // Previous month for comparison
   let pm=CM-1, py=CY; if(pm<0){pm=11;py--;}
   const prev=calc(py,pm);
-  renderSummary('homeSummary',tI,pI,uI,tE,pE,uE,prev.tI,prev.tE,tO,pO,uO);
+  renderSummary('homeSummary',tI,pI,uI,tE,pE,uE,prev.tI,prev.tE);
   renderProfit('homeProfitBar',pr,'εισπραχθέντα − πληρωθέντα · '+mn+' '+CY);
 
   const hasPending=inc.some(r=>r.paid==='ΟΧΙ')||exp.some(r=>r.paid==='ΟΧΙ');
@@ -1969,32 +1890,6 @@ function renderHome(){
   if(ep){ep.textContent=fExp.length===0?'':('Σελ. '+(homeExpPage+1)+' / '+expPages);
     document.getElementById('expPrev').disabled=homeExpPage<=0;
     document.getElementById('expNext').disabled=homeExpPage>=expPages-1;}
-
-  // Oil with pagination
-  const oilWithIdx=(ents(CY,CM).oil||[]).map((r,i)=>({...r,_i:i,_carryover:false}));
-  const fOil=sorted(oilWithIdx,'oil',q,true);
-  const oilPages=Math.max(1,Math.ceil(fOil.length/PAGE_SIZE));
-  homeOilPage=Math.min(homeOilPage,oilPages-1);
-  const oilSlice=fOil.slice(homeOilPage*PAGE_SIZE,(homeOilPage+1)*PAGE_SIZE);
-  document.getElementById('homeOilCount').textContent=fOil.length+' εγγρ.';
-  document.getElementById('homeOilBody').innerHTML=oilSlice.length===0
-    ?'<tr class="empty-row"><td colspan="6">Δεν υπάρχουν πωλήσεις λαδιού</td></tr>'
-    :oilSlice.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}">
-      <td class="c-date mono">${fmtD(r.date)}</td>
-      <td class="c-name">${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" class="clip">📎</a>`:''}${esc(r.name)}</td>
-      <td class="c-meta">${fmtD(r.date)} · ${ptText(r.paid)}</td>
-      <td class="c-status">${ptHtml(r.paid,'oil',r._i,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
-      <td class="c-amt mono">${r.enanti>0
-        ? `<span class="amt-old">${fmt(r.amount)}</span><span class="amt-due">${fmt(r.amount-r.enanti)}</span>`
-        : fmt(r.amount)}</td>
-      <td class="no-print c-act">${actHtml('oil',r._i,false,r._carryover?r._origY:-1,r._carryover?r._origM:-1,r.paid)}</td>
-    </tr>`).join('');
-
-  // oil pager
-  const op=document.getElementById('oilPagerInfo');
-  if(op){op.textContent=fOil.length===0?'':('Σελ. '+(homeOilPage+1)+' / '+oilPages);
-    document.getElementById('oilPrev').disabled=homeOilPage<=0;
-    document.getElementById('oilNext').disabled=homeOilPage>=oilPages-1;}
 
   // Inc with pagination
   const incWithIdx=inc.map((r,i)=>({...r,_i:i,_carryover:false}));
@@ -2128,7 +2023,6 @@ function emptyRow(cols, type){
     'filter':['🏷️','Καμία εγγραφή σε αυτή την κατηγορία','Άλλαξε το φίλτρο'],
     'exp':['📤','Δεν υπάρχουν έξοδα ακόμα','Πάτα + Έξοδο για να προσθέσεις'],
     'inc':['📥','Δεν υπάρχουν έσοδα ακόμα','Πάτα + Έσοδο για να προσθέσεις'],
-    'oil':['🫒','Δεν υπάρχουν πωλήσεις λαδιού','Πάτα + Λάδι για να προσθέσεις'],
   };
   const[icon,title,sub]=msgs[type]||msgs['exp'];
   return`<tr class="empty-row"><td colspan="${cols}"><div class="empty-state"><div class="empty-icon">${icon}</div><div class="empty-title">${title}</div><div class="empty-sub">${sub}</div></div></td></tr>`;
@@ -2171,36 +2065,6 @@ function renderIncPage(){
 }
 
 // ── OIL SALES PAGE ───────────────────────────────────
-function renderOilPage(){
-  const q=(document.getElementById('searchBox').value||'').trim();
-  const{oil}=ents(CY,CM);
-  const carryOil=showCarryover?getCarryover(CY,CM,'oil'):[];
-  const allOil=[...carryOil,...oil.map((r,i)=>({...r,_i:i,_carryover:false}))];
-  const fOil=sorted(allOil,'oil',q);
-  document.getElementById('oilPageCount').textContent=fOil.length+' / '+oil.length+' εγγραφές · '+MN[CM]+' '+CY;
-  document.getElementById('oilPageBody').innerHTML=fOil.length===0
-    ?emptyRow(6, q?'search':'oil')
-    :fOil.map(r=>`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r._carryover?' carry-row':''}">
-        <td class="mono">${fmtD(r.date)}</td>
-        <td>${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-right:4px;text-decoration:none">📎</a>`:''}${esc(r.name)}${r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:''}</td>
-        <td class="mono" style="text-align:right">${r.enanti>0
-          ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
-          : fmt(r.amount)}</td>
-        <td>${ptHtml(r.paid,'oil',r._i,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
-        <td class="muted">${esc(r.notes)}</td>
-        <td class="no-print c-act">${actHtml('oil',r._i,false,r._carryover?r._origY:-1,r._carryover?r._origM:-1,r.paid)}</td>
-      </tr>`).join('');
-}
-
-// ── ANNUAL ────────────────────────────────────────────
-// ── CALENDAR VIEW ─────────────────────────────────────
-let _calSelectedDay=null;
-let _calResizeTimer=null;
-window.addEventListener('resize',()=>{
-  if(CPage!=='calendar') return;
-  clearTimeout(_calResizeTimer);
-  _calResizeTimer=setTimeout(renderCalendar,200);
-});
 function renderCalendar(){
   document.getElementById('calTitle').textContent='Ημερολόγιο Εξόδων · '+MN[CM]+' '+CY;
   const {exp}=ents(CY,CM);
@@ -2294,10 +2158,8 @@ function renderAnnual(){
   document.getElementById('annualCardHdr').textContent='Ανάλυση ανά μήνα · '+CY;
   let tI=0,pI=0,uI=0,tE=0,pE=0,uE=0,rows='';
   const iD=[],eD=[];
-  let tOtot=0,pOtot=0,uOtot=0;
   MN.forEach((m,i)=>{
     const c=calc(CY,i,true);  // annualMode: excludes installment sub-entries
-    tOtot+=c.tO||0;pOtot+=c.pO||0;uOtot+=c.uO||0;
     tI+=c.tI;pI+=c.pI;uI+=c.uI;tE+=c.tE;pE+=c.pE;uE+=c.uE;
     iD.push(+c.pI.toFixed(2));eD.push(+c.pE.toFixed(2));
     const pc=c.pr>=0?'var(--olive)':'var(--red-mid)';
@@ -2324,7 +2186,7 @@ function renderAnnual(){
     <td class="mono" style="text-align:right;font-weight:500;color:${tc}">${fmt(Math.abs(totPr))}</td>
   </tr>`;
   document.getElementById('annualBody').innerHTML=rows;
-  renderSummary('annualSummary',tI,pI,uI,tE,pE,uE,undefined,undefined,tOtot,pOtot,uOtot);
+  renderSummary('annualSummary',tI,pI,uI,tE,pE,uE,undefined,undefined);
   renderProfit('annualProfitBar',totPr,'Συνολικό αποτέλεσμα · '+CY);
   annualChartI=makeChart('annualChart',MNS,iD,eD,annualChartI);
 }
@@ -2533,10 +2395,9 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
   const modalM=(mm!==null&&mm!==undefined)?+mm:CM;
   refreshCatSel();
   const isExp=type==='exp';
-  const isOil=type==='oil';
   const t=document.getElementById('modalTitle');
-  t.textContent=(prefill!==null?'Επεξεργασία':'Νέα εγγραφή —')+(isExp?' Έξοδο':isOil?' Πώληση Λαδιού':' Έσοδο');
-  t.className='modal-title '+(isOil?'oil':type);
+  t.textContent=(prefill!==null?'Επεξεργασία':'Νέα εγγραφή —')+(isExp?' Έξοδο':' Έσοδο');
+  t.className='modal-title '+type;
   document.getElementById('editType').value=type;
   document.getElementById('editId').value=prefill!==null?prefill:'';
   document.getElementById('editY').value=modalY;
@@ -2547,8 +2408,8 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
   const fPS=document.getElementById('fPaySourceWrap');
   if(fPS) fPS.style.display=isExp?'':'none';
   const fIW=document.getElementById('fIncCatWrap');
-  if(fIW) fIW.style.display=(isOil||type==='inc')?'':'none';
-  if(isOil||type==='inc'){
+  if(fIW) fIW.style.display=(type==='inc')?'':'none';
+  if(type==='inc'){
     const ic=document.getElementById('fIncCat');
     if(ic){ic.innerHTML=getIncCats().map(cat=>`<option value="${esc(cat)}">${esc(cat)}</option>`).join('');
       if(prefill!==null) ic.value=ents(modalY,modalM)[type][prefill].incCat||'';
@@ -2556,7 +2417,7 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
     }
   }
   document.getElementById('instFields').style.display='none';
-  document.getElementById('saveBtn').className='btn '+(isExp?'btn-exp':isOil?'btn-oil':'btn-inc');
+  document.getElementById('saveBtn').className='btn '+(isExp?'btn-exp':'btn-inc');
   if(prefill!==null){
     const r=ents(modalY,modalM)[type][prefill];
     document.getElementById('fDate').value=r.date||'';
@@ -2789,7 +2650,7 @@ function copyEntry(type,i,oy,om){
   const d=ents(y,m);
   const orig={...d[type][i]};
   // Ask destination
-  const labels={'exp':'Λοιπά Έξοδα','oil':'Πωλήσεις Λαδιού','inc':'Έσοδα'};
+  const labels={'exp':'Λοιπά Έξοδα','inc':'Έσοδα'};
   const opts=Object.entries(labels).map(([k,v])=>`${k===type?'✓ ':' '}${v}`);
   const choice=prompt(`Αντιγραφή/Μετακίνηση σε:\n1. ${opts[0]}\n2. ${opts[1]}\n3. ${opts[2]}\n\nΓράψε 1, 2 ή 3:\n(Πάτα Ακύρωση για απλή αντιγραφή στην ίδια κατηγορία)`);
   if(choice===null){
@@ -2800,7 +2661,7 @@ function copyEntry(type,i,oy,om){
     setEnts(CY,CM,d);renderCurrentPage();
     return;
   }
-  const keys=['exp','oil','inc'];
+  const keys=['exp','inc'];
   const destType=keys[parseInt(choice)-1];
   if(!destType){return;}
   const copy={...orig,date:orig.date,paid:'',instPlan:null,instGroupId:''};
@@ -2900,11 +2761,11 @@ function undoDelete(){
 
 // ── CATEGORIES ────────────────────────────────────────
 const DCATS=['Καύσιμα','Μισθοδοσία','Πωλήσεις λαδιού','Ηλεκτρισμός / Νερό','Συντήρηση μηχανημάτων','Αναλώσιμα','Μεταφορικά','Λοιπά'];
-const DICATS=['Πωλήσεις Λαδιού','Επιδοτήσεις','Ενοίκια','Τόκοι','Λοιπά Έσοδα'];
+const DICATS=['Επιδοτήσεις','Ενοίκια','Τόκοι','Λοιπά Έσοδα'];
 
 // ── CATEGORY ICONS (Chrome-safe) ──────────────────────
 const CAT_ICONS = {
-  'Καύσιμα':'⛽','Μισθοδοσία':'👷','Πωλήσεις λαδιού':'🫒','Πωλήσεις Λαδιού':'🫒',
+  'Καύσιμα':'⛽','Μισθοδοσία':'👷',
   'Ηλεκτρισμός / Νερό':'💡','Ηλεκτρισμός':'💡','Νερό':'💧','ΔΕΗ':'💡',
   'Συντήρηση μηχανημάτων':'🔧','Συντήρηση':'🔧','Αναλώσιμα':'📦',
   'Μεταφορικά':'🚚','Λοιπά':'📋','Λοιπά Έσοδα':'💶','Επιδοτήσεις':'🏛️',
@@ -3026,7 +2887,7 @@ function restoreBackup(){
 // ── EXPORTS ───────────────────────────────────────────
 function exportPDF(){
   const mn=MN[CM];
-  const lbl=CPage==='annual'?'Σύνολο έτους · '+CY:CPage==='exp'?'Έξοδα · '+mn+' '+CY:CPage==='inc'?'Έσοδα · '+mn+' '+CY:CPage==='oil'?'Πωλήσεις Λαδιού · '+mn+' '+CY:CPage==='contacts'?'Πελατολόγιο':mn+' '+CY;
+  const lbl=CPage==='annual'?'Σύνολο έτους · '+CY:CPage==='exp'?'Έξοδα · '+mn+' '+CY:CPage==='inc'?'Έσοδα · '+mn+' '+CY:CPage==='contacts'?'Πελατολόγιο':mn+' '+CY;
   document.getElementById('printSub').textContent=lbl+' · Εκτυπώθηκε '+new Date().toLocaleDateString('el-GR');
   const style=document.createElement('style');
   style.id='pdf-force';
@@ -3038,11 +2899,10 @@ function exportPDF(){
 
 function exportExcel(){
   const mn=MN[CM];
-  const{inc,exp,oil}=ents(CY,CM);
+  const{inc,exp}=ents(CY,CM);
   const isAnnual=CPage==='annual';
   const isExp=CPage==='exp';
   const isInc=CPage==='inc';
-  const isOil=CPage==='oil';
   const wb=XLSX.utils.book_new();
 
   if(isAnnual){
@@ -3062,22 +2922,6 @@ function exportExcel(){
     const ws=XLSX.utils.aoa_to_sheet(aRows);
     ws['!cols']=[{wch:18},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15}];
     XLSX.utils.book_append_sheet(wb,ws,'Ετήσια Ανάλυση '+CY);
-  } else if(isOil){
-    // Oil only
-    const oilRows=[
-      ['Α.Σ Αγιάσου — Πωλήσεις Λαδιού '+mn+' '+CY],
-      [],
-      ['Ημερομηνία','Πελάτης','Ποσό (€)','Πληρώθηκε','Σχόλια']
-    ];
-    oil.forEach(r=>oilRows.push([r.date||'',r.name||'',+r.amount||0,r.paid||'',r.notes||'']));
-    oilRows.push([]);
-    const tO=oil.reduce((s,r)=>s+ +r.amount,0);
-    const pO=oil.filter(r=>r.paid==='ΝΑΙ').reduce((s,r)=>s+ +r.amount,0);
-    oilRows.push(['','Σύνολο Λαδιού',tO,'','']);
-    oilRows.push(['','Εισπραχθέντα',pO,'','']);
-    const ws=XLSX.utils.aoa_to_sheet(oilRows);
-    ws['!cols']=[{wch:14},{wch:28},{wch:12},{wch:12},{wch:28}];
-    XLSX.utils.book_append_sheet(wb,ws,'Λάδι');
   } else if(isInc){
     // Income only
     const incRows=[
@@ -3122,11 +2966,6 @@ function exportExcel(){
     const wsE=XLSX.utils.aoa_to_sheet(expRows);
     wsE['!cols']=[{wch:14},{wch:28},{wch:12},{wch:12},{wch:14},{wch:20},{wch:12},{wch:28}];
     XLSX.utils.book_append_sheet(wb,wsE,'Έξοδα');
-    const oilRows=[['Α.Σ Αγιάσου — Λάδι '+mn+' '+CY],[],['Ημερομηνία','Πελάτης','Ποσό (€)','Πληρώθηκε','Σχόλια']];
-    oil.forEach(r=>oilRows.push([r.date||'',r.name||'',+r.amount||0,r.paid||'',r.notes||'']));
-    const wsO=XLSX.utils.aoa_to_sheet(oilRows);
-    wsO['!cols']=[{wch:14},{wch:28},{wch:12},{wch:12},{wch:28}];
-    XLSX.utils.book_append_sheet(wb,wsO,'Λάδι');
     const incRows=[['Α.Σ Αγιάσου — Έσοδα '+mn+' '+CY],[],['Ημερομηνία','Πελάτης','Ποσό (€)','Πληρώθηκε','Σχόλια']];
     inc.forEach(r=>incRows.push([r.date||'',r.name||'',+r.amount||0,r.paid||'',r.notes||'']));
     const wsI=XLSX.utils.aoa_to_sheet(incRows);
@@ -3142,7 +2981,7 @@ function n2(v){return parseFloat(v||0).toFixed(2);}
 // ── PRINT ─────────────────────────────────────────────
 function doPrint(){
   const mn=MN[CM];
-  const lbl=CPage==='annual'?'Σύνολο έτους · '+CY:CPage==='exp'?'Έξοδα · '+mn+' '+CY:CPage==='inc'?'Έσοδα · '+mn+' '+CY:CPage==='oil'?'Λάδι · '+mn+' '+CY:CPage==='contacts'?'Πελατολόγιο':mn+' '+CY;
+  const lbl=CPage==='annual'?'Σύνολο έτους · '+CY:CPage==='exp'?'Έξοδα · '+mn+' '+CY:CPage==='inc'?'Έσοδα · '+mn+' '+CY:CPage==='contacts'?'Πελατολόγιο':mn+' '+CY;
   document.getElementById('printSub').textContent=lbl+' · Εκτυπώθηκε '+new Date().toLocaleDateString('el-GR');
   window.print();
 }
@@ -3502,9 +3341,6 @@ function applyBgTheme(id){
   const hInc   = isDark ? '#203a18' : '#d8ecc4';
   const hIncBd = isDark ? '#3a6028' : '#a8c888';
   const hIncTx = isDark ? '#a0d080' : '#2e5020';
-  const hOil   = isDark ? '#3a2e08' : '#f5edd0';
-  const hOilBd = isDark ? '#6a5010' : '#c8a850';
-  const hOilTx = isDark ? '#e0c060' : '#7a5e14';
   const hTh    = isDark ? 'rgba(255,255,255,.08)' : '#d8d2c0';
   const hTd    = isDark ? 'rgba(255,255,255,.04)' : '#c8c0a8';
   // Apply via CSS custom props
@@ -3514,9 +3350,6 @@ function applyBgTheme(id){
   r.setProperty('--hdr-inc-bg',  hInc);
   r.setProperty('--hdr-inc-bd',  hIncBd);
   r.setProperty('--hdr-inc-tx',  hIncTx);
-  r.setProperty('--hdr-oil-bg',  hOil);
-  r.setProperty('--hdr-oil-bd',  hOilBd);
-  r.setProperty('--hdr-oil-tx',  hOilTx);
   r.setProperty('--hdr-th-bg',   hTh);
   r.setProperty('--hdr-th-bd',   hTd);
   r.setProperty('--body-grad', t.bodyGrad);
@@ -3548,7 +3381,7 @@ function getAllContacts(){
   Object.keys(data).forEach(mk=>{
     if(!mk.startsWith('y')) return;
     const d=data[mk];
-    ['exp','inc','oil'].forEach(type=>{
+    ['exp','inc'].forEach(type=>{
       if(!d[type]) return;
       d[type].forEach(r=>{
         if(!r.name||!r.name.trim()) return;
@@ -3720,11 +3553,9 @@ function initials(name){
   return (w[0][0]+w[1][0]).toUpperCase();
 }
 
-// Total value of all dealings with a contact (oil excluded)
+// Total value of all dealings with a contact
 function contactTotal(name){
-  return getTxnsForContact(name)
-    .filter(r=>r.type!=='oil')
-    .reduce((s,r)=>s+(+r.amount||0),0);
+  return getTxnsForContact(name).reduce((s,r)=>s+(+r.amount||0),0);
 }
 
 // How much we still owe this contact (unpaid expenses, minus any part payment)
@@ -3774,7 +3605,7 @@ function getTxnsForContact(name){
     const parts=mk.replace('y','').split('m');
     const y=+parts[0],m=+parts[1];
     const d=data[mk];
-    ['exp','inc','oil'].forEach(type=>{
+    ['exp','inc'].forEach(type=>{
       if(!d[type]) return;
       d[type].forEach(r=>{
         if((r.name||'').trim().toLowerCase()===nameLower){
@@ -3791,7 +3622,6 @@ function renderContactDetail(name){
   const txns=getTxnsForContact(name);
   const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+ +r.amount,0);
   const totalExp=txns.filter(r=>r.type==='exp').reduce((s,r)=>s+ +r.amount,0);
-  const totalOil=txns.filter(r=>r.type==='oil').reduce((s,r)=>s+ +r.amount,0);
   const unpaid=txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').reduce((s,r)=>s+ +r.amount,0);
 
   const isManual=getManualContacts().some(c=>(c.name||c)===name);
@@ -3800,7 +3630,7 @@ function renderContactDetail(name){
   const txnRows=txns.length===0
     ?'<div style="padding:16px;text-align:center;color:var(--text3);font-style:italic">Δεν υπάρχουν συναλλαγές</div>'
     :txns.map(r=>`<div class="cd-txn-row">
-        <span class="cd-txn-type ${r.type}">${r.type==='exp'?'Έξοδο':r.type==='oil'?'Λάδι':'Έσοδο'}</span>
+        <span class="cd-txn-type ${r.type}">${r.type==='exp'?'Έξοδο':'Έσοδο'}</span>
         <span class="mono" style="font-size:11px;color:var(--text3);min-width:72px">${fmtD(r.date)}</span>
         <span style="flex:1;font-size:12px;color:var(--text2)">${MN[r.m]} ${r.y}</span>
         <span class="mono" style="font-size:12.5px">${fmt(r.amount)}</span>
@@ -3823,7 +3653,6 @@ function renderContactDetail(name){
     <div class="cd-stats">
       <div class="cd-stat g"><div class="csl">Σύν. Εσόδων</div><div class="csv">${fmt(totalInc)}</div></div>
       <div class="cd-stat r"><div class="csl">Σύν. Εξόδων</div><div class="csv">${fmt(totalExp)}</div></div>
-      <div class="cd-stat o"><div class="csl">Λάδι</div><div class="csv">${fmt(totalOil)}</div></div>
     </div>
     ${unpaid>0?`<div class="pending-alert" style="margin-bottom:14px">⚠ Εκκρεμείς πληρωμές: ${fmt(unpaid)}</div>`:''}
     <div class="cd-txn-hdr">Συναλλαγές</div>
@@ -4108,7 +3937,7 @@ initHeaderOlives();
 
 function exportMonthPDF(){
   const mn=MN[CM];
-  const{inc,exp,oil}=ents(CY,CM);
+  const{inc,exp}=ents(CY,CM);
   const cv=calc(CY,CM);
   const fmtE=v=>fmt(v);
   const dateStr=new Date().toLocaleDateString('el-GR');
@@ -4140,7 +3969,6 @@ function exportMonthPDF(){
   <div class="summary">
     <div class="scard"><div class="l">Σύνολο Εσόδων</div><div class="v green">${fmtE(cv.tI)}</div></div>
     <div class="scard"><div class="l">Σύνολο Εξόδων</div><div class="v red">${fmtE(cv.tE)}</div></div>
-    <div class="scard"><div class="l">Πωλήσεις Λαδιού</div><div class="v gold">${fmtE(cv.tO||0)}</div></div>
     <div class="scard"><div class="l">Κέρδος/Ζημία</div><div class="v ${cv.pr>=0?'green':'red'}">${fmtE(cv.pr)}</div></div>
   </div>`;
 
@@ -4149,13 +3977,6 @@ function exportMonthPDF(){
     html+=`<h2>📤 Έξοδα (${exp.length})</h2><table><thead><tr><th>Ημ/νία</th><th>Προμηθευτής</th><th>Κατηγορία</th><th>Παραστατικό</th><th class="r">Ποσό</th><th>Πληρ.</th></tr></thead><tbody>`;
     exp.forEach(r=>{ html+=`<tr><td>${fmtD(r.date)}</td><td>${esc(r.name)}</td><td>${esc(r.cat||'')}</td><td>${esc(r.invoice||'')}</td><td class="r">${fmtE(r.amount)}</td><td class="${r.paid==='ΝΑΙ'?'paid-y':'paid-n'}">${r.paid||'ΟΧΙ'}</td></tr>`; });
     html+=`<tr class="total-row"><td colspan="4">ΣΥΝΟΛΟ</td><td class="r">${fmtE(cv.tE)}</td><td></td></tr></tbody></table>`;
-  }
-
-  // Oil table
-  if(oil.length){
-    html+=`<h2>🫒 Πωλήσεις Λαδιού (${oil.length})</h2><table><thead><tr><th>Ημ/νία</th><th>Πελάτης</th><th>Παραστατικό</th><th class="r">Ποσό</th><th>Πληρ.</th></tr></thead><tbody>`;
-    oil.forEach(r=>{ html+=`<tr><td>${fmtD(r.date)}</td><td>${esc(r.name)}</td><td>${esc(r.invoice||'')}</td><td class="r">${fmtE(r.amount)}</td><td class="${r.paid==='ΝΑΙ'?'paid-y':'paid-n'}">${r.paid||'ΟΧΙ'}</td></tr>`; });
-    html+=`<tr class="total-row"><td colspan="3">ΣΥΝΟΛΟ</td><td class="r">${fmtE(cv.tO||0)}</td><td></td></tr></tbody></table>`;
   }
 
   // Income table
@@ -4381,17 +4202,15 @@ function exportContactCard(name){
     ['Ημερομηνία','Κατηγορία','Περιγραφή','Ποσό (€)','Έναντι (€)','Υπόλοιπο (€)','Πληρώθηκε','Παραστατικό','Σχόλια']
   ];
   txns.forEach(r=>{
-    const type=r.type==='exp'?'Έξοδο':r.type==='oil'?'Λάδι':'Έσοδο';
+    const type=r.type==='exp'?'Έξοδο':'Έσοδο';
     const remain=r.enanti>0?Math.max(0,(+r.amount||0)-(+r.enanti||0)):0;
     rows.push([r.date||'',type,r.name||'',+r.amount||0,+r.enanti||0,remain,r.paid||'',r.invoice||'',r.notes||'']);
   });
   rows.push([]);
   const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+(+r.amount||0),0);
   const totalExp=txns.filter(r=>r.type==='exp').reduce((s,r)=>s+(+r.amount||0),0);
-  const totalOil=txns.filter(r=>r.type==='oil').reduce((s,r)=>s+(+r.amount||0),0);
   rows.push(['','','Σύνολο Εσόδων',totalInc,'','','','','']);
   rows.push(['','','Σύνολο Εξόδων',totalExp,'','','','','']);
-  rows.push(['','','Σύνολο Λαδιού',totalOil,'','','','','']);
   const ws=XLSX.utils.aoa_to_sheet(rows);
   ws['!cols']=[{wch:14},{wch:10},{wch:28},{wch:12},{wch:12},{wch:12},{wch:12},{wch:16},{wch:28}];
   XLSX.utils.book_append_sheet(wb,ws,'Καρτέλα');
@@ -4840,7 +4659,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17o</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17p</div>
   </div>
 </div>
 
