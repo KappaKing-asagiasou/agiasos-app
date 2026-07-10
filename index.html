@@ -447,8 +447,6 @@ tr.row-hidden td .hide-btn{opacity:1;}
 #contactsTable .mono{font-size:14px;}
 #contactsTable .muted{font-size:14px;}
 #contactsTable .code-badge{font-size:12.5px;}
-.contacts-table-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hdr-inc-bd,var(--border2));background:var(--hdr-inc-bg,#d8ecc4);flex-wrap:wrap;}
-.contacts-table-hdr h3{font-family:'Lora',serif;font-size:14px;font-weight:400;color:var(--olive);flex:1;}
 .contacts-pager{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface2);font-size:12.5px;color:var(--text2);}
 .contacts-pager .cp-info{flex:1;text-align:center;}
 .contacts-pager button{font-size:18px;border:none;background:transparent;cursor:pointer;color:var(--text2);padding:0 6px;line-height:1;border-radius:6px;}
@@ -459,7 +457,6 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .contacts-layout{display:block;}
 .contacts-sidebar{display:none;}
 [data-theme="dark"] .contacts-table-card{background:var(--surface);border-color:var(--border);}
-[data-theme="dark"] .contacts-table-hdr{background:var(--olive-bg);}
 [data-theme="dark"] .contacts-pager{background:var(--surface2);}
 .contact-item{padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
 .contact-item:hover{background:var(--surface2);}
@@ -671,6 +668,26 @@ tr.row-hidden td .hide-btn{opacity:1;}
   .dtbl tbody tr.empty-row{display:block;border-left:1px solid var(--border);border-radius:9px;text-align:center;padding:16px;}
 }
 
+/* ── CONTACTS ───────────────────────────────────────── */
+.ct-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:500;background:var(--surface2);color:var(--text2);border:1px solid var(--border);letter-spacing:.2px;}
+.ct-av-due{background:var(--red-lt);color:#8a3530;border-color:#e0c4c0;}
+.ct-nm{font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ct-afm{font-size:9.5px;color:var(--text3);margin-top:1px;}
+.ct-phone{display:inline-flex;align-items:center;gap:4px;color:var(--accent);text-decoration:none;font-family:'DM Mono',monospace;font-size:11.5px;}
+.ct-phone:hover{text-decoration:underline;}
+.ct-phone .ic{width:12px;height:12px;}
+.ct-due{color:#8a2a24;font-weight:500;}
+.dtbl .c-phone{width:132px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dtbl .c-total{width:90px;text-align:right;font-size:11.5px;}
+.dtbl tbody tr.ct-active td{background:var(--accent-lt);}
+.contacts-table-card{container-type:inline-size;}
+@container (max-width:620px){
+  .dtbl .c-phone,.dtbl .c-total{display:none;}
+  .dtbl tbody tr.ct-owed{border-left-color:#c0504d;}
+  .dtbl tbody tr.ct-active{border-left-color:var(--accent);}
+  .dtbl .c-chk{align-self:center;}
+}
+
 /* EMPTY STATE */
 .empty-row td{padding:0!important;background:transparent!important;border:none!important;}
 .empty-row:hover td{background:transparent!important;}
@@ -761,6 +778,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 <symbol id="ic-card" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10.5h18"/></symbol>
 <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
 <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></symbol>
+<symbol id="ic-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A15 15 0 013 6a2 2 0 012-2z"/></symbol>
 <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
 <symbol id="ic-wallet" viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h13a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M16 12.5h3"/></symbol>
 </svg>
@@ -787,7 +805,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </nav>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17m</div>
+    <div class="sb-ver">έκδοση 2026.06.17n</div>
   </div>
 </aside>
 <div class="app-body">
@@ -852,7 +870,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17m</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17n</div>
       </div>
     </div>
 
@@ -1034,35 +1052,31 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 
   <!-- ── CONTACTS PAGE ─── -->
   <div class="page" id="page-contacts">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-      <h2 style="font-family:'Lora',serif;font-size:15px;font-weight:400;color:var(--text2);font-style:italic;">👥 Πελατολόγιο</h2>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input id="contactSearch" type="text" placeholder="🔍 Αναζήτηση..." oninput="renderContactsPage()"
-          style="font-family:'DM Sans',sans-serif;font-size:12.5px;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;width:180px;">
-        <button class="btn btn-inc no-print" id="btnNewContact2" onclick="newContact()">+ Νέος Πελάτης</button>
-        <button class="btn btn-gold no-print" onclick="exportContacts()" title="Εξαγωγή σε Excel">📊 Excel</button>
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px;flex-wrap:wrap;">
+      <h2 style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--text);">Πελατολόγιο</h2>
+      <span class="muted" id="contactsCount" style="font-size:11px"></span>
+      <div style="flex:1;min-width:6px"></div>
+      <div style="position:relative;display:flex;align-items:center">
+        <span style="position:absolute;left:8px;color:var(--text3);line-height:0;display:flex"><svg class="ic" style="width:13px;height:13px"><use href="#ic-search"/></svg></span>
+        <input id="contactSearch" type="text" placeholder="Αναζήτηση…" oninput="renderContactsPage()"
+          style="font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 10px 6px 27px;border:1px solid var(--border2);border-radius:8px;background:var(--input-bg);color:var(--text);outline:none;width:168px;">
       </div>
+      <button class="btn btn-ghost btn-sm no-print" onclick="exportContacts()" title="Εξαγωγή σε Excel">Excel</button>
+      <button class="btn btn-inc btn-sm no-print" id="btnNewContact2" onclick="newContact()">+ Νέος</button>
     </div>
     <div class="contacts-table-card">
-      <div class="contacts-table-hdr">
-        <h3>Πελάτες</h3>
-        <span class="muted" id="contactsCount"></span>
-      </div>
       <div class="tbl-scroll">
-        <table id="contactsTable">
+        <table id="contactsTable" class="dtbl">
           <thead id="contactsThead">
             <tr>
-              <th onclick="sortContacts('name')">Όνομα</th>
-              <th onclick="sortContacts('afm')">ΑΦΜ</th>
-              <th onclick="sortContacts('phone')">Τηλέφωνο</th>
-              <th onclick="sortContacts('inc')" style="text-align:right">Σύν. Εσόδων</th>
-              <th onclick="sortContacts('exp')" style="text-align:right">Σύν. Εξόδων</th>
-              <th onclick="sortContacts('oil')" style="text-align:right">🫒 Λάδι</th>
-              <th onclick="sortContacts('unpaid')" style="text-align:right">Εκκρεμείς</th>
-              <th onclick="sortContacts('last')">Τελ. Συναλλαγή</th>
-              <th onclick="sortContacts('code')">Κωδ. Πληρωμής</th>
-              <th onclick="sortContacts('notes')">Σημειώσεις</th>
-              <th class="no-print"></th>
+              <th class="c-chk"></th>
+              <th class="c-name sortable" data-col="name" onclick="sortContacts('name')">Επαφή</th>
+              <th class="c-meta"></th>
+              <th class="c-phone sortable" data-col="phone" onclick="sortContacts('phone')">Τηλέφωνο</th>
+              <th class="c-notes sortable" data-col="notes" onclick="sortContacts('notes')">Σημειώσεις</th>
+              <th class="c-total sortable" data-col="total" onclick="sortContacts('total')">Σύνολο</th>
+              <th class="c-amt sortable" data-col="unpaid" onclick="sortContacts('unpaid')">Εκκρεμές</th>
+              <th class="no-print c-act"></th>
             </tr>
           </thead>
           <tbody id="contactsBody"></tbody>
@@ -3573,25 +3587,10 @@ function renderContactsPage(){
   filtered.sort((a,b)=>{
     const col=contactsSort.col, dir=contactsSort.dir;
     if(col==='name') return dir*a.name.localeCompare(b.name,'el');
-    if(col==='afm') return dir*(a.afm||'').localeCompare(b.afm||'');
     if(col==='phone') return dir*(a.phone||'').localeCompare(b.phone||'');
     if(col==='notes') return dir*(a.notes||'').localeCompare(b.notes||'');
-    // numeric cols: need txns
-    const ta=getTxnsForContact(a.name), tb=getTxnsForContact(b.name);
-    const sum=(txns,type)=>txns.filter(r=>r.type===type).reduce((s,r)=>s+ +r.amount,0);
-    const unpaid=txns=>txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').reduce((s,r)=>s+ +r.amount,0);
-    if(col==='inc') return dir*(sum(ta,'inc')-sum(tb,'inc'));
-    if(col==='exp') return dir*(sum(ta,'exp')-sum(tb,'exp'));
-    if(col==='oil') return dir*(sum(ta,'oil')-sum(tb,'oil'));
-    if(col==='unpaid') return dir*(unpaid(ta)-unpaid(tb));
-    if(col==='last'){
-      const da=ta[0]?.date||'', db=tb[0]?.date||'';
-      return dir*da.localeCompare(db);
-    }
-    if(col==='code'){
-      const ca=ta[0]?.code||'', cb=tb[0]?.code||'';
-      return dir*ca.localeCompare(cb);
-    }
+    if(col==='total') return dir*(contactTotal(a.name)-contactTotal(b.name));
+    if(col==='unpaid') return dir*(contactOwed(a.name)-contactOwed(b.name));
     return 0;
   });
 
@@ -3600,7 +3599,10 @@ function renderContactsPage(){
   const slice=filtered.slice(contactsPage*CONTACTS_PER_PAGE,(contactsPage+1)*CONTACTS_PER_PAGE);
 
   const cEl=document.getElementById('contactsCount');
-  if(cEl) cEl.textContent=filtered.length+' πελάτες';
+  if(cEl){
+    const withDebt=filtered.filter(ct=>contactOwed(ct.name)>0).length;
+    cEl.textContent=filtered.length+' επαφές'+(withDebt?' · '+withDebt+' με εκκρεμή':'');
+  }
 
   const info=document.getElementById('contactsPagerInfo');
   if(info) info.textContent=filtered.length===0?'':('Σελ. '+(contactsPage+1)+' / '+totalPages+' · '+filtered.length+' πελάτες');
@@ -3621,38 +3623,78 @@ function renderContactsPage(){
   const thead=document.getElementById('contactsThead');
   if(thead){
     thead.querySelectorAll('th').forEach(th=>{th.classList.remove('sa','sd');});
-    const cols=['name','afm','phone','inc','exp','oil','unpaid','last','code','notes'];
-    const idx=cols.indexOf(contactsSort.col);
-    const ths=thead.querySelectorAll('th');
-    if(ths[idx]) ths[idx].classList.add(contactsSort.dir===1?'sa':'sd');
+    const th=thead.querySelector(`th[data-col="${contactsSort.col}"]`);
+    if(th) th.classList.add(contactsSort.dir===1?'sa':'sd');
   }
 
-  tbody.innerHTML=slice.map(ct=>{
-    const txns=getTxnsForContact(ct.name);
-    const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+ +r.amount,0);
-    const totalExp=txns.filter(r=>r.type==='exp').reduce((s,r)=>s+ +r.amount,0);
-    const totalOil=txns.filter(r=>r.type==='oil').reduce((s,r)=>s+ +r.amount,0);
-    const unpaid=txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').reduce((s,r)=>s+ +r.amount,0);
-    const lastTxn=txns[0];
-    const lastDate=lastTxn?fmtD(lastTxn.date):'—';
+  tbody.innerHTML=slice.length===0
+    ?'<tr class="empty-row"><td colspan="8">Δεν βρέθηκαν επαφές</td></tr>'
+    :slice.map(ct=>{
+    const total=contactTotal(ct.name);
+    const owed=contactOwed(ct.name);
     const isActive=ct.name===activeContactName;
-    return`<tr class="${isActive?'ry':'r0'}" style="cursor:pointer" onclick="selectContact('${esc(ct.name).replace(/'/g,"\'")}')">
-      <td><strong style="font-size:13px">${esc(ct.name)}</strong></td>
-      <td class="mono muted" style="font-size:12px">${ct.afm?esc(ct.afm):'—'}</td>
-      <td class="muted">${ct.phone?'📞 '+esc(ct.phone):'—'}</td>
-      <td class="mono" style="text-align:right;color:var(--olive)">${totalInc>0?fmt(totalInc):'—'}</td>
-      <td class="mono" style="text-align:right;color:var(--red-mid)">${totalExp>0?fmt(totalExp):'—'}</td>
-      <td class="mono" style="text-align:right;color:var(--gold)">${totalOil>0?fmt(totalOil):'—'}</td>
-      <td class="mono" style="text-align:right;${unpaid>0?'color:var(--amber)':'color:var(--text3)'}">${unpaid>0?fmt(unpaid):'—'}</td>
-      <td class="muted">${lastDate}</td>
-      <td><span class="code-badge" ${lastTxn&&lastTxn.code?`onclick="copyCode('${esc(lastTxn.code).replace(/'/g,"\\'")}'); event.stopPropagation();" title="Κλικ για αντιγραφή" style="cursor:pointer"`:''}>${esc(lastTxn&&lastTxn.code?lastTxn.code:'')}</span>${!(lastTxn&&lastTxn.code)?'<span class="muted">—</span>':''}</td>
-      <td class="muted" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(ct.notes||'')}">${esc(ct.notes||'')}</td>
-      <td class="no-print"><div class="act-cell">
-        ${isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editContactPhone('${esc(ct.name).replace(/'/g,"\'")}','${esc(ct.phone||'').replace(/'/g,"\'")}')">✏</button>
-        <button class="btn btn-ghost btn-danger btn-sm" onclick="event.stopPropagation();deleteContact('${esc(ct.name).replace(/'/g,"\'")}')">✕</button>`:''}
-      </div></td>
+    const nm=esc(ct.name).replace(/'/g,"\\'");
+    const ph=esc(ct.phone||'').replace(/'/g,"\\'");
+    const phoneCell=ct.phone
+      ? `<a href="tel:${esc(ct.phone).replace(/\s/g,'')}" class="ct-phone" onclick="event.stopPropagation()"><svg class="ic"><use href="#ic-phone"/></svg>${esc(ct.phone)}</a>`
+      : '<span class="muted">—</span>';
+    const metaBits=[];
+    if(ct.phone) metaBits.push(esc(ct.phone));
+    metaBits.push('σύνολο '+fmt(total));
+    return`<tr class="${isActive?'ct-active':''}${owed>0?' ct-owed':''}" style="cursor:pointer" onclick="selectContact('${nm}')">
+      <td class="c-chk"><div class="ct-av${owed>0?' ct-av-due':''}">${initials(ct.name)}</div></td>
+      <td class="c-name">
+        <div class="ct-nm">${esc(ct.name)}</div>
+        <div class="ct-afm mono">${ct.afm?'ΑΦΜ '+esc(ct.afm):'χωρίς ΑΦΜ'}</div>
+      </td>
+      <td class="c-meta">${metaBits.join(' · ')}</td>
+      <td class="c-phone">${phoneCell}</td>
+      <td class="c-notes muted" title="${esc(ct.notes||'')}">${esc(ct.notes||'')||'—'}</td>
+      <td class="c-total mono muted">${total>0?fmt(total):'—'}</td>
+      <td class="c-amt mono">${owed>0?`<span class="ct-due">${fmt(owed)}</span>`:'<span class="muted">—</span>'}</td>
+      <td class="no-print c-act">${isAdmin()?`<button class="row-dots" onclick="openContactMenu(event,'${nm}','${ph}')" title="Ενέργειες"><svg class="ic"><use href="#ic-dots"/></svg></button>`:''}</td>
     </tr>`;
   }).join('');
+}
+
+// Initials for the avatar circle (first letters of up to two words)
+function initials(name){
+  const w=(name||'').trim().split(/\s+/).filter(Boolean);
+  if(!w.length) return '?';
+  if(w.length===1) return w[0].slice(0,2).toUpperCase();
+  return (w[0][0]+w[1][0]).toUpperCase();
+}
+
+// Total value of all dealings with a contact (oil excluded)
+function contactTotal(name){
+  return getTxnsForContact(name)
+    .filter(r=>r.type!=='oil')
+    .reduce((s,r)=>s+(+r.amount||0),0);
+}
+
+// How much we still owe this contact (unpaid expenses, minus any part payment)
+function contactOwed(name){
+  return getTxnsForContact(name)
+    .filter(r=>r.type==='exp' && (r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ'))
+    .reduce((s,r)=>s+Math.max(0,(+r.amount||0)-(+r.enanti||0)),0);
+}
+
+// Row menu for a contact
+function openContactMenu(e,name,phone){
+  e.stopPropagation();
+  const m=document.getElementById('rowMenu');
+  if(!m) return;
+  m.innerHTML=
+    `<button class="rm-item" onclick="closeRowMenu();editContactPhone('${name}','${phone}')"><svg class="ic"><use href="#ic-edit"/></svg>Επεξεργασία τηλεφώνου</button>`+
+    '<div class="rm-sep"></div>'+
+    `<button class="rm-item danger" onclick="closeRowMenu();deleteContact('${name}')"><svg class="ic"><use href="#ic-trash"/></svg>Διαγραφή επαφής</button>`;
+  m.classList.add('open');
+  const r=e.currentTarget.getBoundingClientRect();
+  const w=224, h=m.offsetHeight||110;
+  let left=r.right-w, top=r.bottom+4;
+  if(left<8) left=8;
+  if(top+h>window.innerHeight-8) top=Math.max(8,r.top-h-4);
+  m.style.left=left+'px'; m.style.top=top+'px';
 }
 
 function renderContactsList(){ renderContactsPage(); }
@@ -3703,7 +3745,7 @@ function renderContactDetail(name){
   const txnRows=txns.length===0
     ?'<div style="padding:16px;text-align:center;color:var(--text3);font-style:italic">Δεν υπάρχουν συναλλαγές</div>'
     :txns.map(r=>`<div class="cd-txn-row">
-        <span class="cd-txn-type ${r.type}">${r.type==='exp'?'Έξοδο':r.type==='oil'?'🫒 Λάδι':'Έσοδο'}</span>
+        <span class="cd-txn-type ${r.type}">${r.type==='exp'?'Έξοδο':r.type==='oil'?'Λάδι':'Έσοδο'}</span>
         <span class="mono" style="font-size:11px;color:var(--text3);min-width:72px">${fmtD(r.date)}</span>
         <span style="flex:1;font-size:12px;color:var(--text2)">${MN[r.m]} ${r.y}</span>
         <span class="mono" style="font-size:12.5px">${fmt(r.amount)}</span>
@@ -3726,7 +3768,7 @@ function renderContactDetail(name){
     <div class="cd-stats">
       <div class="cd-stat g"><div class="csl">Σύν. Εσόδων</div><div class="csv">${fmt(totalInc)}</div></div>
       <div class="cd-stat r"><div class="csl">Σύν. Εξόδων</div><div class="csv">${fmt(totalExp)}</div></div>
-      <div class="cd-stat o"><div class="csl">🫒 Λάδι</div><div class="csv">${fmt(totalOil)}</div></div>
+      <div class="cd-stat o"><div class="csl">Λάδι</div><div class="csv">${fmt(totalOil)}</div></div>
     </div>
     ${unpaid>0?`<div class="pending-alert" style="margin-bottom:14px">⚠ Εκκρεμείς πληρωμές: ${fmt(unpaid)}</div>`:''}
     <div class="cd-txn-hdr">Συναλλαγές</div>
@@ -3781,20 +3823,15 @@ function exportContacts(){
   const wb=XLSX.utils.book_new();
   const rows=[
     ['Α.Σ Αγιάσου — Πελατολόγιο'],
+    ['Εκτυπώθηκε '+new Date().toLocaleDateString('el-GR')],
     [],
-    ['Όνομα','Τηλέφωνο','Σύν. Εσόδων','Σύν. Εξόδων','🫒 Λάδι','Εκκρεμείς','Τελ. Συναλλαγή','Κωδ. Πληρωμής','Σημειώσεις']
+    ['Όνομα','ΑΦΜ','Τηλέφωνο','Σύνολο Συναλλαγών (€)','Εκκρεμές (€)','Σημειώσεις']
   ];
   all.forEach(ct=>{
-    const txns=getTxnsForContact(ct.name);
-    const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+ +r.amount,0);
-    const totalExp=txns.filter(r=>r.type==='exp').reduce((s,r)=>s+ +r.amount,0);
-    const totalOil=txns.filter(r=>r.type==='oil').reduce((s,r)=>s+ +r.amount,0);
-    const unpaid=txns.filter(r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ').reduce((s,r)=>s+ +r.amount,0);
-    const lastTxn=txns[0];
-    rows.push([ct.name,ct.phone||'',totalInc,totalExp,totalOil,unpaid,lastTxn?fmtD(lastTxn.date):'',lastTxn?.code||'',ct.notes||'']);
+    rows.push([ct.name, ct.afm||'', ct.phone||'', contactTotal(ct.name), contactOwed(ct.name), ct.notes||'']);
   });
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:28},{wch:14},{wch:14},{wch:14},{wch:12},{wch:12},{wch:16},{wch:36}];
+  ws['!cols']=[{wch:30},{wch:13},{wch:16},{wch:20},{wch:14},{wch:36}];
   XLSX.utils.book_append_sheet(wb,ws,'Πελατολόγιο');
   XLSX.writeFile(wb,'agiasos_pelatoloio_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
@@ -4748,7 +4785,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17m</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17n</div>
   </div>
 </div>
 
