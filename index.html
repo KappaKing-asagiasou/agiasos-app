@@ -118,6 +118,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 /* ── SUMMARY CARDS ─── */
 .summary-grid{display:grid;grid-template-columns:1.6fr repeat(auto-fit,minmax(126px,1fr));gap:10px;margin-bottom:12px;}
+/* ── HOME STAT CARDS: 2-2-1 layout ─────────────────── */
+.home-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.home-stats .sc-wide{grid-column:1/-1;}
+.home-stats .stat-card{position:relative;}
+.home-stats .sc-accent{border-left:3px solid #c0504d;}
+.home-stats .stat-card .lbl{margin-bottom:5px;}
+.sc-scope{margin-left:auto;font-size:8px;letter-spacing:.2px;color:var(--text3);text-transform:uppercase;background:var(--surface2);border:1px solid var(--border);padding:1px 6px;border-radius:5px;font-weight:400;white-space:nowrap;}
+.home-stats .stat-card .val{font-size:19px;}
+@media(max-width:400px){
+  .home-stats .stat-card .val{font-size:16px;}
+  .sc-scope{font-size:7.5px;padding:1px 4px;}
+}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 14px;transition:border-color .18s,transform .18s;box-shadow:none;}
 .stat-card:hover{transform:none;border-color:var(--border2);}
 .stat-card.g,.stat-card.r,.stat-card.a{background:var(--surface);border-left:1px solid var(--border);}
@@ -563,7 +575,28 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .modal-form .modal-title.exp,.modal-form .modal-title.inc{color:var(--text);}
 .modal-form .field-row{grid-template-columns:repeat(auto-fit,minmax(196px,1fr));}
 .modal-form .fr-2-1{grid-template-columns:2fr 1fr;}
-@media(max-width:640px){.modal-form{width:100%;}.modal-form .field-row,.modal-form .fr-2-1{grid-template-columns:1fr;}}
+@media(max-width:640px){.modal-form{width:100%;}.modal-form .field-row,.modal-form .fr-2-1{grid-template-columns:1fr;}
+/* ── PAYMENTS EDITOR (entry modal) ─────────────────── */
+#payEditor{margin-top:6px;}
+.pay-hd{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:7px;}
+.pay-row{display:grid;grid-template-columns:1fr 1.15fr 1.15fr auto;gap:7px;align-items:center;margin-bottom:7px;}
+.pay-row input,.pay-row select{font-family:'DM Sans',sans-serif;font-size:12.5px;padding:6px 8px;border:1px solid var(--border2);border-radius:7px;background:var(--input-bg);color:var(--text);outline:none;width:100%;box-sizing:border-box;}
+.pay-row input:focus,.pay-row select:focus{border-color:var(--accent-mid);box-shadow:0 0 0 3px var(--accent-glow);}
+.pay-amt{text-align:right;font-family:'DM Mono',monospace!important;}
+.pay-src-none{font-size:11px;color:var(--text3);text-align:center;}
+.pay-del{width:28px;height:28px;border:1px solid #e0c4c0;background:var(--red-lt);color:#8a3530;border-radius:7px;cursor:pointer;font-size:13px;line-height:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pay-del:hover{background:#f2d4d0;}
+.pay-empty{font-size:11.5px;color:var(--text3);padding:7px 2px;}
+.pay-add{width:100%;padding:8px;border:1px dashed var(--border2);border-radius:7px;background:transparent;color:var(--accent);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s,border-color .15s;margin-top:2px;}
+.pay-add:hover{background:var(--accent-lt);border-color:var(--accent-mid);}
+.pay-summary{display:flex;align-items:center;gap:9px;margin-top:11px;padding:9px 11px;background:var(--surface2);border-radius:8px;flex-wrap:wrap;}
+.pay-summary:empty{display:none;}
+@media(max-width:520px){
+  .pay-row{grid-template-columns:1fr 1fr;grid-template-areas:"amt del" "date date" "src src";gap:5px;}
+  .pay-amt{grid-area:amt;} .pay-del{grid-area:del;justify-self:end;}
+  .pay-date{grid-area:date;} .pay-src,.pay-src-none{grid-area:src;}
+  .pay-row{padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+}}
 
 /* CALENDAR */
 .cal-legend{display:flex;gap:16px;margin-bottom:12px;font-size:12px;color:var(--text2);flex-wrap:wrap;}
@@ -809,7 +842,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </nav>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17p</div>
+    <div class="sb-ver">έκδοση 2026.06.17r</div>
   </div>
 </aside>
 <div class="app-body">
@@ -874,7 +907,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17p</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17r</div>
       </div>
     </div>
 
@@ -904,7 +937,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   <div class="page active" id="page-home">
     <div id="pendingAlert" class="pending-alert hidden">⚠ Υπάρχουν εκκρεμείς πληρωμές αυτό το μήνα.</div>
     <div id="overdueAlert" class="pending-alert hidden" onclick="openOverdue()" style="cursor:pointer;background:#5a2820;border-color:#8a4030;color:#f0d0c0"></div>
-    <div class="summary-grid" id="homeSummary"></div>
+    <div class="home-stats" id="homeSummary"></div>
     <div class="profit-bar" id="homeProfitBar"></div>
     <div class="home-tables">
       <!-- exp mini -->
@@ -1137,8 +1170,8 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
     <div class="fs-t">Εγγραφή</div>
     <div class="field-row">
       <div class="field"><label>Ημερομηνία</label><input type="date" id="fDate"></div>
-      <div class="field"><label>Κατάσταση</label>
-        <select id="fPaid" onchange="toggleInstFields()"><option value="ΟΧΙ">Ανεξόφλητο</option><option value="ΝΑΙ">Πληρωμένο</option><option value="ΔΟΣΕΙΣ">Δόσεις</option></select>
+      <div class="field"><label>Τύπος</label>
+        <select id="fPaid" onchange="toggleInstFields()"><option value="ΚΑΝΟΝΙΚΟ">Κανονικό (με πληρωμές)</option><option value="ΔΟΣΕΙΣ">Δόσεις (πρόγραμμα)</option></select>
       </div>
     </div>
   </div>
@@ -1162,12 +1195,14 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
 
   <div class="fs">
-    <div class="fs-t">Ποσά</div>
-    <div class="field-row">
-      <div class="field"><label>Ποσό (€)</label><input type="number" id="fAmount" step="0.01" placeholder="0.00" oninput="updateEnantiPreview()"></div>
-      <div class="field"><label>Έναντι (€) <span style="font-weight:400;color:var(--text3);font-size:10px">— προαιρετικό</span></label><input type="number" id="fEnanti" step="0.01" placeholder="0.00" oninput="updateEnantiPreview()"></div>
+    <div class="fs-t">Ποσά & Πληρωμές</div>
+    <div class="field" style="max-width:210px"><label>Ποσό τιμολογίου (€)</label><input type="number" id="fAmount" step="0.01" placeholder="0.00" oninput="recomputePaySummary()"></div>
+    <div id="payEditor">
+      <div class="pay-hd">Πληρωμές <span style="font-weight:400;color:var(--text3);font-size:10px">— έναντι / εξόφληση</span></div>
+      <div id="payList"></div>
+      <button type="button" class="pay-add" onclick="addPayRow()">+ Προσθήκη πληρωμής</button>
+      <div id="paySummary" class="pay-summary"></div>
     </div>
-    <div id="enantiPreview" style="font-size:11.5px;color:var(--text3);margin:-4px 0 4px;min-height:16px;"></div>
     <div id="instFields" style="display:none;background:var(--surface2);border-radius:8px;padding:12px;margin:4px 0 6px;border:1px solid var(--border);">
       <div class="fs-t" style="margin-bottom:8px">Ρύθμιση δόσεων</div>
       <div class="field-row">
@@ -1272,8 +1307,12 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 <!-- PAYMENT SOURCE PICKER -->
 <div class="overlay" id="paySrcOverlay" onclick="if(event.target===this)closePaySrcPicker()">
 <div class="del-box" style="max-width:340px">
-  <div class="icon">💳</div><h3>Από πού πληρώθηκε;</h3>
-  <p style="margin-bottom:12px">Επίλεξε πηγή & ημερομηνία πληρωμής για τον λογιστή.</p>
+  <div class="icon">💳</div><h3>Καταχώρηση πληρωμής</h3>
+  <p style="margin-bottom:12px" id="paySrcHint">Ποσό, ημερομηνία & τράπεζα για τον λογιστή.</p>
+  <div class="field" style="margin-bottom:10px;text-align:left">
+    <label style="font-size:12px">Ποσό πληρωμής (€)</label>
+    <input type="number" step="0.01" id="paySrcAmount" style="width:100%" placeholder="0.00">
+  </div>
   <div class="field" style="margin-bottom:14px;text-align:left">
     <label style="font-size:12px">Ημερομηνία πληρωμής</label>
     <input type="date" id="paySrcDate" style="width:100%">
@@ -1463,6 +1502,71 @@ function migratePaySource(){
 function setEntsSilent(y,m,d){data[mk(y,m)]=d;save();}function mk(y,m){return'y'+y+'m'+m;}
 // Note: legacy 'oil' arrays may still exist in old data/backups. They are never read or shown.
 function ents(y,m){const k=mk(y,m);if(!data[k])data[k]={inc:[],exp:[]};return data[k];}
+
+// ─────────────────────────────────────────────────────
+//  PAYMENTS MODEL
+//  Each entry may hold r.payments = [{amount,date,source}].
+//  This is the single source of truth for money paid against an entry.
+//  History is permanent — payments are never wiped, even once fully paid.
+// ─────────────────────────────────────────────────────
+
+// Normalised payments list. Reads r.payments; if absent (pre-migration data)
+// it synthesises one from the old scalar fields so nothing breaks.
+function entryPayments(r){
+  if(Array.isArray(r.payments)) return r.payments;
+  if(r.paid==='ΝΑΙ') return [{amount:+r.amount||0, date:r.paidDate||r.date||'', source:r.paySource||'Άγνωστο'}];
+  if(+r.enanti>0)    return [{amount:+r.enanti||0, date:r.paidDate||'', source:r.paySource||''}];
+  return [];
+}
+// Total paid so far (never more than the invoice, for status purposes)
+function paidSum(r){ return entryPayments(r).reduce((s,p)=>s+(+p.amount||0),0); }
+// What is still owed on this entry
+function remaining(r){ return Math.max(0,(+r.amount||0)-paidSum(r)); }
+// Is this a partial payment (some paid, but not all)?
+function isPartial(r){ const ps=paidSum(r); return ps>0.005 && ps+0.005 < (+r.amount||0); }
+// Three-way status text derived from the payments list
+function statusText(r){
+  if(r.instPlan) return 'Δόσεις';
+  const ps=paidSum(r);
+  if(ps<=0.005) return 'Ανεξόφλητο';
+  if(remaining(r)<=0.005) return 'Πληρωμένο';
+  return 'Έναντι';
+}
+// Keep the legacy r.paid flag in sync so untouched code (row colours, filters,
+// carryover) keeps working. Installments keep their own flag.
+function syncPaid(r){
+  if(r.instPlan) return;
+  r.paid = remaining(r)<=0.005 && paidSum(r)>0.005 ? 'ΝΑΙ' : 'ΟΧΙ';
+}
+// Append a payment to an entry and re-sync its status
+function addPayment(r, amount, date, source){
+  if(!Array.isArray(r.payments)) r.payments = entryPayments(r).slice();
+  r.payments.push({amount:+amount||0, date:date||'', source:source||''});
+  syncPaid(r);
+}
+
+// One-time migration: give every expense/income a payments[] array built from
+// the old scalar fields. Old fields are kept intact (non-destructive).
+function migratePayments(){
+  if(safeGet('agiasos_payments_migrated','0')==='1') return;
+  let changed=false;
+  Object.keys(data).forEach(key=>{
+    if(!/^y\d+m\d+$/.test(key)) return;
+    const bucket=data[key];
+    if(!bucket) return;
+    ['exp','inc'].forEach(tp=>{
+      if(!Array.isArray(bucket[tp])) return;
+      bucket[tp].forEach(r=>{
+        if(Array.isArray(r.payments)) return;      // already has one
+        if(r.instPlan){ r.payments=[]; changed=true; return; } // installments unchanged
+        r.payments = entryPayments(r);             // synthesise from legacy
+        changed=true;
+      });
+    });
+  });
+  safeSet('agiasos_payments_migrated','1');
+  if(changed) save();
+}
 function getContacts(){return data['__contacts__']||[];}
 function setContacts(arr){data['__contacts__']=arr;save();}
 function genContactId(){return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
@@ -1568,17 +1672,8 @@ function calc(y,m,annualMode=false){
   const{inc,exp}=ents(y,m);
   const s=(a,f)=>a.filter(f||Boolean).reduce((t,r)=>t+ +r.amount,0);
   const tI=s(inc);
-  const pI=inc.reduce((sum,r)=>{
-    if(r.paid==='ΝΑΙ') return sum+(+r.amount||0);
-    if(r.enanti>0) return sum+(+r.enanti||0);
-    return sum;
-  },0);
-  const uI=inc.reduce((sum,r)=>{
-    if(r.paid==='ΝΑΙ') return sum;
-    if(r.enanti>0) return sum+Math.max(0,(+r.amount||0)-(+r.enanti||0));
-    if(r.paid==='ΟΧΙ') return sum+(+r.amount||0);
-    return sum;
-  },0);
+  const pI=inc.reduce((sum,r)=>sum+Math.min(+r.amount||0, paidSum(r)),0);
+  const uI=inc.reduce((sum,r)=>sum+remaining(r),0);
 
   if(annualMode){
     // Annual: main entry (instPlan) counts ONLY its installment amount if paid, not the full debt.
@@ -1588,8 +1683,8 @@ function calc(y,m,annualMode=false){
       return r;
     });
     const tE=s(annualExp);
-    const pE=s(annualExp,r=>r.paid==='ΝΑΙ');
-    const uE=s(annualExp,r=>r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ');
+    const pE=annualExp.reduce((sum,r)=>sum+Math.min(+r.amount||0, paidSum(r)),0);
+    const uE=annualExp.reduce((sum,r)=>sum+remaining(r),0);
     return{inc,exp,tI,pI,uI,tE,pE,uE,pr:pI-pE};
   } else {
     // Monthly: same — main entry counts as installment amount only
@@ -1598,18 +1693,9 @@ function calc(y,m,annualMode=false){
       return r;
     });
     const tE=s(monthExp);
-    // For entries with enanti: count enanti as paid, (amount-enanti) as unpaid
-    const pE=monthExp.reduce((sum,r)=>{
-      if(r.paid==='ΝΑΙ') return sum+(+r.amount||0);
-      if(r.enanti>0) return sum+(+r.enanti||0);
-      return sum;
-    },0);
-    const uE=monthExp.reduce((sum,r)=>{
-      if(r.paid==='ΝΑΙ') return sum;
-      if(r.enanti>0) return sum+Math.max(0,(+r.amount||0)-(+r.enanti||0));
-      if(r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ') return sum+(+r.amount||0);
-      return sum;
-    },0);
+    // Paid = how much of each invoice has actually been paid; Unpaid = remainder
+    const pE=monthExp.reduce((sum,r)=>sum+Math.min(+r.amount||0, paidSum(r)),0);
+    const uE=monthExp.reduce((sum,r)=>sum+remaining(r),0);
     return{inc,exp,tI,pI,uI,tE,pE,uE,pr:pI-pE};
 
   }
@@ -1640,6 +1726,46 @@ function renderSummary(id,tI,pI,uI,tE,pE,uE,prevTI,prevTE){
     <div class="stat-card r"><div class="lbl">${ic('ic-check')}Πληρωθέντα Εξ.</div><div class="val">${fmt(pE)}</div></div>`;
   setTimeout(()=>animateVals(id),10);
 }
+// Sum of everything we still owe across ALL months.
+// Mirrors the monthly uE logic (instalment parents count as their instalment
+// amount, part-payments subtracted, hidden rows skipped for viewers) so the
+// current-month slice of this figure equals the "Εκκρεμή Έξοδα μήνα" card.
+function allTimePendingExp(){
+  let total=0;
+  Object.keys(data).forEach(key=>{
+    if(!/^y\d+m\d+$/.test(key)) return;
+    const bucket=data[key];
+    if(!bucket||!bucket.exp) return;
+    bucket.exp.forEach(r=>{
+      if(r.hidden && !isAdmin()) return;
+      if(r.instPlan){ if(r.paid!=='ΝΑΙ') total += (+r.instPlan.amt||0); return; }
+      total += remaining(r);
+    });
+  });
+  return total;
+}
+
+// Home page stat cards: 5 metrics in a 2-2-1 layout.
+function renderHomeStats(tI,pI,uI,tE,pE,uE,prevTI,prevTE){
+  function diff(cur,prev){
+    if(prev===undefined||prev===0) return '';
+    const d=cur-prev, pct=Math.round(d/prev*100);
+    const cl=d>=0?'color:var(--olive)':'color:var(--red-mid)';
+    const arrow=d>=0?'▲':'▼';
+    return`<span style="font-size:10px;${cl};margin-left:5px">${arrow}${Math.abs(pct)}%</span>`;
+  }
+  const ic=n=>`<svg class="ic sc-ic"><use href="#${n}"/></svg>`;
+  const scope=t=>`<span class="sc-scope">${t}</span>`;
+  const allPending=allTimePendingExp();
+  document.getElementById('homeSummary').innerHTML=`
+    <div class="stat-card r"><div class="lbl">${ic('ic-exp')}Σύνολο Εξόδων${scope('μήνας')}</div><div class="val">${fmt(tE)}${diff(tE,prevTE)}</div></div>
+    <div class="stat-card g"><div class="lbl">${ic('ic-inc')}Σύνολο Εσόδων${scope('μήνας')}</div><div class="val">${fmt(tI)}${diff(tI,prevTI)}</div></div>
+    <div class="stat-card r"><div class="lbl">${ic('ic-wallet')}Εκκρεμή Έξοδα${scope('μήνας')}</div><div class="val">${fmt(uE)}</div></div>
+    <div class="stat-card r sc-accent"><div class="lbl">${ic('ic-clock')}Εκκρεμή Έξοδα${scope('όλοι οι μήνες')}</div><div class="val">${fmt(allPending)}</div></div>
+    <div class="stat-card a sc-wide"><div class="lbl">${ic('ic-clock')}Εκκρεμή Έσοδα${scope('μήνας')}</div><div class="val">${fmt(uI)}</div></div>`;
+  setTimeout(()=>animateVals('homeSummary'),10);
+}
+
 function renderProfit(id,pr,lbl){
   const p=pr>=0;const el=document.getElementById(id);
   el.className='profit-bar'+(p?'':' neg');
@@ -1657,6 +1783,31 @@ function ptHtml(paid,type,ri,oy,om){
 // Plain-text status (used in the mobile meta line)
 function ptText(paid){
   return paid==='ΝΑΙ'?'Πληρωμένο':paid==='ΟΧΙ'?'Ανεξόφλητο':paid==='ΔΟΣΕΙΣ'?'Δόσεις':'Έναντι';
+}
+
+// Status pill derived from the payments list (Πληρωμένο / Έναντι / Ανεξόφλητο).
+// Clicking a not-fully-paid pill adds a payment; a paid pill opens the entry.
+function payPill(r,type,ri){
+  const st=statusText(r);
+  const cl=st==='Πληρωμένο'?'y':st==='Έναντι'?'e':'n';
+  const oy=r._carryover?r._origY:-1, om=r._carryover?r._origM:-1;
+  const oyp=(oy!==-1)?`,${oy},${om}`:'';
+  const y=oy!==-1?oy:'undefined', m=om!==-1?om:'undefined';
+  let action, tip;
+  if(remaining(r)<=0.005){ action=`editEntry('${type}',${ri}${oyp})`; tip='Δες πληρωμές'; }
+  else if(type==='exp'){ action=`openPaySourcePicker('${type}',${ri},${y},${m})`; tip='Πρόσθεσε πληρωμή'; }
+  else { action=`markReceived('${type}',${ri},${y},${m})`; tip='Σήμανση ως εισπραγμένο'; }
+  return`<button class="pt ${cl}" onclick="${action}" title="${tip}">${st}</button>`;
+}
+
+// Income quick-receive: adds a payment covering the remaining amount (no bank).
+function markReceived(type,i,oy,om){ if(isViewer()) return;
+  const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
+  const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
+  const d=ents(y,m); const r=d[type][i]; if(!r) return;
+  addPayment(r, remaining(r), new Date().toISOString().slice(0,10), '');
+  setEnts(y,m,d); renderCurrentPage();
+  showToast('✓ Εισπράχθηκε');
 }
 
 // Row actions collapse into a single "⋯" button
@@ -1678,7 +1829,6 @@ function openRowMenu(e,type,ri,oy,om,isHidden,paid){
   let html='';
   if(!viewer){
     html+=it('ic-edit','Επεξεργασία',`editEntry('${type}',${ri}${oyp})`);
-    if(type==='exp'&&paid==='ΝΑΙ') html+=it('ic-card','Επεξεργασία πληρωμής',`openPayEdit('${type}',${ri},${oy},${om})`);
     html+=it('ic-copy','Αντιγραφή',`copyEntry('${type}',${ri}${oyp})`);
     html+=it('ic-move','Μετακίνηση',`openMoveMonth('${type}',${ri}${oyp})`);
     html+=it(isHidden?'ic-eye':'ic-eye-off',isHidden?'Εμφάνιση σε θεατές':'Απόκρυψη από θεατές',`toggleHide('${type}',${ri}${oyp})`);
@@ -1785,7 +1935,7 @@ function renderOverdueAlert(){
       const days=Math.floor((now-entryDate)/(1000*60*60*24));
       if(days>cutoff){
         count++;
-        totalAmt+=(+r.amount||0)-(+r.enanti||0);
+        totalAmt+=remaining(r);
       }
     });
   });
@@ -1802,8 +1952,8 @@ function renderOverdueAlert(){
 function expDenseRow(r){
   const oy=r._carryover?r._origY:-1, om=r._carryover?r._origM:-1;
   const clip=r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" class="clip">📎</a>`:'';
-  const amtHtml=r.enanti>0
-    ? `<span class="amt-old">${fmt(r.amount)}</span><span class="amt-due">${fmt(r.amount-r.enanti)}</span>`
+  const amtHtml=isPartial(r)
+    ? `<span class="amt-old">${fmt(r.amount)}</span><span class="amt-due">${fmt(remaining(r))}</span>`
     : fmt(r.amount);
   const metaBits=[fmtD(r.date)];
   if(r.cat) metaBits.push(esc(r.cat));
@@ -1841,7 +1991,7 @@ function updateExpSelectBar(){
   let total=0;
   _expSelected.forEach(i=>{
     const r=exp[i];
-    if(r) total+=(+r.amount||0)-(+r.enanti||0); // remaining amount
+    if(r) total+=remaining(r); // remaining amount
   });
   document.getElementById('expSelectInfo').textContent=_expSelected.size+' επιλεγμένα';
   document.getElementById('expSelectTotal').textContent='Σύνολο: '+fmt(total);
@@ -1863,7 +2013,7 @@ function renderHome(){
   // Previous month for comparison
   let pm=CM-1, py=CY; if(pm<0){pm=11;py--;}
   const prev=calc(py,pm);
-  renderSummary('homeSummary',tI,pI,uI,tE,pE,uE,prev.tI,prev.tE);
+  renderHomeStats(tI,pI,uI,tE,pE,uE,prev.tI,prev.tE);
   renderProfit('homeProfitBar',pr,'εισπραχθέντα − πληρωθέντα · '+mn+' '+CY);
 
   const hasPending=inc.some(r=>r.paid==='ΟΧΙ')||exp.some(r=>r.paid==='ΟΧΙ');
@@ -1904,9 +2054,9 @@ function renderHome(){
       <td class="c-date mono">${fmtD(r.date)}</td>
       <td class="c-name">${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" class="clip">📎</a>`:''}${esc(r.name)}</td>
       <td class="c-meta">${fmtD(r.date)} · ${ptText(r.paid)}</td>
-      <td class="c-status">${ptHtml(r.paid,'inc',r._i,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
-      <td class="c-amt mono">${r.enanti>0
-        ? `<span class="amt-old">${fmt(r.amount)}</span><span class="amt-due">${fmt(r.amount-r.enanti)}</span>`
+      <td class="c-status">${payPill(r,'inc',r._i)}</td>
+      <td class="c-amt mono">${isPartial(r)
+        ? `<span class="amt-old">${fmt(r.amount)}</span><span class="amt-due">${fmt(remaining(r))}</span>`
         : fmt(r.amount)}</td>
       <td class="no-print c-act">${actHtml('inc',r._i,false,r._carryover?r._origY:-1,r._carryover?r._origM:-1,r.paid)}</td>
     </tr>`).join('');
@@ -1970,7 +2120,7 @@ function expRowHtml(r,isSearch){
       <td class="c-inv">${r.code?`<span class="code-badge" onclick="copyCode('${esc(r.code).replace(/'/g,"\\'")}');event.stopPropagation();" title="Κλικ για αντιγραφή" style="cursor:pointer">${esc(r.code)}</span>`:'<span class="muted">—</span>'}</td>
       <td class="c-notes muted">${esc(r.notes)||'—'}</td>
       <td class="c-status">${instBadgeHtml(r,'exp',r._i)}</td>
-      <td class="c-amt mono">${r.enanti>0?`<span class="amt-old">${fmt(r.amount)}</span><span class="amt-due">${fmt(r.amount-r.enanti)}</span>`:fmt(r.amount)}</td>
+      <td class="c-amt mono">${isPartial(r)?`<span class="amt-old">${fmt(r.amount)}</span><span class="amt-due">${fmt(remaining(r))}</span>`:fmt(r.amount)}</td>
       <td class="no-print c-act">${actHtml('exp',r._i,r.hidden,isSearch?sy:oy,isSearch?sm:om,r.paid)}</td>
     </tr>`;
 }
@@ -2007,13 +2157,8 @@ function payEditBtn(r){
 // Open the pay-source picker for an ALREADY paid entry (to fix bank/date)
 function openPayEdit(type,i,oy,om){
   if(isViewer()) return;
-  const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
-  const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
-  _paySrcCtx={type,i,y,m};
-  const ent=ents(y,m)[type][i];
-  const dateInput=document.getElementById('paySrcDate');
-  if(dateInput) dateInput.value=(ent&&ent.paidDate)?ent.paidDate:(ent&&ent.date)?ent.date:new Date().toISOString().slice(0,10);
-  document.getElementById('paySrcOverlay').classList.add('open');
+  // Payments are edited inside the entry form now.
+  editEntry(type,i,oy,om);
 }
 
 // Empty state row
@@ -2055,10 +2200,10 @@ function renderIncPage(){
       <td class="mono">${fmtD(r.date)}</td>
       <td>${r.attachment?`<a href="${r.attachment}" target="_blank" title="Άνοιγμα τιμολογίου" style="margin-right:4px;text-decoration:none">📎</a>`:''}${esc(r.name)}${r._carryover?`<span class="carry-badge">από ${MN[r._origM].slice(0,3)}</span>`:''}</td>
       <td class="muted">${r.incCat?catIcon(r.incCat)+' '+esc(r.incCat):''}</td>
-      <td class="mono" style="text-align:right">${r.enanti>0
-        ? `<span style="text-decoration:line-through;color:#a08878;font-size:11px">${fmt(r.amount)}</span><br><span style="color:#c08030;font-size:13px">${fmt(r.amount-r.enanti)}</span>`
+      <td class="mono" style="text-align:right">${isPartial(r)
+        ? `<span class="amt-old">${fmt(r.amount)}</span><span class="amt-due">${fmt(remaining(r))}</span>`
         : fmt(r.amount)}</td>
-        <td>${ptHtml(r.paid,'inc',r._i,r._carryover?r._origY:-1,r._carryover?r._origM:-1)}</td>
+        <td>${payPill(r,'inc',r._i)}</td>
       <td class="muted">${esc(r.notes)}</td>
       <td class="no-print c-act">${actHtml('inc',r._i,false,r._carryover?r._origY:-1,r._carryover?r._origM:-1,r.paid)}</td>
     </tr>`).join('');
@@ -2311,25 +2456,15 @@ function toggleHide(type,i,oy,om){
   setEnts(y,m,d);renderCurrentPage();
 }
 
+// Legacy toggle — kept for safety. Routes to the payments flow; never wipes history.
 function togglePaid(type,i,oy,om){ if(isViewer()) return;
   const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
   const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
-  const d=ents(y,m);
-  const cur=d[type][i].paid;
-  const newPaid=cur==='ΝΑΙ'?'ΟΧΙ':'ΝΑΙ';
-  // For expenses being marked as paid: ask for payment source
-  if(type==='exp' && newPaid==='ΝΑΙ'){
-    openPaySourcePicker(type,i,y,m);
-    return;
-  }
-  d[type][i].paid=newPaid;
-  if(newPaid==='ΝΑΙ'){
-    d[type][i].enanti=0;
-    d[type][i].paidDate=new Date().toISOString().slice(0,10);
-  } else {
-    delete d[type][i].paidDate;
-  }
-  setEnts(y,m,d);renderCurrentPage();
+  const d=ents(y,m); const r=d[type][i]; if(!r) return;
+  if(remaining(r)<=0.005){ editEntry(type,i,oy,om); return; } // already paid → view/edit
+  if(type==='exp'){ openPaySourcePicker(type,i,y,m); return; }
+  addPayment(r, remaining(r), new Date().toISOString().slice(0,10), '');
+  setEnts(y,m,d); renderCurrentPage();
 }
 
 // Quick payment source picker (when marking an expense as paid)
@@ -2337,11 +2472,15 @@ let _paySrcCtx=null;
 let _bulkPayMode=false;
 function openPaySourcePicker(type,i,y,m){
   _paySrcCtx={type,i,y,m};
-  // Default payment date: the entry's own date (more likely correct than today)
   const ent=ents(y,m)[type][i];
   const defaultDate=(ent&&ent.date)?ent.date:new Date().toISOString().slice(0,10);
   const dateInput=document.getElementById('paySrcDate');
   if(dateInput) dateInput.value=defaultDate;
+  const amtInput=document.getElementById('paySrcAmount');
+  const rem=ent?remaining(ent):0;
+  if(amtInput) amtInput.value=rem>0.005?+rem.toFixed(2):'';
+  const hint=document.getElementById('paySrcHint');
+  if(hint&&ent) hint.textContent='Υπόλοιπο: '+fmt(rem)+' · πρόσθεσε πληρωμή (έναντι ή εξόφληση).';
   document.getElementById('paySrcOverlay').classList.add('open');
 }
 function closePaySrcPicker(){
@@ -2350,16 +2489,16 @@ function closePaySrcPicker(){
   _bulkPayMode=false;
 }
 function selectPaySource(src){
-  // Bulk mode: apply to all selected home expenses
+  const dateInput=document.getElementById('paySrcDate');
+  const payDate=(dateInput&&dateInput.value)?dateInput.value:new Date().toISOString().slice(0,10);
+  // Bulk mode: add a full-remaining payment to every selected home expense
   if(_bulkPayMode){
-    const dateInput=document.getElementById('paySrcDate');
-    const payDate=(dateInput&&dateInput.value)?dateInput.value:new Date().toISOString().slice(0,10);
     const d=ents(CY,CM);
     let count=0;
     _expSelected.forEach(i=>{
       const r=d.exp[i];
-      if(r && r.paid!=='ΝΑΙ'){
-        r.paid='ΝΑΙ'; r.enanti=0; r.paidDate=payDate; r.paySource=src;
+      if(r && remaining(r)>0.005){
+        addPayment(r, remaining(r), payDate, src);
         count++;
       }
     });
@@ -2375,18 +2514,18 @@ function selectPaySource(src){
   const{type,i,y,m}=_paySrcCtx;
   const d=ents(y,m);
   if(!d[type][i]){closePaySrcPicker();return;}
-  // Use the chosen payment date (defaults to entry date, user can change)
-  const dateInput=document.getElementById('paySrcDate');
-  const payDate=(dateInput&&dateInput.value)?dateInput.value:new Date().toISOString().slice(0,10);
-  d[type][i].paid='ΝΑΙ';
-  d[type][i].enanti=0;
-  d[type][i].paidDate=payDate;
-  d[type][i].paySource=src;
+  const r=d[type][i];
+  // Amount defaults to remaining, but the user may enter a partial (έναντι)
+  const amtInput=document.getElementById('paySrcAmount');
+  let amt=parseFloat(amtInput?amtInput.value:'')||0;
+  if(amt<=0) amt=remaining(r);            // empty → treat as full remaining
+  addPayment(r, amt, payDate, src);
   setEnts(y,m,d);
   closePaySrcPicker();
   renderCurrentPage();
   const mIdx=parseInt(payDate.split('-')[1])-1;
-  showToast('✓ Πληρώθηκε από '+src+' ('+(MN[mIdx]||'')+')');
+  const label = remaining(r)<=0.005 ? 'Εξοφλήθηκε' : 'Καταχωρήθηκε έναντι';
+  showToast('✓ '+label+' — '+fmt(amt)+' από '+src+' ('+(MN[mIdx]||'')+')');
 }
 
 // ── ENTRY MODAL ───────────────────────────────────────
@@ -2423,14 +2562,14 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
     document.getElementById('fDate').value=r.date||'';
     document.getElementById('fName').value=r.name||'';
     document.getElementById('fAmount').value=r.amount||'';
-    document.getElementById('fEnanti').value=r.enanti||'';
     document.getElementById('fCode').value=r.code||'';
     document.getElementById('fInvoice').value=r.invoice||'';
-    document.getElementById('fPaid').value=r.paid||'';
+    document.getElementById('fPaid').value=r.instPlan?'ΔΟΣΕΙΣ':'ΚΑΝΟΝΙΚΟ';
     document.getElementById('fInstAmt').value=r.instAmt||'';
     document.getElementById('fInstTotal').value=r.instTotalCount||'';
+    _modalPayments = entryPayments(r).map(x=>({amount:x.amount,date:x.date||'',source:x.source||''}));
     toggleInstFields();
-    updateEnantiPreview();
+    renderPayEditor();
     document.getElementById('fCat').value=r.cat||'';
     document.getElementById('fNotes').value=r.notes||'';
     document.getElementById('fAttachment').value=r.attachment||'';
@@ -2444,10 +2583,12 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
     if(sc) sc.checked=!!getContactCode(r.name);
     updateSaveCodeHint();
   }else{
-    ['fDate','fName','fAmount','fEnanti','fCode','fInvoice','fNotes','fAttachment'].forEach(id=>document.getElementById(id).value='');
+    ['fDate','fName','fAmount','fCode','fInvoice','fNotes','fAttachment'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('fCat').value='';
     const fIC2=document.getElementById('fIncCat'); if(fIC2) fIC2.value='';
-    document.getElementById('fPaid').value='ΟΧΙ';
+    document.getElementById('fPaid').value='ΚΑΝΟΝΙΚΟ';
+    _modalPayments=[];
+    renderPayEditor();
     const fPSsel2=document.getElementById('fPaySource');
     if(fPSsel2) fPSsel2.value='Άγνωστο';
     const fAfmEl2=document.getElementById('fAfm');
@@ -2455,7 +2596,6 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
     const sc2=document.getElementById('fSaveCode');
     if(sc2) sc2.checked=false;
     updateSaveCodeHint();
-    document.getElementById('enantiPreview').textContent='';
     document.getElementById('fCat').value='';
     document.getElementById('fInstAmt').value='';
     document.getElementById('fInstTotal').value='';
@@ -2466,6 +2606,61 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
   setTimeout(()=>document.getElementById('fName').focus(),100);
 }
 function closeModal(){document.getElementById('entryOverlay').classList.remove('open');}
+
+let _modalPayments=[];  // working copy of the entry's payments while the modal is open
+
+function payBankOptions(sel){
+  return ['Τράπεζα 012','Τράπεζα 266','Μετρητά','Άγνωστο']
+    .map(s=>`<option value="${s}"${sel===s?' selected':''}>${s}</option>`).join('');
+}
+function renderPayEditor(){
+  const list=document.getElementById('payList');
+  if(!list) return;
+  const isExp=document.getElementById('editType').value==='exp';
+  if(_modalPayments.length===0){
+    list.innerHTML='<div class="pay-empty">Καμία πληρωμή ακόμα — πάτα «Προσθήκη πληρωμής»</div>';
+  } else {
+    list.innerHTML=_modalPayments.map((p,idx)=>`
+      <div class="pay-row">
+        <input type="number" step="0.01" class="pay-amt" value="${p.amount!==''&&p.amount!=null?p.amount:''}" placeholder="0.00" oninput="updatePayField(${idx},'amount',this.value)">
+        <input type="date" class="pay-date" value="${p.date||''}" onchange="updatePayField(${idx},'date',this.value)">
+        ${isExp?`<select class="pay-src" onchange="updatePayField(${idx},'source',this.value)">${payBankOptions(p.source||'Τράπεζα 266')}</select>`:'<span class="pay-src-none">εισπράχθηκε</span>'}
+        <button type="button" class="pay-del" onclick="removePayRow(${idx})" title="Αφαίρεση πληρωμής">✕</button>
+      </div>`).join('');
+  }
+  recomputePaySummary();
+}
+function addPayRow(){
+  const isExp=document.getElementById('editType').value==='exp';
+  const total=parseFloat(document.getElementById('fAmount').value)||0;
+  const paid=_modalPayments.reduce((s,p)=>s+(+p.amount||0),0);
+  const rem=Math.max(0,total-paid);
+  _modalPayments.push({amount: rem>0.005?+rem.toFixed(2):'', date:new Date().toISOString().slice(0,10), source:isExp?'Τράπεζα 266':''});
+  renderPayEditor();
+}
+function removePayRow(idx){ _modalPayments.splice(idx,1); renderPayEditor(); }
+function updatePayField(idx,field,val){
+  if(!_modalPayments[idx]) return;
+  _modalPayments[idx][field] = field==='amount' ? (val===''?'':(parseFloat(val)||0)) : val;
+  recomputePaySummary();
+}
+function recomputePaySummary(){
+  const el=document.getElementById('paySummary');
+  if(!el) return;
+  const total=parseFloat(document.getElementById('fAmount').value)||0;
+  const paid=_modalPayments.reduce((s,p)=>s+(+p.amount||0),0);
+  const rem=Math.max(0,total-paid);
+  let pill,cls;
+  if(paid<=0.005){ pill='Ανεξόφλητο'; cls='n'; }
+  else if(rem<=0.005){ pill='Πληρωμένο'; cls='y'; }
+  else { pill='Έναντι'; cls='e'; }
+  const over = paid>total+0.005;
+  el.innerHTML=`<span class="pt ${cls}" style="pointer-events:none">${pill}</span>`+
+    `<span class="mono" style="font-size:12px;color:var(--text2)">Πληρώθηκαν ${fmt(paid)} από ${fmt(total)}</span>`+
+    `<span style="flex:1"></span>`+
+    (over?`<span class="mono" style="font-size:12px;color:#8a2a24">Υπέρβαση ${fmt(paid-total)}!</span>`
+         :`<span class="mono" style="font-size:12px;color:${rem>0.005?'#8a2a24':'var(--olive)'}">Υπόλοιπο ${fmt(rem)}</span>`);
+}
 
 function saveEntry(){
   const type=document.getElementById('editType').value;
@@ -2479,37 +2674,26 @@ function saveEntry(){
   const instAmt=paid==='ΔΟΣΕΙΣ'?parseFloat(document.getElementById('fInstAmt').value)||0:0;
   const instTotalCount=paid==='ΔΟΣΕΙΣ'?parseInt(document.getElementById('fInstTotal').value)||1:0;
   const groupId=paid==='ΔΟΣΕΙΣ'?Date.now().toString(36):'';
-  const enantiVal=parseFloat(document.getElementById('fEnanti').value)||0;
-  // Payment source (expenses only) + payment date
-  const paySourceEl=document.getElementById('fPaySource');
-  const paySource=(type==='exp'&&paySourceEl)?paySourceEl.value:'';
-  // Preserve existing paidDate if editing, otherwise set today if paid=ΝΑΙ
-  let paidDate='';
-  if(paid==='ΝΑΙ'){
-    if(eid!==''){
-      const existing=ents(saveY,saveM)[type][+eid];
-      paidDate=(existing&&existing.paidDate)?existing.paidDate:new Date().toISOString().slice(0,10);
-    } else {
-      paidDate=new Date().toISOString().slice(0,10);
-    }
-  }
+  // Clean the payments editor rows (drop empty ones)
+  const cleanPayments = (paid==='ΔΟΣΕΙΣ') ? [] :
+    _modalPayments.filter(pp=>(+pp.amount||0)>0).map(pp=>({amount:+pp.amount||0, date:pp.date||'', source:pp.source||''}));
   const entry={
     date:document.getElementById('fDate').value,
     name:document.getElementById('fName').value.trim(),
     amount:rawAmt,
-    enanti:paid==='ΝΑΙ'?0:(enantiVal>0?enantiVal:0),
     code:document.getElementById('fCode').value.trim(),
     invoice:document.getElementById('fInvoice').value.trim(),
-    paid:paid==='ΔΟΣΕΙΣ'?'ΟΧΙ':paid,
+    paid:'ΟΧΙ',
     cat:document.getElementById('fCat').value,
     incCat:document.getElementById('fIncCat').value||'',
     notes:document.getElementById('fNotes').value.trim(),
     attachment:document.getElementById('fAttachment').value||'',
-    paySource:paySource,
-    paidDate:paidDate,
+    payments:cleanPayments,
     instPlan:paid==='ΔΟΣΕΙΣ'?{amt:instAmt,total:instTotalCount,groupId}:null,
     instGroupId:paid==='ΔΟΣΕΙΣ'?groupId:''
   };
+  // Derive the paid flag from the payments list (installments keep 'ΟΧΙ')
+  if(paid!=='ΔΟΣΕΙΣ') syncPaid(entry);
   if(!entry.name&&!entry.amount){closeModal();return;}
   // Save/update AFM per-contact (all types)
   const afmVal=(document.getElementById('fAfm')?document.getElementById('fAfm').value.trim():'');
@@ -2849,9 +3033,9 @@ function openOverdue(){
       if(days<=cutoff) return;          // ONLY older than 30 days
       const n=(r.name||'(Χωρίς όνομα)').trim();
       if(!map[n]) map[n]=[];
-      const remaining=(+r.amount||0)-(+r.enanti||0);
-      grand+=remaining;
-      map[n].push({...r, _monthLabel:MNS[mm]+' '+yy, _days:days, _remaining:remaining});
+      const rem=remaining(r);
+      grand+=rem;
+      map[n].push({...r, _monthLabel:MNS[mm]+' '+yy, _days:days, _remaining:rem});
     });
   });
   document.getElementById('pendingTitle').textContent='⏰ Καθυστερημένες Πληρωμές (>30 ημ.)';
@@ -2943,14 +3127,14 @@ function exportExcel(){
     const expRows=[
       ['Α.Σ Αγιάσου — Έξοδα '+mn+' '+CY],
       [],
-      ['Ημερομηνία','Προμηθευτής','Ποσό (€)','Έναντι (€)','Κωδ. Πληρωμής','Κατηγορία','Πληρώθηκε','Σχόλια']
+      ['Ημερομηνία','Προμηθευτής','Ποσό (€)','Πληρωμένο (€)','Κωδ. Πληρωμής','Κατηγορία','Κατάσταση','Σχόλια']
     ];
     exp.forEach(r=>{
-      expRows.push([r.date||'',r.name||'',+r.amount||0,+r.enanti||0,r.code||'',r.cat||'',r.paid||'',r.notes||'']);
+      expRows.push([r.date||'',r.name||'',+r.amount||0,paidSum(r),r.code||'',r.cat||'',statusText(r),r.notes||'']);
     });
     expRows.push([]);
     const tE=exp.reduce((s,r)=>s+ +r.amount,0);
-    const pE=exp.filter(r=>r.paid==='ΝΑΙ').reduce((s,r)=>s+ +r.amount,0);
+    const pE=exp.reduce((s,r)=>s+Math.min(+r.amount||0,paidSum(r)),0);
     expRows.push(['','Σύνολο Εξόδων',tE,'','','','','']);
     expRows.push(['','Πληρωθέντα',pE,'','','','','']);
     const ws=XLSX.utils.aoa_to_sheet(expRows);
@@ -2962,7 +3146,7 @@ function exportExcel(){
       ['Α.Σ Αγιάσου — Έξοδα '+mn+' '+CY],[],
       ['Ημερομηνία','Προμηθευτής','Ποσό (€)','Έναντι (€)','Κωδ. Πληρωμής','Κατηγορία','Πληρώθηκε','Σχόλια']
     ];
-    exp.forEach(r=>expRows.push([r.date||'',r.name||'',+r.amount||0,+r.enanti||0,r.code||'',r.cat||'',r.paid||'',r.notes||'']));
+    exp.forEach(r=>expRows.push([r.date||'',r.name||'',+r.amount||0,paidSum(r),r.code||'',r.cat||'',statusText(r),r.notes||'']));
     const wsE=XLSX.utils.aoa_to_sheet(expRows);
     wsE['!cols']=[{wch:14},{wch:28},{wch:12},{wch:12},{wch:14},{wch:20},{wch:12},{wch:28}];
     XLSX.utils.book_append_sheet(wb,wsE,'Έξοδα');
@@ -3006,22 +3190,14 @@ function instGroupRemain(r){
 }
 
 
-function updateEnantiPreview(){
-  const total=parseFloat(document.getElementById('fAmount').value)||0;
-  const enanti=parseFloat(document.getElementById('fEnanti').value)||0;
-  const el=document.getElementById('enantiPreview');
-  if(!el) return;
-  if(enanti<=0||total<=0){el.textContent='';return;}
-  const remain=Math.max(0,total-enanti);
-  const pct=Math.round(enanti/total*100);
-  el.textContent=`Έναντι ${fmt(enanti)} από ${fmt(total)} · Υπόλοιπο: ${fmt(remain)} (${pct}%)`;
-  el.style.color=remain<=0?'var(--olive)':'var(--amber)';
-}
+function updateEnantiPreview(){ /* replaced by the payments editor */ recomputePaySummary(); }
 
 function toggleInstFields(){
   const v=document.getElementById('fPaid').value;
   const show=v==='ΔΟΣΕΙΣ';
   document.getElementById('instFields').style.display=show?'':'none';
+  const pe=document.getElementById('payEditor');
+  if(pe) pe.style.display=show?'none':'';
   if(show)previewInst();
 }
 
@@ -3056,7 +3232,7 @@ function instBadgeHtml(r, type, ri) {
     const num=+r.instNum||1, tot=+r.instTotalCount||1, amt=+r.instAmt||0;
     return`<span class="inst-badge partial" onclick="openInst('${type}',${ri})" title="Πληρωμή δόσης" style="cursor:pointer">Δόση ${num}/${tot} · ${fmt(amt)}</span>`;
   }
-  return ptHtml(r.paid, type, ri, r._carryover?r._origY:-1, r._carryover?r._origM:-1);
+  return payPill(r, type, ri);
 }
 
 function openInst(type, ri) { if(isViewer()) return;
@@ -3561,8 +3737,11 @@ function contactTotal(name){
 // How much we still owe this contact (unpaid expenses, minus any part payment)
 function contactOwed(name){
   return getTxnsForContact(name)
-    .filter(r=>r.type==='exp' && (r.paid==='ΟΧΙ'||r.paid==='ΔΟΣΕΙΣ'))
-    .reduce((s,r)=>s+Math.max(0,(+r.amount||0)-(+r.enanti||0)),0);
+    .filter(r=>r.type==='exp')
+    .reduce((s,r)=>{
+      if(r.instPlan) return s + (r.paid!=='ΝΑΙ' ? (+r.instPlan.amt||0) : 0);
+      return s + remaining(r);
+    },0);
 }
 
 // Row menu for a contact
@@ -4203,8 +4382,8 @@ function exportContactCard(name){
   ];
   txns.forEach(r=>{
     const type=r.type==='exp'?'Έξοδο':'Έσοδο';
-    const remain=r.enanti>0?Math.max(0,(+r.amount||0)-(+r.enanti||0)):0;
-    rows.push([r.date||'',type,r.name||'',+r.amount||0,+r.enanti||0,remain,r.paid||'',r.invoice||'',r.notes||'']);
+    const remain=remaining(r);
+    rows.push([r.date||'',type,r.name||'',+r.amount||0,paidSum(r),remain,statusText(r),r.invoice||'',r.notes||'']);
   });
   rows.push([]);
   const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+(+r.amount||0),0);
@@ -4510,6 +4689,7 @@ function bootApp(){
     const lb=document.getElementById('loadingBar');
     if(lb) lb.remove();
     migratePaySource();  // migrate old expenses after data loaded
+    migratePayments();   // build payments[] from legacy scalar fields
     renderHome();
   });
 }
@@ -4659,7 +4839,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17p</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17r</div>
   </div>
 </div>
 
