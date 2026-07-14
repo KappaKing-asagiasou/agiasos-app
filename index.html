@@ -842,7 +842,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </nav>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17r</div>
+    <div class="sb-ver">έκδοση 2026.06.17s</div>
   </div>
 </aside>
 <div class="app-body">
@@ -907,7 +907,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17r</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17s</div>
       </div>
     </div>
 
@@ -4177,40 +4177,44 @@ function exportMonthPDF(){
 function gatherAccountantRows(showDiag){
   const targetY=CY, targetM=CM;
   const rows=[];
-  let totalPaid=0, noPaidDate=0, unknownSrc=0, otherMonth=0, included=0;
+  // One row PER PAYMENT — each payment lands in the month it was actually paid.
+  let totalPayments=0, noDate=0, unknownSrc=0, otherMonth=0, included=0;
   const skippedDetails=[];
   Object.keys(data).forEach(key=>{
-    if(!key.startsWith('y')) return;
+    if(!/^y\d+m\d+$/.test(key)) return;
     const bucket=data[key];
     if(!bucket||!bucket.exp) return;
     bucket.exp.forEach(r=>{
-      if(r.paid!=='ΝΑΙ') return;
-      totalPaid++;
-      if(!r.paidDate){ noPaidDate++; skippedDetails.push((r.name||'?')+' (χωρίς ημ.πληρωμής)'); return; }
-      if(r.paySource==='Άγνωστο'||!r.paySource){ unknownSrc++; skippedDetails.push((r.name||'?')+' (Άγνωστη πηγή)'); return; }
-      const pd=new Date(r.paidDate);
-      if(pd.getFullYear()===targetY && pd.getMonth()===targetM){
-        included++;
-        rows.push({
-          entryDate:r.date||'', paidDate:r.paidDate||'', name:r.name||'',
-          afm:getContactAfm(r.name)||'', paySource:r.paySource||'',
-          invoice:r.invoice||'', code:r.code||'', amount:+r.amount||0, notes:r.notes||''
-        });
-      } else { otherMonth++; }
+      entryPayments(r).forEach(p=>{
+        const amt=+p.amount||0;
+        if(amt<=0) return;
+        totalPayments++;
+        if(!p.date){ noDate++; skippedDetails.push((r.name||'?')+' — '+fmt(amt)+' (χωρίς ημ.πληρωμής)'); return; }
+        if(p.source==='Άγνωστο'||!p.source){ unknownSrc++; skippedDetails.push((r.name||'?')+' — '+fmt(amt)+' (Άγνωστη τράπεζα)'); return; }
+        const pd=new Date(p.date);
+        if(pd.getFullYear()===targetY && pd.getMonth()===targetM){
+          included++;
+          rows.push({
+            entryDate:r.date||'', paidDate:p.date, name:r.name||'',
+            afm:getContactAfm(r.name)||'', paySource:p.source,
+            invoice:r.invoice||'', code:r.code||'', amount:amt, notes:r.notes||''
+          });
+        } else { otherMonth++; }
+      });
     });
   });
   if(showDiag){
-    const excluded=noPaidDate+unknownSrc;
+    const excluded=noDate+unknownSrc;
     if(excluded>0){
       let msg='ℹ Διαγνωστικά εξαγωγής λογιστή:\n\n';
-      msg+='• Πληρωμένα έξοδα (ΝΑΙ) συνολικά: '+totalPaid+'\n';
+      msg+='• Πληρωμές συνολικά (όλοι οι μήνες): '+totalPayments+'\n';
       msg+='• Μπήκαν στην εξαγωγή ('+MN[CM]+'): '+included+'\n';
       msg+='• Πληρώθηκαν άλλο μήνα: '+otherMonth+'\n';
-      if(unknownSrc>0) msg+='• ⚠ Με «Άγνωστη» πηγή (εξαιρέθηκαν): '+unknownSrc+'\n';
-      if(noPaidDate>0) msg+='• ⚠ Χωρίς ημ. πληρωμής (εξαιρέθηκαν): '+noPaidDate+'\n';
-      msg+='\nΤα εξαιρεθέντα χρειάζονται διόρθωση: άνοιξέ τα και όρισε «Πληρωμή από».\n\n';
+      if(unknownSrc>0) msg+='• ⚠ Με «Άγνωστη» τράπεζα (εξαιρέθηκαν): '+unknownSrc+'\n';
+      if(noDate>0) msg+='• ⚠ Χωρίς ημ. πληρωμής (εξαιρέθηκαν): '+noDate+'\n';
+      msg+='\nΤα εξαιρεθέντα χρειάζονται διόρθωση: άνοιξε την εγγραφή και συμπλήρωσε ημερομηνία & τράπεζα στην πληρωμή.\n\n';
       if(skippedDetails.length){
-        msg+='Εγγραφές που εξαιρέθηκαν:\n'+skippedDetails.slice(0,15).join('\n');
+        msg+='Πληρωμές που εξαιρέθηκαν:\n'+skippedDetails.slice(0,15).join('\n');
         if(skippedDetails.length>15) msg+='\n…και '+(skippedDetails.length-15)+' ακόμα';
       }
       alert(msg);
@@ -4839,7 +4843,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17r</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17s</div>
   </div>
 </div>
 
