@@ -115,6 +115,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .page{display:none;}
 .page.active{display:block;animation:pageIn .28s cubic-bezier(.22,.8,.36,1);}
 @keyframes pageIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+/* ── SKELETON LOADERS ──────────────────────────────── */
+@keyframes skShimmer{0%{background-position:420px 0}100%{background-position:-420px 0}}
+.skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface) 40%,var(--surface2) 60%);background-size:420px 100%;animation:skShimmer 1.2s ease-in-out infinite;border-radius:7px;display:block;}
+.sk-row td{padding:10px!important;border-bottom:1px solid var(--border);}
+/* ── LIST ENTRANCE (one-shot on page navigation) ───── */
+@keyframes rowRise{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.nav-stagger tbody tr,.nav-stagger .home-stats .stat-card{animation:rowRise .32s cubic-bezier(.22,.8,.36,1) both;}
+.nav-stagger tbody tr:nth-child(1),.nav-stagger .home-stats .stat-card:nth-child(1){animation-delay:0ms}
+.nav-stagger tbody tr:nth-child(2),.nav-stagger .home-stats .stat-card:nth-child(2){animation-delay:32ms}
+.nav-stagger tbody tr:nth-child(3),.nav-stagger .home-stats .stat-card:nth-child(3){animation-delay:64ms}
+.nav-stagger tbody tr:nth-child(4),.nav-stagger .home-stats .stat-card:nth-child(4){animation-delay:96ms}
+.nav-stagger tbody tr:nth-child(5),.nav-stagger .home-stats .stat-card:nth-child(5){animation-delay:128ms}
+.nav-stagger tbody tr:nth-child(6){animation-delay:156ms}
+.nav-stagger tbody tr:nth-child(7){animation-delay:182ms}
+.nav-stagger tbody tr:nth-child(8){animation-delay:206ms}
+.nav-stagger tbody tr:nth-child(9){animation-delay:228ms}
+.nav-stagger tbody tr:nth-child(n+10){animation-delay:248ms}
+/* ── RESPECT REDUCED MOTION ────────────────────────── */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important;}
+}
 
 /* ── SUMMARY CARDS ─── */
 .summary-grid{display:grid;grid-template-columns:1.6fr repeat(auto-fit,minmax(126px,1fr));gap:10px;margin-bottom:12px;}
@@ -853,7 +874,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </nav>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17u</div>
+    <div class="sb-ver">έκδοση 2026.06.17v</div>
   </div>
 </aside>
 <div class="app-body">
@@ -918,7 +939,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17u</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17v</div>
       </div>
     </div>
 
@@ -1675,8 +1696,10 @@ function updateMonthNav(){
 function goPage(p){
   if(p!=='exp') catFilter='';  // reset filter when leaving exp page
   CPage=p;
-  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active','nav-stagger'));
+  const _pg=document.getElementById('page-'+p);
+  _pg.classList.add('active','nav-stagger');
+  setTimeout(()=>_pg.classList.remove('nav-stagger'),650);
   document.querySelectorAll('.sb-item,.bn-item').forEach(t=>{
     t.classList.toggle('active', t.dataset.page===p);
   });
@@ -2105,6 +2128,15 @@ function paySelectedExp(){
   document.getElementById('paySrcOverlay').classList.add('open');
 }
 
+function showHomeSkeleton(){
+  const sk=(h,w)=>`<span class="skeleton" style="height:${h}px;width:${w||'100%'}"></span>`;
+  const hs=document.getElementById('homeSummary');
+  if(hs) hs.innerHTML=[0,1,2,3,4].map(i=>`<div class="stat-card${i===4?' sc-wide':''}" style="border:1px solid var(--border)">${sk(10,'55%')}<div style="height:9px"></div>${sk(18,'72%')}</div>`).join('');
+  ['homeExpBody','homeIncBody'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b) b.innerHTML=[0,1,2,3].map(()=>`<tr class="sk-row"><td colspan="9">${sk(13)}</td></tr>`).join('');
+  });
+}
 function renderHome(){
   const q=(document.getElementById('searchBox').value||'').trim();
   const{inc,exp,tI,pI,uI,tE,pE,uE,pr}=calc(CY,CM);
@@ -4859,6 +4891,7 @@ function bootApp(){
   document.body.insertAdjacentHTML('afterbegin',
     '<div id="loadingBar" style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#5a8040,#c8a030,#5a8040);background-size:200%;animation:shimmer 1s linear infinite;z-index:9999"></div>'
   );
+  showHomeSkeleton();
   loadFromSupabase().then(()=>{
     const lb=document.getElementById('loadingBar');
     if(lb) lb.remove();
@@ -5017,7 +5050,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17u</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17v</div>
   </div>
 </div>
 
