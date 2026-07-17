@@ -591,6 +591,17 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .pay-add:hover{background:var(--accent-lt);border-color:var(--accent-mid);}
 .pay-summary{display:flex;align-items:center;gap:9px;margin-top:11px;padding:9px 11px;background:var(--surface2);border-radius:8px;flex-wrap:wrap;}
 .pay-summary:empty{display:none;}
+/* ── PAYMENT HISTORY TIMELINE ──────────────────────── */
+.ph-list{margin:4px 0 2px;}
+.ph-row{display:flex;gap:12px;}
+.ph-dotcol{display:flex;flex-direction:column;align-items:center;width:12px;flex-shrink:0;}
+.ph-dot{width:11px;height:11px;border-radius:50%;background:var(--olive);margin-top:3px;flex-shrink:0;}
+.ph-line{width:2px;flex:1;background:var(--border2);min-height:14px;}
+.ph-info{padding-bottom:13px;}
+.ph-amt{font-size:14px;font-weight:500;color:var(--text);}
+.ph-meta{font-size:12px;color:var(--text3);margin-top:1px;}
+.ph-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:11px;border-top:1px solid var(--border);font-size:13px;}
+
 @media(max-width:520px){
   .pay-row{grid-template-columns:1fr 1fr;grid-template-areas:"amt del" "date date" "src src";gap:5px;}
   .pay-amt{grid-area:amt;} .pay-del{grid-area:del;justify-self:end;}
@@ -842,7 +853,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </nav>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17s</div>
+    <div class="sb-ver">έκδοση 2026.06.17u</div>
   </div>
 </aside>
 <div class="app-body">
@@ -907,7 +918,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17s</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17u</div>
       </div>
     </div>
 
@@ -1113,6 +1124,19 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
       <div class="chart-hdr">Μηνιαία πορεία εσόδων &amp; εξόδων</div>
       <canvas id="annualChart" height="80"></canvas>
     </div>
+    <div class="chart-card no-print" style="margin-top:16px">
+      <div class="chart-hdr">Έξοδα ανά κατηγορία</div>
+      <div id="catWrap" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
+        <div style="position:relative;width:190px;height:190px;flex-shrink:0;">
+          <canvas id="catChart"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+            <div style="font-size:11px;color:var(--text3)">Σύνολο</div>
+            <div style="font-size:16px;font-weight:500" class="mono" id="catTotal">—</div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:190px" id="catLegend"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ── CALENDAR PAGE ─── -->
@@ -1305,6 +1329,18 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 </div>
 
 <!-- PAYMENT SOURCE PICKER -->
+<div class="overlay" id="payHistOverlay" onclick="if(event.target===this)closePayHistory()">
+<div class="del-box" style="max-width:420px;text-align:left">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:2px">
+    <div>
+      <h3 style="text-align:left;margin:0" id="payHistName">Ιστορικό πληρωμών</h3>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px" id="payHistSub"></div>
+    </div>
+    <button class="modal-x" onclick="closePayHistory()" aria-label="Κλείσιμο"><svg class="ic"><use href="#ic-x"/></svg></button>
+  </div>
+  <div id="payHistBody" style="margin-top:12px"></div>
+</div>
+</div>
 <div class="overlay" id="paySrcOverlay" onclick="if(event.target===this)closePaySrcPicker()">
 <div class="del-box" style="max-width:340px">
   <div class="icon">💳</div><h3>Καταχώρηση πληρωμής</h3>
@@ -1827,6 +1863,11 @@ function openRowMenu(e,type,ri,oy,om,isHidden,paid){
   const it=(icon,label,fn,danger)=>
     `<button class="rm-item${danger?' danger':''}" onclick="closeRowMenu();${fn}"><svg class="ic"><use href="#${icon}"/></svg>${label}</button>`;
   let html='';
+  // Payment history (read-only) — shown for anyone when the entry has payments
+  const _hy=(oy!==-1)?oy:CY, _hm=(oy!==-1)?om:CM;
+  const _he=(ents(_hy,_hm)[type]||[])[ri];
+  const _hasPays=_he && entryPayments(_he).some(p=>(+p.amount||0)>0);
+  if(_hasPays) html+=it('ic-clock','Ιστορικό πληρωμών',`openPayHistory('${type}',${ri}${oyp})`);
   if(!viewer){
     html+=it('ic-edit','Επεξεργασία',`editEntry('${type}',${ri}${oyp})`);
     html+=it('ic-copy','Αντιγραφή',`copyEntry('${type}',${ri}${oyp})`);
@@ -1834,7 +1875,7 @@ function openRowMenu(e,type,ri,oy,om,isHidden,paid){
     html+=it(isHidden?'ic-eye':'ic-eye-off',isHidden?'Εμφάνιση σε θεατές':'Απόκρυψη από θεατές',`toggleHide('${type}',${ri}${oyp})`);
     html+='<div class="rm-sep"></div>';
     html+=it('ic-trash','Διαγραφή',`promptDel('${type}',${ri}${oyp})`,true);
-  } else {
+  } else if(!_hasPays){
     html='<div class="rm-empty">Μόνο ανάγνωση</div>';
   }
   m.innerHTML=html;
@@ -1883,7 +1924,65 @@ function sort(type,col){
   renderCurrentPage();
 }
 
-let homeChartI=null,annualChartI=null;
+let homeChartI=null,annualChartI=null,catChartI=null;
+
+// Category colours (stable order, warm/earthy to match the theme)
+const CAT_COLORS=['#639922','#D85A30','#378ADD','#EF9F27','#7F77DD','#1D9E75','#D4537E','#888780'];
+
+// Expense totals by category for a year (annual-mode semantics:
+// installment parents count as one instalment, sub-instalments excluded).
+function yearCategoryTotals(y){
+  const map={};
+  for(let i=0;i<12;i++){
+    const d=ents(y,i);
+    (d.exp||[]).forEach(r=>{
+      if(r.hidden && !isAdmin()) return;
+      if(r.instGroupId && !r.instPlan) return;          // sub-instalment: excluded
+      const cat=(r.cat&&r.cat.trim())?r.cat.trim():'Χωρίς κατηγορία';
+      const amt = r.instPlan ? (+r.instPlan.amt||0) : (+r.amount||0);
+      if(amt>0) map[cat]=(map[cat]||0)+amt;
+    });
+  }
+  return map;
+}
+
+function makeCatDonut(){
+  const totals=yearCategoryTotals(CY);
+  let arr=Object.keys(totals).map(k=>({label:k,value:totals[k]})).sort((a,b)=>b.value-a.value);
+  // Fold the long tail into "Λοιπά" so the donut stays readable
+  if(arr.length>7){
+    const head=arr.slice(0,6);
+    const other=arr.slice(6).reduce((s,x)=>s+x.value,0);
+    arr=head.concat([{label:'Λοιπά',value:other}]);
+  }
+  arr.forEach((x,i)=>x.color=CAT_COLORS[i%CAT_COLORS.length]);
+  const total=arr.reduce((s,x)=>s+x.value,0);
+  const totalEl=document.getElementById('catTotal');
+  const legEl=document.getElementById('catLegend');
+  const cv=document.getElementById('catChart');
+  if(!cv) return;
+  if(catChartI){catChartI.destroy();catChartI=null;}
+  if(total<=0){
+    if(totalEl) totalEl.textContent=fmt(0);
+    if(legEl) legEl.innerHTML='<div style="font-size:12px;color:var(--text3)">Δεν υπάρχουν έξοδα για '+CY+'.</div>';
+    return;
+  }
+  if(totalEl) totalEl.textContent=fmt(total);
+  const surf=(getComputedStyle(document.body).getPropertyValue('--surface')||'#e8e2d2').trim();
+  catChartI=new Chart(cv.getContext('2d'),{
+    type:'doughnut',
+    data:{labels:arr.map(x=>x.label),datasets:[{data:arr.map(x=>x.value),backgroundColor:arr.map(x=>x.color),borderColor:surf,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'66%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+fmt(c.raw)+' ('+Math.round(c.raw/total*100)+'%)'}}}}
+  });
+  if(legEl) legEl.innerHTML=arr.map(x=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;">
+    <span style="width:10px;height:10px;border-radius:2px;background:${x.color};flex-shrink:0;"></span>
+    <span style="flex:1;color:var(--text)">${x.label}</span>
+    <span class="mono" style="color:var(--text2)">${fmt(x.value)}</span>
+    <span class="mono" style="color:var(--text3);min-width:38px;text-align:right">${Math.round(x.value/total*100)}%</span>
+  </div>`).join('');
+}
+
 function makeChart(canvasId,labels,incD,expD,inst){
   const ctx=document.getElementById(canvasId).getContext('2d');
   if(inst)inst.destroy();
@@ -2334,6 +2433,7 @@ function renderAnnual(){
   renderSummary('annualSummary',tI,pI,uI,tE,pE,uE,undefined,undefined);
   renderProfit('annualProfitBar',totPr,'Συνολικό αποτέλεσμα · '+CY);
   annualChartI=makeChart('annualChart',MNS,iD,eD,annualChartI);
+  makeCatDonut();
 }
 
 // ── PAID TOGGLE ───────────────────────────────────────
@@ -2470,6 +2570,42 @@ function togglePaid(type,i,oy,om){ if(isViewer()) return;
 // Quick payment source picker (when marking an expense as paid)
 let _paySrcCtx=null;
 let _bulkPayMode=false;
+// Read-only payment history timeline for an entry.
+function openPayHistory(type,i,oy,om){
+  const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
+  const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
+  const r=ents(y,m)[type][i];
+  if(!r) return;
+  const pays=entryPayments(r).filter(p=>(+p.amount||0)>0);
+  const total=+r.amount||0, paid=paidSum(r), rem=remaining(r), st=statusText(r);
+  const cl=st==='Πληρωμένο'?'y':st==='Έναντι'?'e':'n';
+  document.getElementById('payHistName').textContent=(r.name||'—')+(r.invoice?' · '+r.invoice:'');
+  document.getElementById('payHistSub').innerHTML=`Τιμολόγιο ${fmt(total)} · <span class="pt ${cl}" style="pointer-events:none">${st}</span>`;
+  let body='';
+  if(pays.length===0){
+    body='<div style="font-size:13px;color:var(--text3);padding:6px 0">Καμία καταγεγραμμένη πληρωμή ακόμα.</div>';
+  } else {
+    body='<div class="ph-list">'+pays.map((p,idx)=>{
+      const last=idx===pays.length-1;
+      const meta=[(p.date?fmtD(p.date):'χωρίς ημ/νία'), (p.source||'χωρίς τράπεζα')].join(' · ');
+      return `<div class="ph-row">
+        <div class="ph-dotcol"><span class="ph-dot"></span>${last?'':'<span class="ph-line"></span>'}</div>
+        <div class="ph-info">
+          <div class="ph-amt mono">${fmt(+p.amount||0)}</div>
+          <div class="ph-meta">${meta}</div>
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+  }
+  body+=`<div class="ph-foot">
+    <span style="color:var(--text3)">Πληρώθηκαν</span>
+    <span class="mono" style="font-weight:500">${fmt(paid)} / ${fmt(total)}${rem>0.005?' · Υπόλοιπο '+fmt(rem):''}</span>
+  </div>`;
+  document.getElementById('payHistBody').innerHTML=body;
+  document.getElementById('payHistOverlay').classList.add('open');
+}
+function closePayHistory(){ document.getElementById('payHistOverlay').classList.remove('open'); }
+
 function openPaySourcePicker(type,i,y,m){
   _paySrcCtx={type,i,y,m};
   const ent=ents(y,m)[type][i];
@@ -3288,6 +3424,16 @@ function refreshInstUI(){
       ?`✓ Πληρώθηκε δόση ${num}/${tot}  →  Δόση ${num+1}/${tot} στον ${MN[nm]} ${ny}`
       :`✓ Πληρώθηκε τελευταία δόση ${num}/${tot} — Εξοφλήθηκε!`;
   }
+  // Payment fields: bank options + default date (entry date, else today)
+  const srcSel=document.getElementById('iPaySource');
+  if(srcSel) srcSel.innerHTML=payBankOptions('Τράπεζα 266');
+  const dateEl=document.getElementById('iPayDate');
+  if(dateEl) dateEl.value=r.date||new Date().toISOString().slice(0,10);
+  // Hide the payment fields if this installment is already paid
+  const alreadyPaid = r.paid==='ΝΑΙ';
+  const pf=document.getElementById('instPayFields');
+  if(pf) pf.style.display=alreadyPaid?'none':'flex';
+  if(payBtn) payBtn.style.display=alreadyPaid?'none':'';
 }
 
 function payCurrentInst(){
@@ -3300,6 +3446,12 @@ function payCurrentInst(){
   const num    = isMain ? 1                       : (+r.instNum||1);
   const groupId= isMain ? r.instPlan.groupId      : r.instGroupId;
 
+  // Record this instalment as a real payment so it reaches the accountant export
+  if(r.paid!=='ΝΑΙ'){
+    const payDate=(document.getElementById('iPayDate')||{}).value||new Date().toISOString().slice(0,10);
+    const paySrc=(document.getElementById('iPaySource')||{}).value||'';
+    addPayment(r, amt, payDate, paySrc);
+  }
   r.paid='ΝΑΙ';
   setEnts(y,m,d);
 
@@ -4174,11 +4326,25 @@ function exportMonthPDF(){
 }
 
 // Gather accountant rows for current month (shared by export + email)
+// Robustly extract {y, mo(0-based)} from a payment date string.
+// Handles YYYY-MM-DD, YYYY/MM/DD, DD/MM/YYYY, DD-MM-YYYY. Returns null if unparseable.
+function payMonthYear(s){
+  if(!s) return null;
+  s=String(s).trim();
+  let m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/);   // YYYY-MM-DD
+  if(m) return {y:+m[1], mo:+m[2]-1};
+  m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/);       // DD-MM-YYYY
+  if(m) return {y:+m[3], mo:+m[2]-1};
+  const d=new Date(s);
+  if(!isNaN(d.getTime())) return {y:d.getFullYear(), mo:d.getMonth()};
+  return null;
+}
+
 function gatherAccountantRows(showDiag){
   const targetY=CY, targetM=CM;
   const rows=[];
   // One row PER PAYMENT — each payment lands in the month it was actually paid.
-  let totalPayments=0, noDate=0, unknownSrc=0, otherMonth=0, included=0;
+  let totalPayments=0, noDate=0, unknownSrc=0, badDate=0, otherMonth=0, included=0;
   const skippedDetails=[];
   Object.keys(data).forEach(key=>{
     if(!/^y\d+m\d+$/.test(key)) return;
@@ -4191,8 +4357,9 @@ function gatherAccountantRows(showDiag){
         totalPayments++;
         if(!p.date){ noDate++; skippedDetails.push((r.name||'?')+' — '+fmt(amt)+' (χωρίς ημ.πληρωμής)'); return; }
         if(p.source==='Άγνωστο'||!p.source){ unknownSrc++; skippedDetails.push((r.name||'?')+' — '+fmt(amt)+' (Άγνωστη τράπεζα)'); return; }
-        const pd=new Date(p.date);
-        if(pd.getFullYear()===targetY && pd.getMonth()===targetM){
+        const my=payMonthYear(p.date);
+        if(!my){ badDate++; skippedDetails.push((r.name||'?')+' — '+fmt(amt)+' (μη αναγνώσιμη ημ: '+p.date+')'); return; }
+        if(my.y===targetY && my.mo===targetM){
           included++;
           rows.push({
             entryDate:r.date||'', paidDate:p.date, name:r.name||'',
@@ -4204,17 +4371,20 @@ function gatherAccountantRows(showDiag){
     });
   });
   if(showDiag){
-    const excluded=noDate+unknownSrc;
-    if(excluded>0){
-      let msg='ℹ Διαγνωστικά εξαγωγής λογιστή:\n\n';
+    const excluded=noDate+unknownSrc+badDate;
+    // Show diagnostics whenever something was excluded, OR nothing at all made it in
+    if(excluded>0 || included===0){
+      let msg='ℹ Διαγνωστικά εξαγωγής λογιστή ('+MN[CM]+' '+CY+'):\n\n';
       msg+='• Πληρωμές συνολικά (όλοι οι μήνες): '+totalPayments+'\n';
-      msg+='• Μπήκαν στην εξαγωγή ('+MN[CM]+'): '+included+'\n';
-      msg+='• Πληρώθηκαν άλλο μήνα: '+otherMonth+'\n';
+      msg+='• Μπήκαν στην εξαγωγή αυτού του μήνα: '+included+'\n';
+      msg+='• Πληρώθηκαν άλλον μήνα (σωστό): '+otherMonth+'\n';
       if(unknownSrc>0) msg+='• ⚠ Με «Άγνωστη» τράπεζα (εξαιρέθηκαν): '+unknownSrc+'\n';
-      if(noDate>0) msg+='• ⚠ Χωρίς ημ. πληρωμής (εξαιρέθηκαν): '+noDate+'\n';
-      msg+='\nΤα εξαιρεθέντα χρειάζονται διόρθωση: άνοιξε την εγγραφή και συμπλήρωσε ημερομηνία & τράπεζα στην πληρωμή.\n\n';
+      if(noDate>0)     msg+='• ⚠ Χωρίς ημ. πληρωμής (εξαιρέθηκαν): '+noDate+'\n';
+      if(badDate>0)    msg+='• ⚠ Με μη αναγνώσιμη ημερομηνία (εξαιρέθηκαν): '+badDate+'\n';
+      if(excluded>0) msg+='\nΤα εξαιρεθέντα χρειάζονται διόρθωση: άνοιξε την εγγραφή και συμπλήρωσε/διόρθωσε ημερομηνία & τράπεζα στην πληρωμή.\n';
+      msg+='\nΘυμήσου: η εξαγωγή δείχνει πληρωμές με βάση την ΗΜΕΡΟΜΗΝΙΑ ΠΛΗΡΩΜΗΣ, όχι την ημ. τιμολογίου. Αν μια πληρωμή χρεώθηκε άλλον μήνα, εμφανίζεται σε εκείνου του μήνα την εξαγωγή.\n';
       if(skippedDetails.length){
-        msg+='Πληρωμές που εξαιρέθηκαν:\n'+skippedDetails.slice(0,15).join('\n');
+        msg+='\nΠληρωμές που εξαιρέθηκαν:\n'+skippedDetails.slice(0,15).join('\n');
         if(skippedDetails.length>15) msg+='\n…και '+(skippedDetails.length-15)+' ακόμα';
       }
       alert(msg);
@@ -4732,7 +4902,11 @@ window.addEventListener('DOMContentLoaded', ()=>{
   <ul class="inst-list" id="instList"></ul>
   <!-- hidden inputs for compat -->
   <input type="hidden" id="iInstAmt"><input type="hidden" id="iCount">
-  <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border)">
+  <div id="instPayFields" style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border);text-align:left">
+    <div class="field" style="flex:1;margin:0"><label style="font-size:11px">Ημ. πληρωμής</label><input type="date" id="iPayDate" style="width:100%"></div>
+    <div class="field" style="flex:1;margin:0"><label style="font-size:11px">Τράπεζα</label><select id="iPaySource" style="width:100%"></select></div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;padding-top:12px">
     <button class="btn btn-inc" id="instPayBtn" onclick="payCurrentInst()" style="flex:1;justify-content:center;padding:9px 16px;font-size:13px;">✓ Πληρώθηκε</button>
     <button class="btn btn-ghost" onclick="closeInst()">Κλείσιμο</button>
   </div>
@@ -4843,7 +5017,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17s</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17u</div>
   </div>
 </div>
 
