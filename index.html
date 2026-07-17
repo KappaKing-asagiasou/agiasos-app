@@ -136,6 +136,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important;}
 }
+/* ── TASTEFUL ANIMATION PASS ───────────────────────── */
+/* value count-up pop */
+@keyframes valPop{0%{transform:scale(1);}30%{transform:scale(1.07);}100%{transform:scale(1);}}
+.val-anim{animation:valPop .45s cubic-bezier(.34,1.4,.64,1);display:inline-block;}
+/* tap feedback */
+.btn:active,.pt:active,.bn-item:active,.sb-item:active,.row-dots:active,.rm-item:active,.mn-btn:active,.pay-add:active,.pay-del:active,.modal-x:active,.tbl-pager button:active,.inst-badge:active{transform:scale(.94);}
+/* hover lift (desktop only) */
+@media (hover:hover){
+  .stat-card:hover,.chart-card:hover{transform:translateY(-2px);}
+}
+/* pulsing attention dot for overdue */
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.65);}}
+.pulse-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:7px;animation:pulseDot 1.5s ease-in-out infinite;vertical-align:middle;}
+/* payment confirmation row flash */
+@keyframes paidFlash{0%{background:rgba(99,153,34,.30);}100%{background:transparent;}}
+tr.just-paid td{animation:paidFlash 1.2s ease-out;}
+/* value-change highlight */
+@keyframes valFlash{0%{color:var(--olive);}100%{}}
+.flash-val{animation:valFlash 1s ease-out;}
+/* month change slide */
+@keyframes slideR{from{opacity:0;transform:translateX(22px);}to{opacity:1;transform:translateX(0);}}
+@keyframes slideL{from{opacity:0;transform:translateX(-22px);}to{opacity:1;transform:translateX(0);}}
+.page.slide-r{animation:slideR .3s cubic-bezier(.22,.8,.36,1);}
+.page.slide-l{animation:slideL .3s cubic-bezier(.22,.8,.36,1);}
+/* nav active pop */
+@keyframes navPop{0%{transform:scale(.9);}100%{transform:scale(1);}}
+.bn-item.active svg,.sb-item.active svg{animation:navPop .28s cubic-bezier(.34,1.4,.64,1);}
+/* celebration confetti */
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden;}
+.confetti{position:absolute;top:20%;width:8px;height:13px;border-radius:2px;opacity:0;animation:confFall 1.15s cubic-bezier(.2,.6,.4,1) forwards;}
+@keyframes confFall{0%{opacity:0;transform:translate(0,-14px) rotate(0);}12%{opacity:1;}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot));}}
 
 /* ── SUMMARY CARDS ─── */
 .summary-grid{display:grid;grid-template-columns:1.6fr repeat(auto-fit,minmax(126px,1fr));gap:10px;margin-bottom:12px;}
@@ -874,7 +905,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </nav>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17v</div>
+    <div class="sb-ver">έκδοση 2026.06.17w</div>
   </div>
 </aside>
 <div class="app-body">
@@ -939,7 +970,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17v</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17w</div>
       </div>
     </div>
 
@@ -1662,6 +1693,8 @@ function changeMonth(d){
   document.getElementById('monthSel').value=CM;
   homeExpPage=0;homeIncPage=0;
   updateMonthNav();
+  const _pg=document.querySelector('.page.active');
+  if(_pg){ _pg.classList.remove('slide-r','slide-l'); void _pg.offsetWidth; _pg.classList.add(d>0?'slide-r':'slide-l'); setTimeout(()=>_pg.classList.remove('slide-r','slide-l'),360); }
   renderCurrentPage();
 }
 
@@ -1865,7 +1898,11 @@ function markReceived(type,i,oy,om){ if(isViewer()) return;
   const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
   const d=ents(y,m); const r=d[type][i]; if(!r) return;
   addPayment(r, remaining(r), new Date().toISOString().slice(0,10), '');
-  setEnts(y,m,d); renderCurrentPage();
+  setEnts(y,m,d);
+  _justPaid={type,i};
+  renderCurrentPage();
+  setTimeout(()=>{_justPaid=null;},60);
+  celebrate();
   showToast('✓ Εισπράχθηκε');
 }
 
@@ -1996,6 +2033,8 @@ function makeCatDonut(){
     type:'doughnut',
     data:{labels:arr.map(x=>x.label),datasets:[{data:arr.map(x=>x.value),backgroundColor:arr.map(x=>x.color),borderColor:surf,borderWidth:2}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'66%',
+      animation:{animateRotate:true,animateScale:true,duration:850,easing:'easeOutQuart'},
+      elements:{arc:{hoverOffset:9}},
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+fmt(c.raw)+' ('+Math.round(c.raw/total*100)+'%)'}}}}
   });
   if(legEl) legEl.innerHTML=arr.map(x=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;">
@@ -2062,7 +2101,7 @@ function renderOverdueAlert(){
     });
   });
   if(count>0){
-    el.innerHTML=`⏰ <strong>${count}</strong> ${count===1?'εκκρεμής πληρωμή':'εκκρεμείς πληρωμές'} άνω των 30 ημερών · σύνολο ${fmt(totalAmt)} <span style="opacity:.7;font-size:11px">(πάτα για λίστα)</span>`;
+    el.innerHTML=`<span class="pulse-dot"></span>⏰ <strong>${count}</strong> ${count===1?'εκκρεμής πληρωμή':'εκκρεμείς πληρωμές'} άνω των 30 ημερών · σύνολο ${fmt(totalAmt)} <span style="opacity:.7;font-size:11px">(πάτα για λίστα)</span>`;
     el.classList.remove('hidden');
   } else {
     el.classList.add('hidden');
@@ -2080,7 +2119,7 @@ function expDenseRow(r){
   const metaBits=[fmtD(r.date)];
   if(r.cat) metaBits.push(esc(r.cat));
   metaBits.push(r.paid==='ΔΟΣΕΙΣ'||r.instPlan?'Δόσεις':ptText(r.paid));
-  return`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r.hidden?' row-hidden':''}">
+  return`<tr class="${r.paid==='ΝΑΙ'?'ry':r.paid==='ΟΧΙ'?'rn':'r0'}${r.hidden?' row-hidden':''}${(_justPaid&&_justPaid.type==='exp'&&_justPaid.i===r._i)?' just-paid':''}">
       <td class="no-print c-chk">${r.paid!=='ΝΑΙ'?`<input type="checkbox" class="exp-chk" data-i="${r._i}" ${_expSelected.has(r._i)?'checked':''} onchange="toggleExpSelect(${r._i})" onclick="event.stopPropagation()">`:''}</td>
       <td class="c-date mono">${fmtD(r.date)}</td>
       <td class="c-name">${clip}${esc(r.name)}</td>
@@ -2466,6 +2505,7 @@ function renderAnnual(){
   renderProfit('annualProfitBar',totPr,'Συνολικό αποτέλεσμα · '+CY);
   annualChartI=makeChart('annualChart',MNS,iD,eD,annualChartI);
   makeCatDonut();
+  setTimeout(()=>animateVals('annualSummary'),20);
 }
 
 // ── PAID TOGGLE ───────────────────────────────────────
@@ -2638,6 +2678,29 @@ function openPayHistory(type,i,oy,om){
 }
 function closePayHistory(){ document.getElementById('payHistOverlay').classList.remove('open'); }
 
+let _justPaid=null;  // {type,i} — briefly flags a row that was just paid
+
+// A small confetti burst for milestones (full pay-off, last instalment)
+function celebrate(){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const wrap=document.createElement('div');
+  wrap.className='confetti-wrap';
+  const colors=['#639922','#c8a030','#d85a30','#3a5626','#efc457','#b0552c'];
+  for(let i=0;i<18;i++){
+    const s=document.createElement('span');
+    s.className='confetti';
+    s.style.left=(44+Math.random()*12)+'%';
+    s.style.background=colors[i%colors.length];
+    s.style.setProperty('--dx',(Math.random()*180-90)+'px');
+    s.style.setProperty('--dy',(130+Math.random()*130)+'px');
+    s.style.setProperty('--rot',(Math.random()*600-300)+'deg');
+    s.style.animationDelay=(Math.random()*0.09)+'s';
+    wrap.appendChild(s);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(()=>wrap.remove(),1500);
+}
+
 function openPaySourcePicker(type,i,y,m){
   _paySrcCtx={type,i,y,m};
   const ent=ents(y,m)[type][i];
@@ -2689,8 +2752,12 @@ function selectPaySource(src){
   if(amt<=0) amt=remaining(r);            // empty → treat as full remaining
   addPayment(r, amt, payDate, src);
   setEnts(y,m,d);
+  const paidOff=remaining(r)<=0.005;
+  _justPaid={type,i};
   closePaySrcPicker();
   renderCurrentPage();
+  setTimeout(()=>{_justPaid=null;},60);
+  if(paidOff) celebrate();
   const mIdx=parseInt(payDate.split('-')[1])-1;
   const label = remaining(r)<=0.005 ? 'Εξοφλήθηκε' : 'Καταχωρήθηκε έναντι';
   showToast('✓ '+label+' — '+fmt(amt)+' από '+src+' ('+(MN[mIdx]||'')+')');
@@ -3486,6 +3553,9 @@ function payCurrentInst(){
   }
   r.paid='ΝΑΙ';
   setEnts(y,m,d);
+  _justPaid={type,i:ri};
+  setTimeout(()=>{_justPaid=null;},60);
+  if(num>=tot) celebrate();
 
   if(num<tot){
     let nm=m+1, ny=y;
@@ -5050,7 +5120,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17v</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17w</div>
   </div>
 </div>
 
