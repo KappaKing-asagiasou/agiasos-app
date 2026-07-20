@@ -905,7 +905,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </nav>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17w</div>
+    <div class="sb-ver">έκδοση 2026.06.17x</div>
   </div>
 </aside>
 <div class="app-body">
@@ -970,7 +970,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17w</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17x</div>
       </div>
     </div>
 
@@ -1060,8 +1060,10 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
       </div>
     </div>
     <div class="chart-card no-print">
-      <div class="chart-hdr">Σύγκριση εσόδων &amp; εξόδων — τελευταίοι 6 μήνες</div>
-      <canvas id="homeChart" height="75"></canvas>
+      <div class="chart-hdr">Ταμειακή ροή έτους <span id="cfYear"></span></div>
+      <div id="cfSummary" style="display:flex;gap:10px;margin-bottom:11px;flex-wrap:wrap"></div>
+      <div id="cfLegend" style="display:flex;gap:16px;margin-bottom:8px;font-size:12px;color:var(--text3)"></div>
+      <canvas id="homeChart" height="88"></canvas>
     </div>
   </div>
 
@@ -2045,6 +2047,19 @@ function makeCatDonut(){
   </div>`).join('');
 }
 
+function makeCashflow(canvasId,labels,incD,expD,netD,inst){
+  const ctx=document.getElementById(canvasId).getContext('2d');
+  if(inst)inst.destroy();
+  return new Chart(ctx,{type:'bar',data:{labels,datasets:[
+    {type:'bar',label:'Έσοδα',data:incD,backgroundColor:'rgba(99,153,34,.22)',borderColor:'rgba(99,153,34,.85)',borderWidth:1.5,borderRadius:4,order:2},
+    {type:'bar',label:'Έξοδα',data:expD,backgroundColor:'rgba(216,90,48,.16)',borderColor:'rgba(216,90,48,.82)',borderWidth:1.5,borderRadius:4,order:2},
+    {type:'line',label:'Καθαρό',data:netD,borderColor:'#185FA5',backgroundColor:'#185FA5',borderWidth:2,pointRadius:2.4,pointHoverRadius:4.5,tension:.3,order:1}
+  ]},options:{responsive:true,maintainAspectRatio:true,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>x.dataset.label+': '+fmt(x.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{family:"'DM Sans',sans-serif",size:11},color:'#a09a8e'}},
+      y:{grid:{color:'#e8e4dc'},ticks:{font:{family:"'DM Mono',monospace",size:10},color:'#a09a8e',callback:v=>v.toLocaleString('el-GR')+'€'}}},
+    animation:{duration:850,easing:"easeInOutQuart"}}});
+}
 function makeChart(canvasId,labels,incD,expD,inst){
   const ctx=document.getElementById(canvasId).getContext('2d');
   if(inst)inst.destroy();
@@ -2239,9 +2254,24 @@ function renderHome(){
     document.getElementById('incNext').disabled=homeIncPage>=incPages-1;}
 
   // Chart
-  const labels=[],incD=[],expD=[];
-  for(let i=5;i>=0;i--){let m=CM-i,y=CY;if(m<0){m+=12;y--;}const c=calc(y,m);labels.push(MNS[m]);incD.push(+c.pI.toFixed(2));expD.push(+c.pE.toFixed(2));}
-  homeChartI=makeChart('homeChart',labels,incD,expD,homeChartI);
+  // Yearly cash-flow (paid income vs paid expense per month, plus net)
+  const cfLabels=[],cfInc=[],cfExp=[],cfNet=[];
+  let yInc=0,yExp=0;
+  for(let mm=0;mm<12;mm++){
+    const cc=calc(CY,mm,true);
+    const pi=+cc.pI.toFixed(2), pe=+cc.pE.toFixed(2);
+    cfLabels.push(MNS[mm]); cfInc.push(pi); cfExp.push(pe); cfNet.push(+(pi-pe).toFixed(2));
+    yInc+=pi; yExp+=pe;
+  }
+  const yNet=yInc-yExp;
+  const cyEl=document.getElementById('cfYear'); if(cyEl) cyEl.textContent=CY;
+  const smEl=document.getElementById('cfSummary');
+  if(smEl) smEl.innerHTML=[['Έσοδα έτους',yInc,'#3B6D11'],['Έξοδα έτους',yExp,'#A32D2D'],['Καθαρό',yNet,yNet>=0?'#185FA5':'#A32D2D']]
+    .map(x=>`<div style="flex:1;min-width:92px;background:var(--surface2);border-radius:8px;padding:8px 11px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px">${x[0]}</div><div class="mono" style="font-size:15px;font-weight:500;color:${x[2]};margin-top:2px">${(x[0]==='Καθαρό'&&yNet<0)?'−'+fmt(Math.abs(x[1])):fmt(x[1])}</div></div>`).join('');
+  const lgEl=document.getElementById('cfLegend');
+  if(lgEl) lgEl.innerHTML=[['Έσοδα','#639922'],['Έξοδα','#D85A30'],['Καθαρό','#185FA5']]
+    .map(x=>`<span style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:${x[1]}"></span>${x[0]}</span>`).join('');
+  homeChartI=makeCashflow('homeChart',cfLabels,cfInc,cfExp,cfNet,homeChartI);
 }
 
 // ── EXPENSES FULL PAGE ────────────────────────────────
@@ -5120,7 +5150,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17w</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17x</div>
   </div>
 </div>
 
