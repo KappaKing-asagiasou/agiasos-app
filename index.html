@@ -57,7 +57,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .sb-item:hover{background:rgba(255,255,255,.09);color:#fff;}
 .sb-item.active{background:var(--accent);color:#fff;font-weight:500;}
 .sb-item .ic{width:17px;height:17px;flex-shrink:0;}
-.sb-foot{margin-top:auto;padding-top:11px;border-top:1px solid rgba(255,255,255,.14);}
+.sb-admin{margin-top:auto;}
+.sb-divider{height:1px;background:rgba(255,255,255,.14);margin:4px 10px 8px;}
+.viewer-mode .sb-admin{display:none;}
+.viewer-mode .sb-foot{margin-top:auto;}
+.sb-foot{margin-top:0;padding-top:11px;border-top:1px solid rgba(255,255,255,.14);}
 .sb-ver{padding:5px 10px 0;font-size:10px;color:rgba(240,235,220,.35);letter-spacing:.3px;}
 .sb-save{padding:0 10px;font-size:10.5px;color:rgba(240,235,220,.5);min-height:14px;}
 
@@ -876,6 +880,33 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 [data-theme="dark"] .pay-del:hover{background:rgba(184,64,54,.35);}
 [data-theme="dark"] .cal-chip{background:rgba(184,64,54,.22);color:#f0c4b8;}
 [data-theme="dark"] .ct-av-due{border-color:rgba(184,64,54,.4);}
+
+/* ── BANK RECONCILIATION PAGE ──────────────────────── */
+.recon-note{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:12.5px;color:var(--text2);margin-bottom:14px;}
+.recon-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.recon-controls .field{flex:1;min-width:120px;margin:0;}
+.recon-paste{width:100%;box-sizing:border-box;min-height:120px;font-family:'DM Mono',monospace;font-size:12.5px;padding:10px;border:1px solid var(--border2);border-radius:8px;background:var(--input-bg);color:var(--text);resize:vertical;outline:none;}
+.recon-paste:focus{border-color:var(--accent-mid);box-shadow:0 0 0 3px var(--accent-glow);}
+.recon-summary{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px;}
+.rs{font-size:12px;padding:5px 11px;border-radius:7px;font-weight:500;}
+.rs.ok{background:var(--olive-lt);color:var(--olive);}
+.rs.warn{background:var(--gold-lt);color:#7a5e14;}
+.rs.bad{background:var(--red-lt);color:#8a3530;}
+.recon-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;}
+.rc-col{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden;}
+.rc-hd{display:flex;align-items:center;gap:7px;padding:10px 12px;font-size:12.5px;font-weight:500;}
+.rc-col.ok .rc-hd{color:var(--olive);} .rc-col.warn .rc-hd{color:#7a5e14;} .rc-col.bad .rc-hd{color:#8a3530;}
+.rc-hd .ic{width:15px;height:15px;}
+.rc-count{margin-left:auto;font-size:11px;background:var(--surface2);border-radius:20px;padding:1px 8px;color:var(--text3);}
+.rc-row{padding:9px 12px;border-top:1px solid var(--border);}
+.rc-amt{font-family:'DM Mono',monospace;font-size:13.5px;font-weight:500;color:var(--text);}
+.rc-sub{font-size:11.5px;color:var(--text3);margin-top:2px;}
+.rc-tag{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:5px;margin-top:5px;background:var(--olive-lt);color:var(--olive);}
+.rc-hint{font-size:11px;color:#8a3530;margin-top:3px;}
+.rc-empty{padding:11px 12px;font-size:12px;color:var(--text3);border-top:1px solid var(--border);}
+.recon-amb{margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden;}
+.recon-amb-hd{display:flex;align-items:center;gap:7px;padding:10px 12px;font-size:12.5px;font-weight:500;color:var(--accent);}
+@media(max-width:720px){ .recon-cols{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
@@ -901,7 +932,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 <symbol id="ic-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="ic-clip" viewBox="0 0 24 24"><path d="M15 7l-6.5 6.5a2.5 2.5 0 003.5 3.5L19 10a4.5 4.5 0 00-6.4-6.3L5.8 10.5a6.5 6.5 0 009.2 9.2L20 15"/></symbol>
 <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
-<symbol id="ic-wallet" viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h13a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M16 12.5h3"/></symbol>
+<symbol id="ic-bank" viewBox="0 0 24 24"><path d="M3 21h18M5 21V10M10 21V10M14 21V10M19 21V10M3 10h18L12 4z"/></symbol><symbol id="ic-wallet" viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h13a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M16 12.5h3"/></symbol>
 </svg>
 
 
@@ -923,9 +954,13 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
       <button class="sb-item" data-page="calendar" onclick="goPage('calendar')"><svg class="ic"><use href="#ic-cal"/></svg>Ημ/γιο</button>
       <button class="sb-item" data-page="contacts" onclick="goPage('contacts')"><svg class="ic"><use href="#ic-users"/></svg>Πελάτες</button>
   </nav>
+  <div class="sb-admin" id="sbAdmin">
+    <div class="sb-divider"></div>
+    <button class="sb-item" data-page="recon" onclick="goPage('recon')"><svg class="ic"><use href="#ic-bank"/></svg>Συμφωνία τράπεζας</button>
+  </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17y</div>
+    <div class="sb-ver">έκδοση 2026.06.17z</div>
   </div>
 </aside>
 <div class="app-body">
@@ -990,7 +1025,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17y</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17z</div>
       </div>
     </div>
 
@@ -1221,6 +1256,11 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
     </div>
     <div class="cal-wrap" id="calGrid"></div>
     <div class="cal-day-detail" id="calDayDetail"></div>
+  </div>
+  <!-- ── BANK RECONCILIATION PAGE (admin only) ─── -->
+  <div class="page" id="page-recon">
+    <div class="view-label"><h2>Συμφωνία τράπεζας</h2></div>
+    <div id="reconBody"></div>
   </div>
 </div>
 
@@ -1749,6 +1789,7 @@ function updateMonthNav(){
 
 // ── NAVIGATION ────────────────────────────────────────
 function goPage(p){
+  if(p==='recon' && isViewer()){ p='home'; }  // admin-only page
   if(p!=='exp') catFilter='';  // reset filter when leaving exp page
   CPage=p;
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active','nav-stagger'));
@@ -1760,12 +1801,139 @@ function goPage(p){
   });
   window.scrollTo({top:0,behavior:'instant'});
   // Hide search & add buttons on annual/contacts/calendar pages
-  const isAnnual=p==='annual'||p==='contacts'||p==='calendar';
+  const isAnnual=p==='annual'||p==='contacts'||p==='calendar'||p==='recon';
   document.getElementById('searchWrap').style.display=isAnnual?'none':'';
   document.getElementById('btnAddExp').style.display=isAnnual?'none':'';
   document.getElementById('btnAddInc').style.display=isAnnual?'none':'';
   document.getElementById('monthSel').disabled=isAnnual;
   renderCurrentPage();
+}
+
+// ══════════════════════════════════════════════════════
+//  BANK RECONCILIATION (admin only)
+// ══════════════════════════════════════════════════════
+let _reconResult=null;
+
+function reconParseMoney(tok){
+  if(!tok) return 0;
+  tok=String(tok).replace(/[€\s]/g,'');
+  if(/,\d{2}$/.test(tok)) tok=tok.replace(/\./g,'').replace(',','.');  // 1.234,56
+  else tok=tok.replace(/,/g,'');                                       // 1,234.56 / 1234
+  const v=parseFloat(tok); return isNaN(v)?0:Math.abs(v);
+}
+// Parse pasted statement text → [{date:'YYYY-MM-DD', amount, desc}]
+function reconParseStatement(text){
+  const out=[];
+  (text||'').split(/\r?\n/).forEach(raw=>{
+    const s=raw.trim(); if(!s) return;
+    const dm=s.match(/(\d{4}-\d{1,2}-\d{1,2})|(\d{1,2}\/\d{1,2}\/\d{4})/);
+    if(!dm) return;
+    const dateRaw=dm[0];
+    let date=dateRaw;
+    if(dateRaw.indexOf('/')>-1){ const pr=dateRaw.split('/'); date=pr[2]+'-'+pr[1].padStart(2,'0')+'-'+pr[0].padStart(2,'0'); }
+    const nums=s.match(/-?\d[\d.]*,\d{2}|-?\d[\d.]*\.\d{2}|-?\d+/g)||[];
+    const money=nums.filter(n=>/[.,]\d{2}$/.test(n));
+    const pick=money.length?money[money.length-1]:nums[nums.length-1];
+    const amount=reconParseMoney(pick);
+    let desc=s.replace(dateRaw,'');
+    if(pick) desc=desc.replace(pick,'');
+    desc=desc.replace(/\s+/g,' ').trim();
+    if(amount>0) out.push({date, amount, desc});
+  });
+  return out;
+}
+// Recorded payments for a bank in a period
+function reconGatherPayments(bank,y,m){
+  const out=[];
+  Object.keys(data).forEach(key=>{
+    if(!/^y\d+m\d+$/.test(key)) return;
+    const b=data[key]; if(!b||!b.exp) return;
+    b.exp.forEach(r=>{
+      entryPayments(r).forEach(pmt=>{
+        if((+pmt.amount||0)<=0 || pmt.source!==bank) return;
+        const my=payMonthYear(pmt.date);
+        if(my && my.y===y && my.mo===m) out.push({name:r.name||'', code:r.code||'', amount:+pmt.amount||0, date:pmt.date});
+      });
+    });
+  });
+  return out;
+}
+// The matching engine
+function reconMatch(lines,payments){
+  const used=new Set(), matched=[], bankOnly=[], ambiguous=[], DAY=86400000;
+  lines.forEach(line=>{
+    const cands=[];
+    payments.forEach((pm,idx)=>{
+      if(used.has(idx)) return;
+      if(Math.abs((+pm.amount||0)-(+line.amount||0))>0.01) return;
+      cands.push({idx,pm});
+    });
+    if(!cands.length){ bankOnly.push(line); return; }
+    const norm=s=>String(s||'').replace(/\s/g,'').toUpperCase();
+    const byCode=cands.filter(c=>c.pm.code && line.desc && norm(line.desc).includes(norm(c.pm.code)));
+    let pick=null, reason='';
+    if(byCode.length===1){ pick=byCode[0]; reason='RF κωδικός'; }
+    else if(byCode.length>1){ ambiguous.push({line,cands:byCode.map(c=>c.pm)}); return; }
+    else {
+      const near=cands.filter(c=>{const d1=new Date(c.pm.date),d2=new Date(line.date);return !isNaN(d1)&&!isNaN(d2)&&Math.abs(d1-d2)<=4*DAY;});
+      const pool=near.length?near:cands;
+      if(pool.length===1){ pick=pool[0]; reason=near.length?'ποσό + ημ/νία':'ποσό'; }
+      else { ambiguous.push({line,cands:pool.map(c=>c.pm)}); return; }
+    }
+    used.add(pick.idx); matched.push({line,pm:pick.pm,reason});
+  });
+  const booksOnly=[]; payments.forEach((pm,idx)=>{ if(!used.has(idx)) booksOnly.push(pm); });
+  return {matched,bankOnly,booksOnly,ambiguous};
+}
+function runRecon(){
+  const bank=document.getElementById('reconBank').value;
+  const y=+document.getElementById('reconYear').value;
+  const m=+document.getElementById('reconMonth').value;
+  const lines=reconParseStatement(document.getElementById('reconPaste').value);
+  if(!lines.length){ showToast('⚠ Δεν βρέθηκαν κινήσεις — έλεγξε τη μορφή'); return; }
+  const pays=reconGatherPayments(bank,y,m);
+  _reconResult=reconMatch(lines,pays);
+  _reconResult._meta={bank,y,m,total:lines.length};
+  renderReconResults();
+}
+function renderRecon(){
+  if(isViewer()){ goPage('home'); return; }
+  const now=new Date();
+  const body=document.getElementById('reconBody');
+  const months=MN.map((nm,i)=>`<option value="${i}"${i===CM?' selected':''}>${nm}</option>`).join('');
+  const years=[CY-1,CY,CY+1].map(y=>`<option value="${y}"${y===CY?' selected':''}>${y}</option>`).join('');
+  body.innerHTML=`
+    <div class="recon-note">🔒 Ορατή μόνο σε διαχειριστή. <strong>Φάση δοκιμής:</strong> επικόλλησε κινήσεις χειροκίνητα — το διάβασμα PDF έρχεται στη συνέχεια.</div>
+    <div class="recon-controls">
+      <div class="field"><label>Λογαριασμός</label><select id="reconBank">${payBankOptions('Τράπεζα 266')}</select></div>
+      <div class="field"><label>Μήνας</label><select id="reconMonth">${months}</select></div>
+      <div class="field"><label>Έτος</label><select id="reconYear">${years}</select></div>
+    </div>
+    <div class="field" style="margin-top:4px"><label>Κινήσεις extrait <span style="font-weight:400;color:var(--text3);font-size:11px">— μία ανά γραμμή: ημερομηνία, ποσό, περιγραφή</span></label>
+      <textarea id="reconPaste" class="recon-paste" placeholder="2026-06-12  258,00  ΔΕΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ RF12...&#10;18/06/2026  320,00  ΠΕΝΤΟΓΕΝΗΣ ΑΕ&#10;10/06/2026  45,00  ΠΡΟΜΗΘΕΙΑ ΕΜΒΑΣΜΑΤΟΣ"></textarea>
+    </div>
+    <button class="btn btn-inc" onclick="runRecon()" style="margin-top:2px"><svg class="ic"><use href="#ic-check"/></svg> Έλεγχος συμφωνίας</button>
+    <div id="reconResults" style="margin-top:16px"></div>`;
+}
+function renderReconResults(){
+  const R=_reconResult; if(!R) return;
+  const el=document.getElementById('reconResults');
+  const money=v=>fmt(v);
+  const dcol=(title,cls,icon,count,rowsHtml)=>`<div class="rc-col ${cls}"><div class="rc-hd"><svg class="ic"><use href="#${icon}"/></svg>${title}<span class="rc-count">${count}</span></div>${rowsHtml||'<div class="rc-empty">—</div>'}</div>`;
+  const matchedRows=R.matched.map(x=>`<div class="rc-row"><div class="rc-amt">${money(x.pm.amount)}</div><div class="rc-sub">${esc(x.pm.name||'—')} · ${fmtD(x.pm.date)}</div><span class="rc-tag ok">${x.reason}</span></div>`).join('');
+  const bankRows=R.bankOnly.map(l=>`<div class="rc-row"><div class="rc-amt">${money(l.amount)}</div><div class="rc-sub">${fmtD(l.date)} · ${esc(l.desc||'—')}</div></div>`).join('');
+  const bookRows=R.booksOnly.map(pm=>`<div class="rc-row"><div class="rc-amt">${money(pm.amount)}</div><div class="rc-sub">${esc(pm.name||'—')} · ${fmtD(pm.date)}</div><div class="rc-hint">λάθος ημ/νία ή τράπεζα;</div></div>`).join('');
+  let ambHtml='';
+  if(R.ambiguous.length){
+    ambHtml='<div class="recon-amb"><div class="recon-amb-hd"><svg class="ic"><use href="#ic-dots"/></svg> Χρειάζονται επιβεβαίωση ('+R.ambiguous.length+')</div>'+
+      R.ambiguous.map(a=>`<div class="rc-row"><div class="rc-sub">Κίνηση ${money(a.line.amount)} · ${fmtD(a.line.date)} — ταιριάζει με: ${a.cands.map(c=>esc(c.name||'—')).join(' ή ')}</div></div>`).join('')+'</div>';
+  }
+  el.innerHTML=`<div class="recon-summary"><span class="rs ok">${R.matched.length} ταιριασμένα</span><span class="rs warn">${R.bankOnly.length} μόνο στην τράπεζα</span><span class="rs bad">${R.booksOnly.length} μόνο στα βιβλία</span></div>
+    <div class="recon-cols">
+      ${dcol('Ταιριασμένα','ok','ic-check',R.matched.length,matchedRows)}
+      ${dcol('Μόνο στην τράπεζα','warn','ic-wallet',R.bankOnly.length,bankRows)}
+      ${dcol('Μόνο στα βιβλία','bad','ic-clip',R.booksOnly.length,bookRows)}
+    </div>${ambHtml}`;
 }
 
 function renderCurrentPage(){
@@ -1775,6 +1943,7 @@ function renderCurrentPage(){
   else if(CPage==='annual')renderAnnual();
   else if(CPage==='calendar')renderCalendar();
   else if(CPage==='contacts')renderContactsPage();
+  else if(CPage==='recon')renderRecon();
 }
 
 // ── HELPERS ───────────────────────────────────────────
@@ -5170,7 +5339,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17y</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17z</div>
   </div>
 </div>
 
