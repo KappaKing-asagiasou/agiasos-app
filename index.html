@@ -885,6 +885,12 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 .recon-note{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:12.5px;color:var(--text2);margin-bottom:14px;}
 .recon-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
 .recon-controls .field{flex:1;min-width:120px;margin:0;}
+.recon-range{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.rr-grp{display:flex;align-items:center;gap:6px;}
+.rr-grp label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-right:2px;}
+.rr-grp select{min-width:78px;}
+.rr-arrow{color:var(--text3);font-size:15px;padding-bottom:6px;}
+@media(max-width:520px){.recon-range{flex-direction:column;align-items:stretch;}.rr-arrow{display:none;}.rr-grp select{flex:1;}}
 .recon-paste{width:100%;box-sizing:border-box;min-height:120px;font-family:'DM Mono',monospace;font-size:12.5px;padding:10px;border:1px solid var(--border2);border-radius:8px;background:var(--input-bg);color:var(--text);resize:vertical;outline:none;}
 .recon-paste:focus{border-color:var(--accent-mid);box-shadow:0 0 0 3px var(--accent-glow);}
 .recon-summary{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px;}
@@ -960,7 +966,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17z</div>
+    <div class="sb-ver">έκδοση 2026.06.18a</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1025,7 +1031,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17z</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18a</div>
       </div>
     </div>
 
@@ -1843,7 +1849,7 @@ function reconParseStatement(text){
   return out;
 }
 // Recorded payments for a bank in a period
-function reconGatherPayments(bank,y,m){
+function reconGatherPayments(bank,fromIdx,toIdx){
   const out=[];
   Object.keys(data).forEach(key=>{
     if(!/^y\d+m\d+$/.test(key)) return;
@@ -1852,7 +1858,9 @@ function reconGatherPayments(bank,y,m){
       entryPayments(r).forEach(pmt=>{
         if((+pmt.amount||0)<=0 || pmt.source!==bank) return;
         const my=payMonthYear(pmt.date);
-        if(my && my.y===y && my.mo===m) out.push({name:r.name||'', code:r.code||'', amount:+pmt.amount||0, date:pmt.date});
+        if(!my) return;
+        const idx=my.y*12+my.mo;
+        if(idx>=fromIdx && idx<=toIdx) out.push({name:r.name||'', code:r.code||'', amount:+pmt.amount||0, date:pmt.date});
       });
     });
   });
@@ -1887,13 +1895,14 @@ function reconMatch(lines,payments){
 }
 function runRecon(){
   const bank=document.getElementById('reconBank').value;
-  const y=+document.getElementById('reconYear').value;
-  const m=+document.getElementById('reconMonth').value;
+  const fromIdx=(+document.getElementById('reconFromYear').value)*12 + (+document.getElementById('reconFromMonth').value);
+  let toIdx=(+document.getElementById('reconToYear').value)*12 + (+document.getElementById('reconToMonth').value);
+  if(toIdx<fromIdx) toIdx=fromIdx;  // guard: swap-proof
   const lines=reconParseStatement(document.getElementById('reconPaste').value);
   if(!lines.length){ showToast('⚠ Δεν βρέθηκαν κινήσεις — έλεγξε τη μορφή'); return; }
-  const pays=reconGatherPayments(bank,y,m);
+  const pays=reconGatherPayments(bank,fromIdx,toIdx);
   _reconResult=reconMatch(lines,pays);
-  _reconResult._meta={bank,y,m,total:lines.length};
+  _reconResult._meta={bank,fromIdx,toIdx,total:lines.length};
   renderReconResults();
 }
 function renderRecon(){
@@ -1906,8 +1915,11 @@ function renderRecon(){
     <div class="recon-note">🔒 Ορατή μόνο σε διαχειριστή. <strong>Φάση δοκιμής:</strong> επικόλλησε κινήσεις χειροκίνητα — το διάβασμα PDF έρχεται στη συνέχεια.</div>
     <div class="recon-controls">
       <div class="field"><label>Λογαριασμός</label><select id="reconBank">${payBankOptions('Τράπεζα 266')}</select></div>
-      <div class="field"><label>Μήνας</label><select id="reconMonth">${months}</select></div>
-      <div class="field"><label>Έτος</label><select id="reconYear">${years}</select></div>
+    </div>
+    <div class="recon-range">
+      <div class="rr-grp"><label>Από</label><select id="reconFromMonth">${months}</select><select id="reconFromYear">${years}</select></div>
+      <span class="rr-arrow">→</span>
+      <div class="rr-grp"><label>Έως</label><select id="reconToMonth">${months}</select><select id="reconToYear">${years}</select></div>
     </div>
     <div class="field" style="margin-top:4px"><label>Κινήσεις extrait <span style="font-weight:400;color:var(--text3);font-size:11px">— μία ανά γραμμή: ημερομηνία, ποσό, περιγραφή</span></label>
       <textarea id="reconPaste" class="recon-paste" placeholder="2026-06-12  258,00  ΔΕΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ RF12...&#10;18/06/2026  320,00  ΠΕΝΤΟΓΕΝΗΣ ΑΕ&#10;10/06/2026  45,00  ΠΡΟΜΗΘΕΙΑ ΕΜΒΑΣΜΑΤΟΣ"></textarea>
@@ -5339,7 +5351,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17z</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18a</div>
   </div>
 </div>
 
