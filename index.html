@@ -856,6 +856,26 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   tr:hover td,tr.ry:hover td,tr.rn:hover td{background:inherit!important;}
   .pending-alert{display:none!important;}
 }
+
+/* ── DARK MODE: fixes for hardcoded light colors ───── */
+[data-theme="dark"] .btn-exp{background:#4a2424;color:#f0c8c8;border-color:#7a3838;}
+[data-theme="dark"] .btn-exp:hover{background:#5c2c2c;}
+[data-theme="dark"] .btn-inc{background:#24401c;color:#b6e298;border-color:#3a6028;}
+[data-theme="dark"] .btn-inc:hover{background:#2e5024;}
+[data-theme="dark"] .btn-gold:hover{background:#4a3a12;}
+[data-theme="dark"] .btn-danger:hover{border-color:rgba(200,90,90,.5);}
+[data-theme="dark"] .btn-pdf:hover{background:#3a2c10;}
+[data-theme="dark"] .btn-xlsx:hover{background:#243a1c;}
+[data-theme="dark"] tr.ry td{background:rgba(99,153,34,.13);}
+[data-theme="dark"] tr.rn td{background:rgba(184,64,54,.15);}
+[data-theme="dark"] tr.ry:hover td{background:rgba(99,153,34,.20);}
+[data-theme="dark"] tr.rn:hover td{background:rgba(184,64,54,.22);}
+[data-theme="dark"] .pt.y:hover{background:rgba(99,153,34,.28);}
+[data-theme="dark"] .pt.n:hover{background:rgba(184,64,54,.28);}
+[data-theme="dark"] .pt.e:hover{background:rgba(122,94,20,.32);}
+[data-theme="dark"] .pay-del:hover{background:rgba(184,64,54,.35);}
+[data-theme="dark"] .cal-chip{background:rgba(184,64,54,.22);color:#f0c4b8;}
+[data-theme="dark"] .ct-av-due{border-color:rgba(184,64,54,.4);}
 </style>
 </head>
 <body>
@@ -905,7 +925,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </nav>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.17x</div>
+    <div class="sb-ver">έκδοση 2026.06.17y</div>
   </div>
 </aside>
 <div class="app-body">
@@ -970,7 +990,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17x</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.17y</div>
       </div>
     </div>
 
@@ -3787,6 +3807,7 @@ function applyBgTheme(id){
   r.setProperty('--border2',t.border2);
   // Derive accent colors based on whether theme is dark or light
   const isDark=t.bg.startsWith('#1')||t.bg.startsWith('#2');
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   // Input background — lighter than surface in dark themes, white in light
   r.setProperty('--input-bg', isDark ? t.bg : '#ffffff');
   r.setProperty('--olive-bg',  isDark?'rgba(61,92,42,.25)' :'#eef4e6');
@@ -3822,7 +3843,8 @@ function applyBgTheme(id){
 
 // Apply saved theme on load
 (function(){
-  const saved=safeGet(BG_KEY)||'agiasos';
+  let saved=safeGet(BG_KEY);
+  if(!saved){ saved = (safeGet('agiasos_theme')==='dark') ? 'olive' : 'agiasos'; }
   applyBgTheme(saved);
 })();
 
@@ -4312,28 +4334,26 @@ function toggleCarryover(){
   closeDropdowns();
 }
 
+// Is a given theme id a dark one?
+function themeIsDark(id){
+  const t=BG_THEMES.find(x=>x.id===id);
+  return !!(t && (t.bg.startsWith('#1')||t.bg.startsWith('#2')));
+}
+// 🌙 button — toggles between the light default and a dark theme, via the one system
 function toggleDark(){
-  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  const next=isDark?'light':'dark';
-  document.documentElement.setAttribute('data-theme',next);
-  safeSet('agiasos_theme',next);
+  const cur=safeGet(BG_KEY)||'agiasos';
+  applyBgTheme(themeIsDark(cur) ? 'agiasos' : 'olive');
+  updateDarkLabel();
+}
+// Keep the menu label/icon in sync with the active theme
+function updateDarkLabel(){
+  const dark=themeIsDark(safeGet(BG_KEY)||'agiasos');
   const lbl=document.getElementById('darkMenuLabel');
   const icon=document.querySelector('#darkMenuItem .di-icon');
-  if(lbl) lbl.textContent=next==='dark'?'Light mode':'Dark mode';
-  if(icon) icon.textContent=next==='dark'?'☀️':'🌙';
+  if(lbl) lbl.textContent=dark?'Light mode':'Dark mode';
+  if(icon) icon.textContent=dark?'☀️':'🌙';
 }
-// Apply saved theme on load
-(function(){
-  const t=safeGet('agiasos_theme')||'light';
-  document.documentElement.setAttribute('data-theme',t);
-  // Button text set after DOM ready
-  window.addEventListener('DOMContentLoaded',()=>{
-    const lbl=document.getElementById('darkMenuLabel');
-    const icon=document.querySelector('#darkMenuItem .di-icon');
-    if(lbl) lbl.textContent=t==='dark'?'Light mode':'Dark mode';
-    if(icon) icon.textContent=t==='dark'?'☀️':'🌙';
-  });
-})();
+window.addEventListener('DOMContentLoaded',updateDarkLabel);
 
 
 
@@ -5150,7 +5170,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17x</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.17y</div>
   </div>
 </div>
 
