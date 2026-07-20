@@ -882,6 +882,9 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 [data-theme="dark"] .ct-av-due{border-color:rgba(184,64,54,.4);}
 
 /* ── BANK RECONCILIATION PAGE ──────────────────────── */
+.recon-upload{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
+.recon-loading{font-size:12.5px;color:var(--text2);}
+.recon-or{text-align:center;font-size:11px;color:var(--text3);margin:8px 0;text-transform:uppercase;letter-spacing:.4px;}
 .recon-note{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:12.5px;color:var(--text2);margin-bottom:14px;}
 .recon-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
 .recon-controls .field{flex:1;min-width:120px;margin:0;}
@@ -966,7 +969,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18a</div>
+    <div class="sb-ver">έκδοση 2026.06.18b</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1031,7 +1034,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18a</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18b</div>
       </div>
     </div>
 
@@ -1893,6 +1896,47 @@ function reconMatch(lines,payments){
   const booksOnly=[]; payments.forEach((pm,idx)=>{ if(!used.has(idx)) booksOnly.push(pm); });
   return {matched,bankOnly,booksOnly,ambiguous};
 }
+// Phase B — AI reads the bank statement PDF and extracts the movements
+async function scanStatement(input){
+  const file=input.files[0]; if(!file) return; input.value='';
+  if(file.size>4*1024*1024){ showToast('⚠ Αρχείο πολύ μεγάλο (μέγιστο 4MB)'); return; }
+  const ld=document.getElementById('reconLoading'); if(ld) ld.style.display='';
+  try{
+    const isPDF=file.type==='application/pdf';
+    const mediaType=isPDF?'application/pdf':(file.type||'image/jpeg');
+    let base64;
+    if(!isPDF && file.type.startsWith('image/')) base64=await compressImage(file);
+    else base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
+    const prompt='Διάβασε αυτό το τραπεζικό extrait (κίνηση λογαριασμού) και επέστρεψε ΜΟΝΟ ένα JSON array, χωρίς markdown, χωρίς άλλο κείμενο.\nΚάθε στοιχείο του array = μία ΧΡΕΩΣΗ (χρήματα που ΒΓΗΚΑΝ: πληρωμές, αναλήψεις, μεταφορές, προμήθειες).\nΠεδία:\n- date: ημερομηνία κίνησης σε μορφή YYYY-MM-DD\n- amount: το ποσό της χρέωσης ως θετικός αριθμός, χωρίς € και χωρίς πρόσημο (π.χ. 258.00)\n- desc: η αιτιολογία/περιγραφή της κίνησης όπως ακριβώς εμφανίζεται (κράτα ονόματα δικαιούχων, RF, IBAN)\nΑΓΝΟΗΣΕ τις πιστώσεις/καταθέσεις (χρήματα που ΜΠΗΚΑΝ) και τις γραμμές υπολοίπου.\nΑν δεν υπάρχουν χρεώσεις, επίστρεψε [].\nΑπάντησε ΜΟΝΟ με το JSON array.';
+    const body={ model:'claude-opus-4-6', max_tokens:8000, messages:[{role:'user',content:[
+      {type:isPDF?'document':'image', source:{type:'base64', media_type:mediaType, data:base64}},
+      {type:'text', text:prompt}
+    ]}]};
+    const resp=await fetch('https://akpqfjewlyygngfpvcid.supabase.co/functions/v1/scan-invoice',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
+      body:JSON.stringify(body)
+    });
+    if(!resp.ok){ const e=await resp.json().catch(()=>({})); throw new Error((e.error&&e.error.message)||('API '+resp.status)); }
+    const d=await resp.json();
+    if(!d.content||!d.content[0]) throw new Error('Άδεια απάντηση από AI');
+    let txt=(d.content[0].text||'').trim().replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+    const a=txt.indexOf('['), b=txt.lastIndexOf(']');
+    if(a>=0 && b>a) txt=txt.slice(a,b+1);
+    let arr;
+    try{ arr=JSON.parse(txt); }catch(pe){ throw new Error('Το AI δεν επέστρεψε έγκυρη λίστα (ίσως πολύ μεγάλο extrait). Δοκίμασε λιγότερες σελίδες.'); }
+    if(!Array.isArray(arr) || !arr.length){ showToast('⚠ Δεν βρέθηκαν χρεώσεις στο PDF'); return; }
+    const ta=document.getElementById('reconPaste');
+    if(ta) ta.value=arr.map(x=>`${x.date||''}  ${(+x.amount||0).toFixed(2)}  ${String(x.desc||'').replace(/\s+/g,' ')}`).join('\n');
+    showToast('✓ Διαβάστηκαν '+arr.length+' κινήσεις');
+    runRecon();
+  }catch(err){
+    console.error('scanStatement error:',err);
+    showToast('⚠ '+(err.message||err));
+  }finally{
+    const ld2=document.getElementById('reconLoading'); if(ld2) ld2.style.display='none';
+  }
+}
 function runRecon(){
   const bank=document.getElementById('reconBank').value;
   const fromIdx=(+document.getElementById('reconFromYear').value)*12 + (+document.getElementById('reconFromMonth').value);
@@ -1921,6 +1965,12 @@ function renderRecon(){
       <span class="rr-arrow">→</span>
       <div class="rr-grp"><label>Έως</label><select id="reconToMonth">${months}</select><select id="reconToYear">${years}</select></div>
     </div>
+    <div class="recon-upload">
+      <input type="file" id="reconFile" accept="application/pdf,image/*" style="display:none" onchange="scanStatement(this)">
+      <button class="btn btn-gold" onclick="document.getElementById('reconFile').click()"><svg class="ic"><use href="#ic-clip"/></svg> Ανέβασε PDF extrait</button>
+      <span id="reconLoading" class="recon-loading" style="display:none">⏳ Διάβασμα extrait… (20-40 δευτ.)</span>
+    </div>
+    <div class="recon-or">— ή επικόλλησε χειροκίνητα —</div>
     <div class="field" style="margin-top:4px"><label>Κινήσεις extrait <span style="font-weight:400;color:var(--text3);font-size:11px">— μία ανά γραμμή: ημερομηνία, ποσό, περιγραφή</span></label>
       <textarea id="reconPaste" class="recon-paste" placeholder="2026-06-12  258,00  ΔΕΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ RF12...&#10;18/06/2026  320,00  ΠΕΝΤΟΓΕΝΗΣ ΑΕ&#10;10/06/2026  45,00  ΠΡΟΜΗΘΕΙΑ ΕΜΒΑΣΜΑΤΟΣ"></textarea>
     </div>
@@ -5351,7 +5401,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18a</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18b</div>
   </div>
 </div>
 
