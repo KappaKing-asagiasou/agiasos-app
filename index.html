@@ -1038,7 +1038,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18e</div>
+    <div class="sb-ver">έκδοση 2026.06.18f</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1103,7 +1103,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18e</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18f</div>
       </div>
     </div>
 
@@ -5465,6 +5465,51 @@ function checkAuth(){
   return sessionStorage.getItem(AUTH_KEY) === '1';
 }
 
+async function doAuthLogin(){
+  const email=(document.getElementById('loginEmail').value||'').trim();
+  const pass=document.getElementById('loginPass2').value||'';
+  const errEl=document.getElementById('loginErr');
+  const btn=document.getElementById('authBtn');
+  if(!email||!pass){ if(errEl) errEl.textContent='Συμπλήρωσε email και κωδικό.'; return; }
+  if(btn){ btn.disabled=true; btn.textContent='Σύνδεση…'; }
+  if(errEl) errEl.textContent='';
+  try{
+    // 1) Authenticate with Supabase Auth
+    const r=await fetch(SB_URL+'/auth/v1/token?grant_type=password',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY},
+      body:JSON.stringify({email:email,password:pass})
+    });
+    const d=await r.json();
+    if(!r.ok || !d.access_token) throw new Error(d.error_description||d.msg||d.error||'Λάθος email ή κωδικός.');
+    const token=d.access_token, uid=d.user && d.user.id;
+    // 2) Fetch this user's membership + role
+    const mr=await fetch(SB_URL+'/rest/v1/members?user_id=eq.'+uid+'&select=role,org_id',{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}
+    });
+    const rows=await mr.json();
+    if(!Array.isArray(rows) || !rows.length) throw new Error('Ο λογαριασμός δεν είναι συνδεδεμένος με τον συνεταιρισμό. Ειδοποίησε τον διαχειριστή.');
+    const memberRole=rows[0].role;
+    const appRole=(memberRole==='admin'||memberRole==='editor')?'admin':'viewer';
+    // 3) Store session + boot
+    sessionStorage.setItem(AUTH_KEY,'1');
+    sessionStorage.setItem(ROLE_KEY,appRole);
+    sessionStorage.setItem('agiasos_sb_token',token);
+    sessionStorage.setItem('agiasos_sb_uid',uid||'');
+    sessionStorage.setItem('agiasos_member_role',memberRole);
+    sessionStorage.setItem('agiasos_org_id',rows[0].org_id||'');
+    currentRole=appRole;
+    document.getElementById('loginScreen').style.display='none';
+    logLogin(appRole);
+    bootApp();
+  }catch(err){
+    if(errEl) errEl.textContent=(err&&err.message)?err.message:'Σφάλμα σύνδεσης.';
+    document.getElementById('loginPass2').value='';
+  }finally{
+    if(btn){ btn.disabled=false; btn.innerHTML='Σύνδεση &nbsp;→'; }
+  }
+}
+
 function doLogin(){
   const val = document.getElementById('loginPass').value;
   if(val === APP_PASS){
@@ -5519,7 +5564,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     bootApp();
   } else {
     setTimeout(()=>{
-      const lp = document.getElementById('loginPass');
+      const lp = document.getElementById('loginEmail');
       if(lp) lp.focus();
     }, 100);
   }
@@ -5655,11 +5700,17 @@ function safeReload(){
     <div class="login-logo">🫒</div>
     <div class="login-welcome">Καλώς ήρθες</div>
     <div class="login-welcome-sub">ΕΙΣΟΔΟΣ ΛΟΓΑΡΙΑΣΜΟΥ</div>
-    <input class="login-input" type="password" id="loginPass" placeholder="Κωδικός πρόσβασης" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
+    <input class="login-input" type="email" id="loginEmail" placeholder="Email" autocomplete="username" onkeydown="if(event.key==='Enter')doAuthLogin()">
+    <input class="login-input" type="password" id="loginPass2" placeholder="Κωδικός" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuthLogin()">
+    <button class="login-btn" id="authBtn" onclick="doAuthLogin()">Σύνδεση &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
+    <button id="fallbackToggle" onclick="document.getElementById('fallbackBox').style.display='block';this.style.display='none';" style="margin-top:14px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">Παλιός κωδικός (εφεδρεία)</button>
+    <div id="fallbackBox" style="display:none;margin-top:10px">
+      <input class="login-input" type="password" id="loginPass" placeholder="Κωδικός πρόσβασης" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="login-btn" onclick="doLogin()">Είσοδος (παλιό) &nbsp;→</button>
+    </div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18e</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18f</div>
   </div>
 </div>
 
