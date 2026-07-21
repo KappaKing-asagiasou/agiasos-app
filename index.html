@@ -1038,7 +1038,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18h</div>
+    <div class="sb-ver">έκδοση 2026.06.18i</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1103,7 +1103,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18h</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18i</div>
       </div>
     </div>
 
@@ -1612,6 +1612,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
     <div style="font-size:11.5px;color:var(--text3);margin-bottom:8px">Αντιγράφει τα δεδομένα στους νέους πίνακες. Η app_data ΔΕΝ αλλάζει. Ασφαλές να ξανατρέξει.</div>
     <button class="btn btn-gold" id="migBtn" onclick="migrateToNewTables()">Έλεγχος &amp; μεταφορά</button>
     <button class="btn btn-inc" id="testNewBtn" onclick="testLoadNewBackend()" style="margin-left:6px">👁 Δοκιμή: ανάγνωση από νέα δομή</button>
+    <button class="btn btn-exp" id="activateNewBtn" onclick="activateNewBackendSession()" style="margin-top:8px">⚡ Ενεργοποίηση νέας δομής (δοκιμή)</button>
     <pre id="migOut" style="display:none;margin-top:10px;font-size:11px;background:var(--surface2);border-radius:8px;padding:10px;max-height:220px;overflow:auto;white-space:pre-wrap"></pre>
   </div>
   <div style="display:flex;justify-content:flex-end;margin-top:8px">
@@ -1689,7 +1690,8 @@ function save(){
   _pendingSave=true;
   // 2. Debounce Supabase to 800ms (was 2s) to reduce API calls but stay fast
   clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(()=>saveToSupabase(),800);
+  if(newBackendActive){ _saveTimer=setTimeout(()=>runSync(),800); }
+  else { _saveTimer=setTimeout(()=>saveToSupabase(),800); }
 }
 
 // Safety net: force-save to Supabase when user closes/leaves the page
@@ -3837,6 +3839,97 @@ function openOverdue(){
 }
 
 // ── BACKUP ────────────────────────────────────────────
+// ── Stage 4: per-record sync engine ──────────────────
+let _snap=null;                 // snapshot at load: signatures per record
+let newBackendActive=false;     // when true, save() writes per-record to new tables
+const ECOLS4=['date','name','amount','code','invoice','paid','cat','incCat','notes','attachment','hidden','afm','payments'];
+
+function _sortDeep(o){
+  if(Array.isArray(o)) return o.map(_sortDeep);
+  if(o && typeof o==='object'){ const r={}; Object.keys(o).sort().forEach(k=>{ r[k]=_sortDeep(o[k]); }); return r; }
+  return o;
+}
+function _sig(o){ return JSON.stringify(_sortDeep(o)); }
+
+function _entryCore(e,kind,bucket){
+  const extra={_bucket:bucket};
+  Object.keys(e).forEach(k=>{ if(ECOLS4.indexOf(k)<0 && k!=='_id') extra[k]=e[k]; });
+  return { kind:kind, date:e.date||null, name:e.name||null, amount:+e.amount||0, code:e.code||null,
+    invoice:e.invoice||null, paid:e.paid||null, cat:e.cat||null, inc_cat:e.incCat||null, notes:e.notes||null,
+    attachment:e.attachment||null, hidden:!!e.hidden, afm:e.afm||null,
+    payments:Array.isArray(e.payments)?e.payments:[], extra:extra };
+}
+function _contactCore(o){
+  const extra={}; Object.keys(o).forEach(k=>{ if(['name','afm','code','_id'].indexOf(k)<0) extra[k]=o[k]; });
+  return { name:o.name||null, afm:o.afm||null, code:o.code||null, extra:extra };
+}
+function _tillCore(d){
+  return { date:d.date||null, opening:+d.opening||0, cash:d.cash||[], pos:d.pos||[], closed:!!d.closed, closed_at:d.closedAt||null };
+}
+
+// Build the snapshot from the current in-memory data (called right after a load)
+function buildSnapshot(){
+  const snap={entries:{},contacts:{},till:{},cats:{exp:[],inc:[]},settings:{}};
+  Object.keys(data).forEach(key=>{
+    const km=key.match(/^y(\d+)m(\d+)$/); if(!km) return;
+    ['exp','inc'].forEach(kind=>{ (data[key][kind]||[]).forEach(e=>{ if(e._id) snap.entries[e._id]=_sig(_entryCore(e,kind,key)); }); });
+  });
+  (data['__contacts__']||[]).forEach(o=>{ if(o._id) snap.contacts[o._id]=_sig(_contactCore(o)); });
+  (((data['__till__']||{}).days)||[]).forEach(d=>{ if(d._id) snap.till[d._id]=_sig(_tillCore(d)); });
+  snap.cats.exp=(data['__cats__']||[]).slice();
+  snap.cats.inc=(data['__incats__']||[]).slice();
+  const handled=new Set(['__contacts__','__cats__','__incats__','__till__']);
+  Object.keys(data).forEach(k=>{ if(/^__.+__$/.test(k)&&!handled.has(k)) snap.settings[k]=_sig(data[k]); });
+  _snap=snap;
+}
+
+// Compute the diff between current data and the snapshot
+function computeSyncDiff(){
+  const org=sessionStorage.getItem('agiasos_org_id');
+  const uid=sessionStorage.getItem('agiasos_sb_uid')||null;
+  const d={ entriesIns:[], entriesUpd:[], entriesDel:[], contactsIns:[], contactsUpd:[], contactsDel:[],
+    tillIns:[], tillUpd:[], tillDel:[], catsIns:[], catsDel:[], settingsUp:[], settingsDel:[] };
+  // ENTRIES
+  const seenE=new Set();
+  Object.keys(data).forEach(key=>{
+    const km=key.match(/^y(\d+)m(\d+)$/); if(!km) return;
+    ['exp','inc'].forEach(kind=>{ (data[key][kind]||[]).forEach(e=>{
+      const core=_entryCore(e,kind,key); const s=_sig(core);
+      if(!e._id){ d.entriesIns.push({ref:e, row:Object.assign({org_id:org,created_by:uid},core), sig:s}); }
+      else { seenE.add(e._id); if(_snap.entries[e._id]!==s) d.entriesUpd.push({id:e._id,row:core,sig:s}); }
+    }); });
+  });
+  Object.keys(_snap.entries).forEach(id=>{ if(!seenE.has(id)) d.entriesDel.push(id); });
+  // CONTACTS
+  const seenC=new Set();
+  (data['__contacts__']||[]).forEach(o=>{
+    const core=_contactCore(o); const s=_sig(core);
+    if(!o._id){ d.contactsIns.push({ref:o, row:Object.assign({org_id:org},core), sig:s}); }
+    else { seenC.add(o._id); if(_snap.contacts[o._id]!==s) d.contactsUpd.push({id:o._id,row:core,sig:s}); }
+  });
+  Object.keys(_snap.contacts).forEach(id=>{ if(!seenC.has(id)) d.contactsDel.push(id); });
+  // TILL DAYS
+  const seenT=new Set();
+  (((data['__till__']||{}).days)||[]).forEach(dd=>{
+    const core=_tillCore(dd); const s=_sig(core);
+    if(!dd._id){ d.tillIns.push({ref:dd, row:Object.assign({org_id:org,created_by:uid},core), sig:s}); }
+    else { seenT.add(dd._id); if(_snap.till[dd._id]!==s) d.tillUpd.push({id:dd._id,row:core,sig:s}); }
+  });
+  Object.keys(_snap.till).forEach(id=>{ if(!seenT.has(id)) d.tillDel.push(id); });
+  // CATEGORIES (match by name)
+  [['exp','__cats__'],['inc','__incats__']].forEach(pair=>{
+    const kind=pair[0], cur=(data[pair[1]]||[]), prev=_snap.cats[kind]||[];
+    cur.forEach((n,i)=>{ if(prev.indexOf(n)<0) d.catsIns.push({org_id:org,kind:kind,name:n,sort:i}); });
+    prev.forEach(n=>{ if(cur.indexOf(n)<0) d.catsDel.push({kind:kind,name:n}); });
+  });
+  // SETTINGS (leftover __X__ keys)
+  const handled=new Set(['__contacts__','__cats__','__incats__','__till__']);
+  const curKeys=new Set();
+  Object.keys(data).forEach(k=>{ if(/^__.+__$/.test(k)&&!handled.has(k)){ curKeys.add(k); const s=_sig(data[k]); if(_snap.settings[k]!==s) d.settingsUp.push({org_id:org,key:k,value:data[k],sig:s}); } });
+  Object.keys(_snap.settings).forEach(k=>{ if(!curKeys.has(k)) d.settingsDel.push(k); });
+  return d;
+}
+
 // Stage 3 — read the new tables and rebuild the SAME internal `data` shape
 async function loadFromNewTables(){
   const token=sessionStorage.getItem('agiasos_sb_token');
@@ -3870,14 +3963,17 @@ async function loadFromNewTables(){
       notes:row.notes||'', attachment:row.attachment||'', hidden:!!row.hidden, afm:row.afm||'',
       payments:Array.isArray(row.payments)?row.payments:[] };
     Object.keys(extra).forEach(k=>{ if(k!=='_bucket') e[k]=extra[k]; });
+    if(row.id) Object.defineProperty(e,'_id',{value:row.id,enumerable:false,writable:true,configurable:true});
     (row.kind==='inc'?nd[bucket].inc:nd[bucket].exp).push(e);
   });
-  nd['__contacts__']=cts.map(ct=>{ const o={name:ct.name||'',afm:ct.afm||'',code:ct.code||''}; const ex=ct.extra||{}; Object.keys(ex).forEach(k=>o[k]=ex[k]); return o; });
+  nd['__contacts__']=cts.map(ct=>{ const o={name:ct.name||'',afm:ct.afm||'',code:ct.code||''}; const ex=ct.extra||{}; Object.keys(ex).forEach(k=>o[k]=ex[k]); if(ct.id) Object.defineProperty(o,'_id',{value:ct.id,enumerable:false,writable:true,configurable:true}); return o; });
   nd['__cats__']=cats.filter(x=>x.kind==='exp').sort((a,b)=>(a.sort||0)-(b.sort||0)).map(x=>x.name);
   nd['__incats__']=cats.filter(x=>x.kind==='inc').sort((a,b)=>(a.sort||0)-(b.sort||0)).map(x=>x.name);
-  nd['__till__']={days:tds.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(d=>({
-    id:d.created_at?new Date(d.created_at).getTime():Date.now(), date:d.date||'', opening:+d.opening||0,
-    cash:d.cash||[], pos:d.pos||[], closed:!!d.closed, closedAt:d.closed_at||'' }))};
+  nd['__till__']={days:tds.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(d=>{
+    const o={ id:d.created_at?new Date(d.created_at).getTime():Date.now(), date:d.date||'', opening:+d.opening||0,
+      cash:d.cash||[], pos:d.pos||[], closed:!!d.closed, closedAt:d.closed_at||'' };
+    if(d.id) Object.defineProperty(o,'_id',{value:d.id,enumerable:false,writable:true,configurable:true});
+    return o; })};
   sets.forEach(s=>{ nd[s.key]=s.value; });
   return nd;
 }
@@ -3897,6 +3993,86 @@ async function testLoadNewBackend(){
     showToast('⚠ '+((err&&err.message)||err));
   }finally{
     if(btn){ btn.disabled=false; btn.textContent='👁 Δοκιμή: ανάγνωση από νέα δομή'; }
+  }
+}
+
+let _syncing=false, _syncAgain=false;
+async function runSync(){
+  if(_syncing){ _syncAgain=true; return; }
+  _syncing=true;
+  const si=document.getElementById('saveIndicator');
+  try{
+    await syncToNewTables();
+    if(si){ si.textContent='✓'; si.style.color='rgba(255,255,255,.5)'; }
+    _pendingSave=false;
+  }catch(e){
+    console.error('sync error',e);
+    if(si){ si.textContent='⚠'; si.style.color='#e08080'; }
+    showToast('⚠ Σφάλμα συγχρονισμού: '+((e&&e.message)||e));
+  }finally{
+    _syncing=false;
+    if(_syncAgain){ _syncAgain=false; runSync(); }
+  }
+}
+
+async function syncToNewTables(){
+  if(!_snap) buildSnapshot();
+  await applySyncDiff(computeSyncDiff());
+}
+
+async function applySyncDiff(diff){
+  const token=sessionStorage.getItem('agiasos_sb_token');
+  const org=sessionStorage.getItem('agiasos_org_id');
+  const H={'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json'};
+  const base=SB_URL+'/rest/v1/';
+  const chk=async(r,w)=>{ if(!r.ok) throw new Error(w+': '+(await r.text()).slice(0,150)); return r; };
+  // helper: insert with returned ids → write back _id + snapshot
+  const doIns=async(table,items,snapMap)=>{
+    if(!items.length) return;
+    const r=await chk(await fetch(base+table,{method:'POST',headers:Object.assign({},H,{'Prefer':'return=representation'}),body:JSON.stringify(items.map(x=>x.row))}), table+' insert');
+    const rows=await r.json();
+    rows.forEach((row,i)=>{ const it=items[i]; Object.defineProperty(it.ref,'_id',{value:row.id,enumerable:false,writable:true,configurable:true}); snapMap[row.id]=it.sig; });
+  };
+  const doUpd=async(table,items,snapMap)=>{
+    for(const u of items){ await chk(await fetch(base+table+'?id=eq.'+u.id,{method:'PATCH',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(u.row)}), table+' update'); snapMap[u.id]=u.sig; }
+  };
+  const doDel=async(table,ids,snapMap)=>{
+    if(!ids.length) return;
+    await chk(await fetch(base+table+'?id=in.('+ids.join(',')+')',{method:'DELETE',headers:H}), table+' delete');
+    ids.forEach(id=>{ delete snapMap[id]; });
+  };
+  await doIns('entries', diff.entriesIns, _snap.entries);
+  await doUpd('entries', diff.entriesUpd, _snap.entries);
+  await doDel('entries', diff.entriesDel, _snap.entries);
+  await doIns('contacts', diff.contactsIns, _snap.contacts);
+  await doUpd('contacts', diff.contactsUpd, _snap.contacts);
+  await doDel('contacts', diff.contactsDel, _snap.contacts);
+  await doIns('till_days', diff.tillIns, _snap.till);
+  await doUpd('till_days', diff.tillUpd, _snap.till);
+  await doDel('till_days', diff.tillDel, _snap.till);
+  // categories (match by name)
+  if(diff.catsIns.length) await chk(await fetch(base+'categories',{method:'POST',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(diff.catsIns)}),'categories insert');
+  for(const cd of diff.catsDel){ await chk(await fetch(base+'categories?org_id=eq.'+org+'&kind=eq.'+cd.kind+'&name=eq.'+encodeURIComponent(cd.name),{method:'DELETE',headers:H}),'categories delete'); }
+  _snap.cats.exp=(data['__cats__']||[]).slice(); _snap.cats.inc=(data['__incats__']||[]).slice();
+  // settings (upsert / delete)
+  for(const su of diff.settingsUp){ await chk(await fetch(base+'settings?on_conflict=org_id,key',{method:'POST',headers:Object.assign({},H,{'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({org_id:org,key:su.key,value:su.value})}),'settings upsert'); _snap.settings[su.key]=su.sig; }
+  for(const sk of diff.settingsDel){ await chk(await fetch(base+'settings?org_id=eq.'+org+'&key=eq.'+encodeURIComponent(sk),{method:'DELETE',headers:H}),'settings delete'); delete _snap.settings[sk]; }
+}
+
+// Activate the new backend for THIS session (per-record writes). Refresh resets.
+async function activateNewBackendSession(){
+  if(!isAdmin()){ showToast('⚠ Μόνο διαχειριστής'); return; }
+  const btn=document.getElementById('activateNewBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Ενεργοποίηση…'; }
+  try{
+    const nd=await loadFromNewTables();
+    data=nd; buildSnapshot(); newBackendActive=true;
+    closeBackup(); goPage('home'); renderHome();
+    showToast('⚡ Νέα δομή ΕΝΕΡΓΗ (δοκιμή συνεδρίας). Οι αλλαγές γράφονται ανά εγγραφή. Refresh για επιστροφή στο παλιό.');
+  }catch(err){
+    showToast('⚠ '+((err&&err.message)||err));
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='⚡ Ενεργοποίηση νέας δομής (δοκιμή)'; }
   }
 }
 
@@ -5843,7 +6019,7 @@ function safeReload(){
       <button class="login-btn" onclick="doLogin()">Είσοδος (παλιό) &nbsp;→</button>
     </div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18h</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18i</div>
   </div>
 </div>
 
