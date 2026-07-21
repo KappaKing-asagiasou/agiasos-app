@@ -1038,7 +1038,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18l</div>
+    <div class="sb-ver">έκδοση 2026.06.18m</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1103,7 +1103,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18l</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18m</div>
       </div>
     </div>
 
@@ -4005,7 +4005,10 @@ async function runSync(){
   _syncing=true;
   const si=document.getElementById('saveIndicator');
   try{
+    const _diff=(_snap?computeSyncDiff():null);
+    if(_diff) console.log('[sync] ins/upd/del entries:', _diff.entriesIns.length, _diff.entriesUpd.length, _diff.entriesDel.length, '| contacts:', _diff.contactsIns.length, _diff.contactsUpd.length, _diff.contactsDel.length);
     await syncToNewTables();
+    console.log('[sync] ✓ ολοκληρώθηκε');
     if(si){ si.textContent='✓'; si.style.color='rgba(255,255,255,.5)'; }
     _pendingSave=false;
     _pollSig=null;   // re-baseline: don't treat our own write as a remote change
@@ -4069,6 +4072,7 @@ async function applySyncDiff(diff){
 // ── Stage 5: live sync (lightweight polling) ─────────
 let _pollTimer=null, _pollSig=null;
 function _uiBusy(){ return !!document.querySelector('.overlay.open'); }
+function _countEntries(d){ let n=0; Object.keys(d).forEach(k=>{ if(/^y\d+m\d+$/.test(k)){ n+=(d[k].exp||[]).length+(d[k].inc||[]).length; } }); return n; }
 async function computePollSig(){
   const token=sessionStorage.getItem('agiasos_sb_token');
   const org=sessionStorage.getItem('agiasos_org_id');
@@ -4092,10 +4096,13 @@ async function pollRemote(){
     if(_pollSig===null){ _pollSig=sig; return; }         // baseline (fallback)
     if(sig===_pollSig) return;                            // nothing changed
     if(_uiBusy()||_syncing||_pendingSave) return;         // re-check before reloading
+    const _before=_countEntries(data);
     const nd=await loadFromNewTables();
+    const _after=_countEntries(nd);
+    console.log('[poll] reload: entries', _before, '→', _after, '| sig', _pollSig, '→', sig);
     data=nd; buildSnapshot(); _pollSig=sig;
     renderCurrentPage();
-    showToast('🔄 Ενημερώθηκε από άλλον χρήστη');
+    showToast('🔄 Ενημερώθηκε ('+_after+' εγγραφές)');
   }catch(e){ /* silent; retry next cycle */ }
 }
 let _liveSyncWired=false;
@@ -6078,7 +6085,7 @@ function safeReload(){
       <button class="login-btn" onclick="doLogin()">Είσοδος (παλιό) &nbsp;→</button>
     </div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18l</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18m</div>
   </div>
 </div>
 
