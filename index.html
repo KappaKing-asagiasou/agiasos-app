@@ -1038,7 +1038,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18j</div>
+    <div class="sb-ver">έκδοση 2026.06.18l</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1103,7 +1103,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18j</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18l</div>
       </div>
     </div>
 
@@ -1365,7 +1365,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 <div class="overlay" id="entryOverlay">
 <div class="modal modal-form">
   <div class="modal-hd">
-    <div class="modal-title" id="modalTitle"></div>
+    <div><div class="modal-title" id="modalTitle"></div><div id="modalAudit" style="font-size:11px;color:var(--text3);margin-top:1px"></div></div>
     <button class="modal-x" onclick="closeModal()" aria-label="Κλείσιμο"><svg class="ic"><use href="#ic-x"/></svg></button>
   </div>
 
@@ -1881,7 +1881,7 @@ function updateMonthNav(){
 
 // ── NAVIGATION ────────────────────────────────────────
 function goPage(p){
-  if((p==='recon'||p==='till') && isViewer()){ p='home'; }  // admin-only pages
+  if((p==='recon'||p==='till') && !isAdmin()){ p='home'; }  // admin-only pages
   if(p!=='exp') catFilter='';  // reset filter when leaving exp page
   CPage=p;
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active','nav-stagger'));
@@ -3322,6 +3322,7 @@ function openModal(type,prefill=null,_unused=null,my=null,mm=null){ if(isViewer(
   t.className='modal-title '+type;
   document.getElementById('editType').value=type;
   document.getElementById('editId').value=prefill!==null?prefill:'';
+  { const au=document.getElementById('modalAudit'); if(au){ if(prefill!==null){ const rr=ents(modalY,modalM)[type][prefill]; const who=(rr._ub&&_memberNames[rr._ub])||(rr._cb&&_memberNames[rr._cb])||''; const when=rr._ua?fmtD(String(rr._ua).slice(0,10)):''; au.textContent=(who||when)?('✎ Τελευταία αλλαγή: '+[who,when].filter(Boolean).join(' · ')):''; } else au.textContent=''; } }
   document.getElementById('editY').value=modalY;
   document.getElementById('editM').value=modalM;
   document.getElementById('fCodeWrap').style.display=isExp?'':'none';
@@ -3840,7 +3841,7 @@ function openOverdue(){
 
 // ── BACKUP ────────────────────────────────────────────
 // ── Stage 4: per-record sync engine ──────────────────
-let _snap=null;                 // snapshot at load: signatures per record
+let _snap=null, _memberNames={};                 // snapshot at load: signatures per record
 let newBackendActive=false;     // when true, save() writes per-record to new tables
 const ECOLS4=['date','name','amount','code','invoice','paid','cat','incCat','notes','attachment','hidden','afm','payments'];
 
@@ -3949,8 +3950,9 @@ async function loadFromNewTables(){
     }
     return all;
   };
-  const results=await Promise.all([getAll('entries'),getAll('contacts'),getAll('categories'),getAll('till_days'),getAll('settings')]);
-  const ents=results[0], cts=results[1], cats=results[2], tds=results[3], sets=results[4];
+  const results=await Promise.all([getAll('entries'),getAll('contacts'),getAll('categories'),getAll('till_days'),getAll('settings'),getAll('members')]);
+  const ents=results[0], cts=results[1], cats=results[2], tds=results[3], sets=results[4], mem=results[5];
+  _memberNames={}; (mem||[]).forEach(m=>{ if(m.user_id) _memberNames[m.user_id]=m.name||''; });
   const nd={};
   ents.forEach(row=>{
     const extra=row.extra||{};
@@ -3964,6 +3966,7 @@ async function loadFromNewTables(){
       payments:Array.isArray(row.payments)?row.payments:[] };
     Object.keys(extra).forEach(k=>{ if(k!=='_bucket') e[k]=extra[k]; });
     if(row.id) Object.defineProperty(e,'_id',{value:row.id,enumerable:false,writable:true,configurable:true});
+    ['_cb','_ub','_ua'].forEach((prop,idx)=>{ const val=[row.created_by,row.updated_by,row.updated_at][idx]; if(val) Object.defineProperty(e,prop,{value:val,enumerable:false,writable:true,configurable:true}); });
     (row.kind==='inc'?nd[bucket].inc:nd[bucket].exp).push(e);
   });
   nd['__contacts__']=cts.map(ct=>{ const o={name:ct.name||'',afm:ct.afm||'',code:ct.code||''}; const ex=ct.extra||{}; Object.keys(ex).forEach(k=>o[k]=ex[k]); if(ct.id) Object.defineProperty(o,'_id',{value:ct.id,enumerable:false,writable:true,configurable:true}); return o; });
@@ -4029,15 +4032,16 @@ async function applySyncDiff(diff){
   const chk=async(r,w)=>{ if(!r.ok) throw new Error(w+': '+(await r.text()).slice(0,150)); return r; };
   // helper: insert with returned ids → write back _id + snapshot
   const nowIso=new Date().toISOString();
+  const uid=sessionStorage.getItem('agiasos_sb_uid')||null;
   const doIns=async(table,items,snapMap)=>{
     if(!items.length) return;
-    items.forEach(x=>{ x.row.updated_at=nowIso; });
+    items.forEach(x=>{ x.row.updated_at=nowIso; x.row.updated_by=uid; });
     const r=await chk(await fetch(base+table,{method:'POST',headers:Object.assign({},H,{'Prefer':'return=representation'}),body:JSON.stringify(items.map(x=>x.row))}), table+' insert');
     const rows=await r.json();
     rows.forEach((row,i)=>{ const it=items[i]; Object.defineProperty(it.ref,'_id',{value:row.id,enumerable:false,writable:true,configurable:true}); snapMap[row.id]=it.sig; });
   };
   const doUpd=async(table,items,snapMap)=>{
-    for(const u of items){ await chk(await fetch(base+table+'?id=eq.'+u.id,{method:'PATCH',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(Object.assign({},u.row,{updated_at:nowIso}))}), table+' update'); snapMap[u.id]=u.sig; }
+    for(const u of items){ await chk(await fetch(base+table+'?id=eq.'+u.id,{method:'PATCH',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(Object.assign({},u.row,{updated_at:nowIso,updated_by:uid}))}), table+' update'); snapMap[u.id]=u.sig; }
   };
   const doDel=async(table,ids,snapMap)=>{
     if(!ids.length) return;
@@ -4065,11 +4069,10 @@ async function applySyncDiff(diff){
 // ── Stage 5: live sync (lightweight polling) ─────────
 let _pollTimer=null, _pollSig=null;
 function _uiBusy(){ return !!document.querySelector('.overlay.open'); }
-async function pollRemote(){
-  if(!newBackendActive || document.hidden || _uiBusy() || _syncing || _pendingSave) return;
+async function computePollSig(){
   const token=sessionStorage.getItem('agiasos_sb_token');
   const org=sessionStorage.getItem('agiasos_org_id');
-  if(!token||!org) return;
+  if(!token||!org) return null;
   const H={'apikey':SB_KEY,'Authorization':'Bearer '+token};
   const base=SB_URL+'/rest/v1/';
   const sigOf=async(t)=>{
@@ -4079,9 +4082,14 @@ async function pollRemote(){
     const mx=(Array.isArray(rows)&&rows[0]&&rows[0].updated_at)||'';
     return cnt+'|'+mx;
   };
+  return (await sigOf('entries'))+' '+(await sigOf('contacts'))+' '+(await sigOf('till_days'));
+}
+async function pollRemote(){
+  if(!newBackendActive || document.hidden || _uiBusy() || _syncing || _pendingSave) return;
   try{
-    const sig=(await sigOf('entries'))+' '+(await sigOf('contacts'))+' '+(await sigOf('till_days'));
-    if(_pollSig===null){ _pollSig=sig; return; }         // baseline
+    const sig=await computePollSig();
+    if(sig===null) return;
+    if(_pollSig===null){ _pollSig=sig; return; }         // baseline (fallback)
     if(sig===_pollSig) return;                            // nothing changed
     if(_uiBusy()||_syncing||_pendingSave) return;         // re-check before reloading
     const nd=await loadFromNewTables();
@@ -4090,7 +4098,16 @@ async function pollRemote(){
     showToast('🔄 Ενημερώθηκε από άλλον χρήστη');
   }catch(e){ /* silent; retry next cycle */ }
 }
-function startLiveSync(){ if(!_pollTimer) _pollTimer=setInterval(pollRemote, 12000); }
+let _liveSyncWired=false;
+function startLiveSync(){
+  if(!_pollTimer) _pollTimer=setInterval(pollRemote, 12000);
+  if(!_liveSyncWired){
+    _liveSyncWired=true;
+    // Poll immediately when the tab/window regains focus (feels instant on switch)
+    document.addEventListener('visibilitychange',()=>{ if(!document.hidden) pollRemote(); });
+    window.addEventListener('focus',()=>pollRemote());
+  }
+}
 
 // Activate the new backend for THIS session (per-record writes). Refresh resets.
 async function activateNewBackendSession(){
@@ -4100,7 +4117,7 @@ async function activateNewBackendSession(){
   try{
     const nd=await loadFromNewTables();
     data=nd; buildSnapshot(); newBackendActive=true;
-    _pollSig=null; startLiveSync();
+    _pollSig=await computePollSig().catch(()=>null); startLiveSync();
     closeBackup(); goPage('home'); renderHome();
     showToast('⚡ Νέα δομή ΕΝΕΡΓΗ (δοκιμή συνεδρίας). Οι αλλαγές γράφονται ανά εγγραφή. Refresh για επιστροφή στο παλιό.');
   }catch(err){
@@ -5107,6 +5124,10 @@ function applyRole(){
     const sw=document.getElementById('settingsWrap');
     if(sw) sw.style.display='none';
   }
+  if(!isAdmin()){
+    const sa=document.getElementById('sbAdmin');
+    if(sa) sa.style.display='none';
+  }
   if(isViewer()){
     // Add viewer CSS class to body
     document.body.classList.add('viewer-mode');
@@ -5800,9 +5821,12 @@ const ROLE_KEY    = 'agiasos_role';
 
 // role: 'admin' | 'viewer'
 let currentRole = sessionStorage.getItem(ROLE_KEY) || null;
+let currentMemberRole = sessionStorage.getItem('agiasos_member_role') || null;  // admin|editor|viewer (Auth)
 
-function isAdmin(){ return currentRole === 'admin'; }
+// Full admin = the real 'admin' member role; falls back to the old binary role for the legacy password login
+function isAdmin(){ return currentMemberRole ? (currentMemberRole === 'admin') : (currentRole === 'admin'); }
 function isViewer(){ return currentRole === 'viewer'; }
+function canWrite(){ return !isViewer(); }
 
 function checkAuth(){
   return sessionStorage.getItem(AUTH_KEY) === '1';
@@ -5840,6 +5864,7 @@ async function doAuthLogin(){
     sessionStorage.setItem('agiasos_sb_token',token);
     sessionStorage.setItem('agiasos_sb_uid',uid||'');
     sessionStorage.setItem('agiasos_member_role',memberRole);
+    currentMemberRole=memberRole;
     sessionStorage.setItem('agiasos_org_id',rows[0].org_id||'');
     currentRole=appRole;
     document.getElementById('loginScreen').style.display='none';
@@ -6053,7 +6078,7 @@ function safeReload(){
       <button class="login-btn" onclick="doLogin()">Είσοδος (παλιό) &nbsp;→</button>
     </div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18j</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18l</div>
   </div>
 </div>
 
