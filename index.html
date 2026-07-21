@@ -1038,7 +1038,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18i</div>
+    <div class="sb-ver">έκδοση 2026.06.18j</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1103,7 +1103,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18i</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18j</div>
       </div>
     </div>
 
@@ -4005,6 +4005,7 @@ async function runSync(){
     await syncToNewTables();
     if(si){ si.textContent='✓'; si.style.color='rgba(255,255,255,.5)'; }
     _pendingSave=false;
+    _pollSig=null;   // re-baseline: don't treat our own write as a remote change
   }catch(e){
     console.error('sync error',e);
     if(si){ si.textContent='⚠'; si.style.color='#e08080'; }
@@ -4027,14 +4028,16 @@ async function applySyncDiff(diff){
   const base=SB_URL+'/rest/v1/';
   const chk=async(r,w)=>{ if(!r.ok) throw new Error(w+': '+(await r.text()).slice(0,150)); return r; };
   // helper: insert with returned ids → write back _id + snapshot
+  const nowIso=new Date().toISOString();
   const doIns=async(table,items,snapMap)=>{
     if(!items.length) return;
+    items.forEach(x=>{ x.row.updated_at=nowIso; });
     const r=await chk(await fetch(base+table,{method:'POST',headers:Object.assign({},H,{'Prefer':'return=representation'}),body:JSON.stringify(items.map(x=>x.row))}), table+' insert');
     const rows=await r.json();
     rows.forEach((row,i)=>{ const it=items[i]; Object.defineProperty(it.ref,'_id',{value:row.id,enumerable:false,writable:true,configurable:true}); snapMap[row.id]=it.sig; });
   };
   const doUpd=async(table,items,snapMap)=>{
-    for(const u of items){ await chk(await fetch(base+table+'?id=eq.'+u.id,{method:'PATCH',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(u.row)}), table+' update'); snapMap[u.id]=u.sig; }
+    for(const u of items){ await chk(await fetch(base+table+'?id=eq.'+u.id,{method:'PATCH',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(Object.assign({},u.row,{updated_at:nowIso}))}), table+' update'); snapMap[u.id]=u.sig; }
   };
   const doDel=async(table,ids,snapMap)=>{
     if(!ids.length) return;
@@ -4059,6 +4062,36 @@ async function applySyncDiff(diff){
   for(const sk of diff.settingsDel){ await chk(await fetch(base+'settings?org_id=eq.'+org+'&key=eq.'+encodeURIComponent(sk),{method:'DELETE',headers:H}),'settings delete'); delete _snap.settings[sk]; }
 }
 
+// ── Stage 5: live sync (lightweight polling) ─────────
+let _pollTimer=null, _pollSig=null;
+function _uiBusy(){ return !!document.querySelector('.overlay.open'); }
+async function pollRemote(){
+  if(!newBackendActive || document.hidden || _uiBusy() || _syncing || _pendingSave) return;
+  const token=sessionStorage.getItem('agiasos_sb_token');
+  const org=sessionStorage.getItem('agiasos_org_id');
+  if(!token||!org) return;
+  const H={'apikey':SB_KEY,'Authorization':'Bearer '+token};
+  const base=SB_URL+'/rest/v1/';
+  const sigOf=async(t)=>{
+    const r=await fetch(base+t+'?org_id=eq.'+org+'&select=updated_at&order=updated_at.desc&limit=1',{headers:Object.assign({},H,{'Prefer':'count=exact','Range':'0-0'})});
+    const cnt=(r.headers.get('content-range')||'/0').split('/')[1];
+    const rows=await r.json().catch(()=>[]);
+    const mx=(Array.isArray(rows)&&rows[0]&&rows[0].updated_at)||'';
+    return cnt+'|'+mx;
+  };
+  try{
+    const sig=(await sigOf('entries'))+' '+(await sigOf('contacts'))+' '+(await sigOf('till_days'));
+    if(_pollSig===null){ _pollSig=sig; return; }         // baseline
+    if(sig===_pollSig) return;                            // nothing changed
+    if(_uiBusy()||_syncing||_pendingSave) return;         // re-check before reloading
+    const nd=await loadFromNewTables();
+    data=nd; buildSnapshot(); _pollSig=sig;
+    renderCurrentPage();
+    showToast('🔄 Ενημερώθηκε από άλλον χρήστη');
+  }catch(e){ /* silent; retry next cycle */ }
+}
+function startLiveSync(){ if(!_pollTimer) _pollTimer=setInterval(pollRemote, 12000); }
+
 // Activate the new backend for THIS session (per-record writes). Refresh resets.
 async function activateNewBackendSession(){
   if(!isAdmin()){ showToast('⚠ Μόνο διαχειριστής'); return; }
@@ -4067,6 +4100,7 @@ async function activateNewBackendSession(){
   try{
     const nd=await loadFromNewTables();
     data=nd; buildSnapshot(); newBackendActive=true;
+    _pollSig=null; startLiveSync();
     closeBackup(); goPage('home'); renderHome();
     showToast('⚡ Νέα δομή ΕΝΕΡΓΗ (δοκιμή συνεδρίας). Οι αλλαγές γράφονται ανά εγγραφή. Refresh για επιστροφή στο παλιό.');
   }catch(err){
@@ -6019,7 +6053,7 @@ function safeReload(){
       <button class="login-btn" onclick="doLogin()">Είσοδος (παλιό) &nbsp;→</button>
     </div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18i</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18j</div>
   </div>
 </div>
 
