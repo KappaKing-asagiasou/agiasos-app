@@ -1038,7 +1038,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18f</div>
+    <div class="sb-ver">έκδοση 2026.06.18g</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1103,7 +1103,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18f</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18g</div>
       </div>
     </div>
 
@@ -1606,6 +1606,12 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
     <p>Εισαγωγή — επικολλήστε backup JSON:</p>
     <textarea class="backup-ta" id="backupIn" placeholder="Επικολλήστε εδώ..."></textarea>
     <div style="margin-top:8px"><button class="btn btn-exp" onclick="restoreBackup()">⬆ Επαναφορά</button></div>
+  </div>
+  <div class="backup-section" style="border-top:2px dashed var(--border2);padding-top:14px">
+    <p>🔧 Μετάβαση σε νέα δομή (Στάδιο 2)</p>
+    <div style="font-size:11.5px;color:var(--text3);margin-bottom:8px">Αντιγράφει τα δεδομένα στους νέους πίνακες. Η app_data ΔΕΝ αλλάζει. Ασφαλές να ξανατρέξει.</div>
+    <button class="btn btn-gold" id="migBtn" onclick="migrateToNewTables()">Έλεγχος &amp; μεταφορά</button>
+    <pre id="migOut" style="display:none;margin-top:10px;font-size:11px;background:var(--surface2);border-radius:8px;padding:10px;max-height:220px;overflow:auto;white-space:pre-wrap"></pre>
   </div>
   <div style="display:flex;justify-content:flex-end;margin-top:8px">
     <button class="btn btn-ghost" onclick="closeBackup()">Κλείσιμο</button>
@@ -3830,6 +3836,69 @@ function openOverdue(){
 }
 
 // ── BACKUP ────────────────────────────────────────────
+async function migrateToNewTables(){
+  if(!isAdmin()){ showToast('⚠ Μόνο διαχειριστής'); return; }
+  const token=sessionStorage.getItem('agiasos_sb_token');
+  const org=sessionStorage.getItem('agiasos_org_id');
+  const uid=sessionStorage.getItem('agiasos_sb_uid');
+  const out=document.getElementById('migOut');
+  const btn=document.getElementById('migBtn');
+  const log=m=>{ out.style.display='block'; out.textContent+=m+'\n'; out.scrollTop=out.scrollHeight; };
+  if(!token||!org){ showToast('⚠ Συνδέσου με email/κωδικό (όχι εφεδρικό) για τη μεταφορά'); return; }
+  if(!confirm('Μεταφορά δεδομένων στους νέους πίνακες;\nΘα καθαριστούν τυχόν προηγούμενες δοκιμές στη νέα δομή.\nΗ app_data ΔΕΝ αλλάζει.')) return;
+  btn.disabled=true; out.style.display='block'; out.textContent='';
+  const H={'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json'};
+  const base=SB_URL+'/rest/v1/';
+  const delAll=t=>fetch(base+t+'?org_id=eq.'+org,{method:'DELETE',headers:H});
+  const insChunk=async(t,rows)=>{ let n=0; for(let i=0;i<rows.length;i+=200){ const ch=rows.slice(i,i+200); const r=await fetch(base+t,{method:'POST',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(ch)}); if(!r.ok){ throw new Error(t+': '+(await r.text()).slice(0,180)); } n+=ch.length; } return n; };
+  const countRows=async t=>{ const r=await fetch(base+t+'?org_id=eq.'+org+'&select=id',{headers:Object.assign({},H,{'Prefer':'count=exact','Range':'0-0'})}); return (r.headers.get('content-range')||'?/?').split('/')[1]; };
+  try{
+    const entries=[], contacts=[], categories=[], tillDays=[], settings=[];
+    const ECOLS=new Set(['date','name','amount','code','invoice','paid','cat','incCat','notes','attachment','hidden','afm','payments']);
+    let srcExp=0, srcInc=0;
+    Object.keys(data).forEach(key=>{
+      const km=key.match(/^y(\d+)m(\d+)$/); if(!km) return;
+      const b=data[key]||{};
+      ['exp','inc'].forEach(kind=>{
+        (b[kind]||[]).forEach(r=>{
+          if(kind==='exp') srcExp++; else srcInc++;
+          const extra={_bucket:key};
+          Object.keys(r).forEach(k=>{ if(!ECOLS.has(k)) extra[k]=r[k]; });
+          entries.push({org_id:org, kind:kind, date:r.date||null, name:r.name||null, amount:+r.amount||0,
+            code:r.code||null, invoice:r.invoice||null, paid:r.paid||null, cat:r.cat||null, inc_cat:r.incCat||null,
+            notes:r.notes||null, attachment:r.attachment||null, hidden:!!r.hidden, afm:r.afm||null,
+            payments:Array.isArray(r.payments)?r.payments:entryPayments(r), extra:extra, created_by:uid||null});
+        });
+      });
+    });
+    (data['__contacts__']||[]).forEach(ct=>{ const extra={}; Object.keys(ct).forEach(k=>{ if(['name','afm','code'].indexOf(k)<0) extra[k]=ct[k]; }); contacts.push({org_id:org, name:ct.name||null, afm:ct.afm||null, code:ct.code||null, extra:extra}); });
+    const addCats=(arr,kind)=>{ (arr||[]).forEach((ct,i)=>{ const name=(typeof ct==='string')?ct:(ct&&ct.name); if(name) categories.push({org_id:org, kind:kind, name:name, sort:i}); }); };
+    addCats(data['__cats__'],'exp'); addCats(data['__incats__'],'inc');
+    (((data['__till__']||{}).days)||[]).forEach(d=>{ tillDays.push({org_id:org, date:d.date||null, opening:+d.opening||0, cash:d.cash||[], pos:d.pos||[], closed:!!d.closed, closed_at:d.closedAt||null, created_by:uid||null}); });
+    const handled=new Set(['__contacts__','__cats__','__incats__','__till__']);
+    Object.keys(data).forEach(key=>{ if(/^__.+__$/.test(key) && !handled.has(key)) settings.push({org_id:org, key:key, value:data[key]}); });
+
+    log('Πηγή: '+srcExp+' έξοδα · '+srcInc+' έσοδα · '+contacts.length+' επαφές · '+categories.length+' κατηγορίες · '+tillDays.length+' μέρες ταμείου · '+settings.length+' λοιπά.');
+    log('Καθαρισμός προηγούμενων δοκιμών…');
+    await delAll('entries'); await delAll('contacts'); await delAll('categories'); await delAll('till_days'); await delAll('settings');
+    log('Μεταφορά…');
+    log('  ✓ entries: '+await insChunk('entries',entries));
+    log('  ✓ contacts: '+await insChunk('contacts',contacts));
+    log('  ✓ categories: '+await insChunk('categories',categories));
+    log('  ✓ till_days: '+await insChunk('till_days',tillDays));
+    log('  ✓ settings: '+await insChunk('settings',settings));
+    log('Επαλήθευση από τη βάση…');
+    log('  entries στη βάση: '+await countRows('entries')+' (αναμενόμενα '+entries.length+')');
+    log('  contacts στη βάση: '+await countRows('contacts')+' (αναμενόμενα '+contacts.length+')');
+    log('  till_days στη βάση: '+await countRows('till_days')+' (αναμενόμενα '+tillDays.length+')');
+    log('✅ Ολοκληρώθηκε. Αν τα νούμερα ταιριάζουν, η μεταφορά πέτυχε.');
+    showToast('✓ Μεταφορά ολοκληρώθηκε');
+  }catch(err){
+    log('❌ ΣΦΑΛΜΑ: '+((err&&err.message)||err));
+    showToast('⚠ Σφάλμα μεταφοράς — δες το log');
+  }finally{ btn.disabled=false; }
+}
+
 function openBackup(){ if(isViewer()) return;document.getElementById('backupOut').value=JSON.stringify(data,null,2);document.getElementById('backupIn').value='';document.getElementById('backupOverlay').classList.add('open');}
 function closeBackup(){document.getElementById('backupOverlay').classList.remove('open');}
 function copyBackup(){const t=document.getElementById('backupOut');t.select();document.execCommand('copy');alert('Αντιγράφηκε!');}
@@ -5710,7 +5779,7 @@ function safeReload(){
       <button class="login-btn" onclick="doLogin()">Είσοδος (παλιό) &nbsp;→</button>
     </div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18f</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18g</div>
   </div>
 </div>
 
