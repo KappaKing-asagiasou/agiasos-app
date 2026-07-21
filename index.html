@@ -949,6 +949,8 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 .till-in{flex:1;min-width:0;border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:13px;background:var(--input-bg);color:var(--text);outline:none;}
 .till-in:focus{border-color:var(--accent-mid,#378add);}
 .till-in.till-amt{flex:0 0 74px;font-family:'DM Mono',monospace;}
+.till-in.till-note{margin-top:7px;width:100%;box-sizing:border-box;font-size:12.5px;}
+.till-note-txt{font-size:11px;color:#7a5e14;background:var(--gold-lt);padding:1px 6px;border-radius:5px;margin-top:3px;display:inline-block;width:fit-content;}
 .till-btns{display:flex;gap:7px;margin-top:7px;}
 .till-btns .btn{flex:1;justify-content:center;font-size:13px;padding:9px;}
 .till-b-out{background:#f5dede;color:#7a2020;border-color:#d0a0a0;}
@@ -1036,7 +1038,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18d</div>
+    <div class="sb-ver">έκδοση 2026.06.18e</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1101,7 +1103,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18d</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18e</div>
       </div>
     </div>
 
@@ -2141,16 +2143,18 @@ function tillAddCash(dir){
   const day=tillActiveDay(); if(!day) return;
   const nm=(document.getElementById('tillCashName').value||'').trim();
   const amt=parseFloat(document.getElementById('tillCashAmt').value)||0;
+  const note=(document.getElementById('tillCashNote').value||'').trim();
   if(amt<=0){ showToast('⚠ Βάλε ποσό'); return; }
-  day.cash.push({amount:+amt.toFixed(2), name:nm||(dir==='in'?'Είσπραξη':'Πληρωμή'), ts:_tillHM(), dir});
+  day.cash.push({amount:+amt.toFixed(2), name:nm||(dir==='in'?'Είσπραξη':'Πληρωμή'), note, ts:_tillHM(), dir});
   save(); renderTill();
 }
 function tillAddPos(){
   const day=tillActiveDay(); if(!day) return;
   const nm=(document.getElementById('tillPosName').value||'').trim();
   const amt=parseFloat(document.getElementById('tillPosAmt').value)||0;
+  const note=(document.getElementById('tillPosNote').value||'').trim();
   if(amt<=0){ showToast('⚠ Βάλε ποσό'); return; }
-  day.pos.push({amount:+amt.toFixed(2), name:nm||'Είσπραξη POS', ts:_tillHM()});
+  day.pos.push({amount:+amt.toFixed(2), name:nm||'Είσπραξη POS', note, ts:_tillHM()});
   save(); renderTill();
 }
 function tillRemoveCash(i){ const d=tillActiveDay(); if(!d)return; d.cash.splice(i,1); save(); renderTill(); }
@@ -2176,8 +2180,8 @@ function renderTill(){
 
   if(active){
     const bal=tillCashBalance(active), cin=tillCashIn(active), cout=tillCashOut(active), pos=tillPosTotal(active);
-    const cashRows=(active.cash||[]).map((e,i)=>`<div class="till-row"><span class="till-nm">${esc(e.name||'')}<span class="till-ts">${e.ts||''}</span></span><span class="till-amt-wrap"><span class="mono ${e.dir==='in'?'till-pos':'till-neg'}">${e.dir==='in'?'+':'−'}${fmt(e.amount)}</span><button class="till-x" onclick="tillRemoveCash(${i})" title="Αφαίρεση">✕</button></span></div>`).join('') || '<div class="till-empty">Καμία κίνηση ακόμα</div>';
-    const posRows=(active.pos||[]).map((e,i)=>`<div class="till-row"><span class="till-nm">${esc(e.name||'')}<span class="till-ts">${e.ts||''}</span></span><span class="till-amt-wrap"><span class="mono till-accent">+${fmt(e.amount)}</span><button class="till-x" onclick="tillRemovePos(${i})" title="Αφαίρεση">✕</button></span></div>`).join('') || '<div class="till-empty">Καμία κάρτα ακόμα</div>';
+    const cashRows=(active.cash||[]).map((e,i)=>`<div class="till-row"><span class="till-nm">${esc(e.name||'')}<span class="till-ts">${e.ts||''}</span>${e.note?`<span class="till-note-txt">✎ ${esc(e.note)}</span>`:''}</span><span class="till-amt-wrap"><span class="mono ${e.dir==='in'?'till-pos':'till-neg'}">${e.dir==='in'?'+':'−'}${fmt(e.amount)}</span><button class="till-x" onclick="tillRemoveCash(${i})" title="Αφαίρεση">✕</button></span></div>`).join('') || '<div class="till-empty">Καμία κίνηση ακόμα</div>';
+    const posRows=(active.pos||[]).map((e,i)=>`<div class="till-row"><span class="till-nm">${esc(e.name||'')}<span class="till-ts">${e.ts||''}</span>${e.note?`<span class="till-note-txt">✎ ${esc(e.note)}</span>`:''}</span><span class="till-amt-wrap"><span class="mono till-accent">+${fmt(e.amount)}</span><button class="till-x" onclick="tillRemovePos(${i})" title="Αφαίρεση">✕</button></span></div>`).join('') || '<div class="till-empty">Καμία κάρτα ακόμα</div>';
     html+=`<div class="till-dayhd"><svg class="ic"><use href="#ic-cal"/></svg> Ενεργή μέρα · <strong>${_tillDMY(active.date)}</strong></div>
     <div class="till-cols">
       <div class="till-col cash">
@@ -2190,6 +2194,7 @@ function renderTill(){
           <input id="tillCashName" class="till-in" placeholder="Όνομα / αιτιολογία">
           <input id="tillCashAmt" class="till-in till-amt" type="number" step="0.01" placeholder="€">
         </div>
+        <input id="tillCashNote" class="till-in till-note" placeholder="Σημείωση (προαιρετικό) — π.χ. χρωστάει 2">
         <div class="till-btns">
           <button class="btn till-b-out" onclick="tillAddCash('out')">− Πληρωμή</button>
           <button class="btn till-b-in" onclick="tillAddCash('in')">+ Είσπραξη</button>
@@ -2205,6 +2210,7 @@ function renderTill(){
           <input id="tillPosName" class="till-in" placeholder="Όνομα / αιτιολογία">
           <input id="tillPosAmt" class="till-in till-amt" type="number" step="0.01" placeholder="€">
         </div>
+        <input id="tillPosNote" class="till-in till-note" placeholder="Σημείωση (προαιρετικό)">
         <div class="till-btns">
           <button class="btn till-b-pos" onclick="tillAddPos()">+ Είσπραξη POS</button>
         </div>
@@ -2228,8 +2234,8 @@ function renderTill(){
       const isLast=(ri===0);
       const bal=tillCashBalance(d), pos=tillPosTotal(d);
       const det=`<div class="till-arch-det" id="tillArch${d.id}" style="display:none">
-        <div class="till-det-col"><div class="till-det-t">Μετρητά</div>${(d.cash||[]).map(e=>`<div class="till-drow"><span>${esc(e.name||'')} <span class="till-ts">${e.ts||''}</span></span><span class="mono ${e.dir==='in'?'till-pos':'till-neg'}">${e.dir==='in'?'+':'−'}${fmt(e.amount)}</span></div>`).join('')||'<div class="till-empty">—</div>'}</div>
-        <div class="till-det-col"><div class="till-det-t">POS</div>${(d.pos||[]).map(e=>`<div class="till-drow"><span>${esc(e.name||'')} <span class="till-ts">${e.ts||''}</span></span><span class="mono till-accent">+${fmt(e.amount)}</span></div>`).join('')||'<div class="till-empty">—</div>'}</div>
+        <div class="till-det-col"><div class="till-det-t">Μετρητά</div>${(d.cash||[]).map(e=>`<div class="till-drow"><span>${esc(e.name||'')} <span class="till-ts">${e.ts||''}</span>${e.note?`<span class="till-note-txt">✎ ${esc(e.note)}</span>`:''}</span><span class="mono ${e.dir==='in'?'till-pos':'till-neg'}">${e.dir==='in'?'+':'−'}${fmt(e.amount)}</span></div>`).join('')||'<div class="till-empty">—</div>'}</div>
+        <div class="till-det-col"><div class="till-det-t">POS</div>${(d.pos||[]).map(e=>`<div class="till-drow"><span>${esc(e.name||'')} <span class="till-ts">${e.ts||''}</span>${e.note?`<span class="till-note-txt">✎ ${esc(e.note)}</span>`:''}</span><span class="mono till-accent">+${fmt(e.amount)}</span></div>`).join('')||'<div class="till-empty">—</div>'}</div>
       </div>`;
       return `<div class="till-arch-row${d.closed?'':' open'}">
         <div class="till-arch-main" onclick="tillToggleArch(${d.id})">
@@ -5653,7 +5659,7 @@ function safeReload(){
     <button class="login-btn" onclick="doLogin()">Είσοδος &nbsp;→</button>
     <div class="login-error" id="loginErr"></div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18d</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18e</div>
   </div>
 </div>
 
