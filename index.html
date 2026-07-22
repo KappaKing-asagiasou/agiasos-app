@@ -57,10 +57,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .sb-item:hover{background:rgba(255,255,255,.09);color:#fff;}
 .sb-item.active{background:var(--accent);color:#fff;font-weight:500;}
 .sb-item .ic{width:17px;height:17px;flex-shrink:0;}
-.sb-admin{margin-top:auto;}
+.sb-bottom{margin-top:auto;}
 .sb-divider{height:1px;background:rgba(255,255,255,.14);margin:4px 10px 8px;}
 .viewer-mode .sb-admin{display:none;}
-.viewer-mode .sb-foot{margin-top:auto;}
 .sb-foot{margin-top:0;padding-top:11px;border-top:1px solid rgba(255,255,255,.14);}
 .sb-ver{padding:5px 10px 0;font-size:10px;color:rgba(240,235,220,.35);letter-spacing:.3px;}
 .sb-save{padding:0 10px;font-size:10.5px;color:rgba(240,235,220,.5);min-height:14px;}
@@ -368,13 +367,11 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 .inst-badge.full{background:linear-gradient(135deg,var(--olive-lt) 0%,#d8e8c0 100%);color:var(--olive);border:1px solid #88b868;}
 .inst-badge.none{background:var(--surface2);color:var(--text3);border:1px solid var(--border);}
 
-
 /* warm scrollbars */
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:var(--surface2);border-radius:3px;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--text3);}
-
 
 /* month nav arrows */
 .month-nav{display:flex;align-items:center;gap:2px;}
@@ -391,7 +388,6 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 .btn-pdf:hover{background:#ead0a8;}
 .btn-xlsx{background:linear-gradient(135deg,#e8f4e0 0%,#d4eac0 100%);color:var(--olive);border-color:#98c070;}
 .btn-xlsx:hover{background:#cce0b0;}
-
 
 /* Mobile responsive improvements */
 @media(max-width:600px){
@@ -413,7 +409,6 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 @media(max-width:380px){
   .summary-grid{grid-template-columns:repeat(2,1fr);}
 }
-
 
 /* LOGIN */
 .login-screen{position:fixed;inset:0;background:linear-gradient(160deg,#0d1a07 0%,#162510 40%,#1e3018 70%,#0d1a07 100%);display:flex;align-items:stretch;z-index:9999;overflow:hidden;}
@@ -457,7 +452,6 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 .viewer-mode .hc .btn-muted,
 .viewer-mode .hc .btn-white:not(#annualBtn):not(#darkBtn) { display: none !important; }
 
-
 /* NOTIFICATION BELL */
 .notif-wrap{position:relative;display:inline-flex;}
 .notif-btn{font-size:16px;background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;cursor:pointer;color:var(--text2);transition:background .15s;position:relative;}
@@ -482,9 +476,7 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 .notif-empty{padding:20px;text-align:center;color:var(--text3);font-style:italic;font-size:12.5px;}
 [data-theme="dark"] .notif-panel{background:var(--surface);border-color:var(--border);}
 
-
 /* OIL SALES TABLE */
-
 
 
 
@@ -494,7 +486,6 @@ tr.ry:hover td{background:#cce0b8;}tr.rn:hover td{background:#eaccc8;}
 .hide-btn.hidden-on{background:var(--amber-lt);color:var(--amber);border-color:#d4a840;}
 tr.row-hidden td{opacity:.4;}
 tr.row-hidden td .hide-btn{opacity:1;}
-
 
 /* CONTACTS PAGE */
 .contacts-table-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden;}
@@ -552,7 +543,6 @@ tr.row-hidden td .hide-btn{opacity:1;}
 [data-theme="dark"] .cd-stat{background:var(--surface2);}
 [data-theme="dark"] .contact-item.active{background:var(--olive-bg);}
 
-
 /* AUTOCOMPLETE */
 .ac-wrap{position:relative;}
 .ac-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-top:none;border-radius:0 0 var(--r) var(--r);max-height:180px;overflow-y:auto;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.12);display:none;}
@@ -564,7 +554,6 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .ac-item .ac-phone{font-size:11px;color:var(--text3);}
 [data-theme="dark"] .ac-list{background:var(--surface);border-color:var(--border2);}
 [data-theme="dark"] .ac-item:hover,[data-theme="dark"] .ac-item.focused{background:var(--olive-bg);}
-
 
 /* HEADER DROPDOWNS */
 .hdr-dropdown{position:relative;display:inline-flex;}
@@ -583,7 +572,6 @@ tr.row-hidden td .hide-btn{opacity:1;}
 [data-theme="dark"] .hdr-drop-menu{background:var(--surface);border-color:var(--border);}
 [data-theme="dark"] .hdr-drop-item:hover{background:var(--surface2);}
 
-
 /* BG PICKER */
 .bg-picker-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
 .bg-picker-overlay.open{display:flex;}
@@ -597,9 +585,7 @@ tr.row-hidden td .hide-btn{opacity:1;}
 .bg-opt-name{font-size:12.5px;color:var(--text);font-weight:500;line-height:1.3;}
 .bg-opt-hex{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;}
 
-
 /* HOME MINI TABLES — compact, no scroll */
-
 
 
 /* EMAIL PREVIEW */
@@ -806,7 +792,6 @@ tr.carry-row td{background:#fdf5e0!important;font-style:italic;}
 tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;}
 [data-theme="dark"] tr.carry-row td{background:#2a2208!important;}
 
-
 /* INVOICE SCANNER */
 .scan-btn{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;padding:10px 12px;border-radius:8px;border:1px dashed var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all .15s;width:100%;}
 .scan-btn .ic{width:15px;height:15px;}
@@ -984,6 +969,72 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 [data-theme="dark"] .till-b-in{background:#24401c;color:#b6e298;border-color:#3a6028;}
 [data-theme="dark"] .till-b-pos{background:#1c3242;color:#a8cce8;border-color:#2a4a60;}
 [data-theme="dark"] .till-b-close:hover{background:#4a2424;}
+
+/* ── SUPPLIERS PAGE ────────────────────────────────── */
+.sup-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.sup-cards{display:flex;gap:10px;flex-wrap:wrap;}
+.sup-card{background:var(--surface2);border-radius:10px;padding:10px 14px;min-width:150px;}
+.sup-card-l{font-size:11.5px;color:var(--text3);}
+.sup-card-v{font-size:22px;font-weight:600;line-height:1.2;}
+.sup-card-v.neg,.sup-bal.neg,.sup-head-bal.neg,.sup-bill-st.neg{color:#a3402d;}
+.sup-card-v.pos,.sup-bal.pos,.sup-head-bal.pos,.sup-bill-st.pos,.sup-sub.pos{color:var(--olive);}
+.sup-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .12s,transform .1s;}
+.sup-row:hover{border-color:var(--olive);}
+.sup-row:active{transform:scale(.995);}
+.sup-nm{font-size:14.5px;font-weight:600;}
+.sup-sub{font-size:11.5px;color:var(--text3);}
+.sup-pill{display:inline-block;font-size:10.5px;padding:1px 8px;border-radius:20px;margin-top:5px;}
+.sup-pill.warn{background:var(--gold-lt);color:#7a5e14;}
+.sup-pill.ok{background:var(--olive-lt);color:var(--olive);}
+.sup-row-r{text-align:right;}
+.sup-bal{font-size:17px;font-weight:600;}
+.sup-empty,.sup-empty2{font-size:13px;color:var(--text3);padding:16px;background:var(--surface);border:1px dashed var(--border2);border-radius:11px;text-align:center;}
+.sup-empty2{padding:11px;text-align:left;border-style:solid;}
+.sup-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.sup-back{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:5px 11px;border:1px solid var(--border2);border-radius:7px;background:transparent;color:var(--text2);cursor:pointer;}
+.sup-back:hover{border-color:var(--olive);color:var(--olive);}
+.sup-back .ic{width:13px;height:13px;}
+.sup-head-nm{font-size:19px;font-weight:600;margin-top:8px;display:flex;align-items:center;gap:7px;}
+.sup-head-r{text-align:right;}
+.sup-head-bal{font-size:25px;font-weight:600;line-height:1.15;}
+.sup-mini{width:22px;height:22px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--text3);cursor:pointer;font-size:11px;line-height:1;}
+.sup-mini:hover{border-color:var(--olive);color:var(--olive);}
+.sup-mini2{margin-left:8px;font-size:10.5px;padding:2px 8px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--text3);cursor:pointer;text-transform:none;letter-spacing:0;}
+.sup-mini2:hover{border-color:var(--olive);color:var(--olive);}
+.sup-add{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;}
+.sup-in{border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:13px;background:var(--input-bg);color:var(--text);outline:none;}
+.sup-in:focus{border-color:var(--accent-mid,#378add);}
+.sup-add .sup-in:nth-child(1){width:145px;}
+.sup-add .sup-in:nth-child(2){flex:1;min-width:120px;}
+.sup-qty{width:110px;}
+.sup-sec{font-size:11.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:18px 2px 6px;display:flex;align-items:center;}
+.sup-item{display:flex;align-items:center;gap:10px;padding:8px 2px;border-top:1px solid var(--border);font-size:13.5px;}
+.sup-date{font-size:11.5px;color:var(--text3);min-width:56px;}
+.sup-item-nm{flex:1;min-width:0;}
+.sup-qty-t{font-size:12px;color:var(--text3);}
+.sup-x{width:21px;height:21px;border:1px solid var(--border2);border-radius:5px;background:transparent;color:var(--text3);cursor:pointer;font-size:11px;line-height:1;flex:none;}
+.sup-x:hover{border-color:#a3402d;color:#a3402d;}
+.sup-selbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--gold-lt);border-radius:10px;padding:10px 13px;margin-top:11px;}
+.sup-selc{font-size:12.5px;color:#7a5e14;font-weight:600;}
+.sup-selr{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.sup-amt{width:165px;font-family:'DM Mono',monospace;}
+.sup-chk{display:flex;align-items:center;gap:5px;font-size:12px;color:#7a5e14;cursor:pointer;}
+.sup-bill{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px 13px;margin-bottom:8px;}
+.sup-bill.done{opacity:.72;}
+.sup-bill-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.sup-bill-nm{font-size:13.5px;font-weight:600;}
+.sup-bill-st{font-size:11.5px;margin-top:2px;}
+.sup-bill-r{display:flex;align-items:center;gap:10px;text-align:right;}
+.sup-bill-amt{font-size:15px;font-weight:600;}
+.sup-pay{font-size:12px;padding:5px 12px;border:1px solid var(--olive);border-radius:7px;background:transparent;color:var(--olive);cursor:pointer;white-space:nowrap;}
+.sup-pay:hover{background:var(--olive-lt);}
+.sup-bill-items{font-size:11.5px;color:var(--text3);margin-top:7px;padding-top:7px;border-top:1px solid var(--border);line-height:1.6;}
+@media(max-width:640px){.sup-head-r{text-align:left;}.sup-add .sup-in:nth-child(1){width:100%;}.sup-amt{width:100%;}}
+[data-theme="dark"] .sup-selbar{background:#3a3018;}
+[data-theme="dark"] .sup-selc,[data-theme="dark"] .sup-chk{color:#e8cf8a;}
+[data-theme="dark"] .sup-pill.warn{background:#3a3018;color:#e8cf8a;}
+[data-theme="dark"] .sup-card-v.neg,[data-theme="dark"] .sup-bal.neg,[data-theme="dark"] .sup-head-bal.neg,[data-theme="dark"] .sup-bill-st.neg{color:#f0a89a;}
+[data-theme="dark"] .sup-x:hover{border-color:#f0a89a;color:#f0a89a;}
 </style>
 </head>
 <body>
@@ -1009,9 +1060,8 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 <symbol id="ic-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="ic-clip" viewBox="0 0 24 24"><path d="M15 7l-6.5 6.5a2.5 2.5 0 003.5 3.5L19 10a4.5 4.5 0 00-6.4-6.3L5.8 10.5a6.5 6.5 0 009.2 9.2L20 15"/></symbol>
 <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
-<symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol><symbol id="ic-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-2"/></symbol><symbol id="ic-coins" viewBox="0 0 24 24"><ellipse cx="8" cy="6" rx="5" ry="2.4"/><path d="M3 6v5c0 1.3 2.2 2.4 5 2.4s5-1.1 5-2.4V6"/><ellipse cx="16" cy="13" rx="5" ry="2.4"/><path d="M11 13v5c0 1.3 2.2 2.4 5 2.4s5-1.1 5-2.4v-5"/></symbol><symbol id="ic-bank" viewBox="0 0 24 24"><path d="M3 21h18M5 21V10M10 21V10M14 21V10M19 21V10M3 10h18L12 4z"/></symbol><symbol id="ic-wallet" viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h13a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M16 12.5h3"/></symbol>
+<symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol><symbol id="ic-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-2"/></symbol><symbol id="ic-truck" viewBox="0 0 24 24"><path d="M3 17V6h11v11"/><path d="M14 9h4l3 3v5h-3"/><circle cx="7.5" cy="17.5" r="1.8"/><circle cx="17.5" cy="17.5" r="1.8"/></symbol><symbol id="ic-coins" viewBox="0 0 24 24"><ellipse cx="8" cy="6" rx="5" ry="2.4"/><path d="M3 6v5c0 1.3 2.2 2.4 5 2.4s5-1.1 5-2.4V6"/><ellipse cx="16" cy="13" rx="5" ry="2.4"/><path d="M11 13v5c0 1.3 2.2 2.4 5 2.4s5-1.1 5-2.4v-5"/></symbol><symbol id="ic-bank" viewBox="0 0 24 24"><path d="M3 21h18M5 21V10M10 21V10M14 21V10M19 21V10M3 10h18L12 4z"/></symbol><symbol id="ic-wallet" viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h13a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M16 12.5h3"/></symbol>
 </svg>
-
 
 <div class="app-shell">
 <aside class="sidebar no-print">
@@ -1031,14 +1081,17 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
       <button class="sb-item" data-page="calendar" onclick="goPage('calendar')"><svg class="ic"><use href="#ic-cal"/></svg>Ημ/γιο</button>
       <button class="sb-item" data-page="contacts" onclick="goPage('contacts')"><svg class="ic"><use href="#ic-users"/></svg>Πελάτες</button>
   </nav>
-  <div class="sb-admin" id="sbAdmin">
+  <div class="sb-bottom">
     <div class="sb-divider"></div>
-    <button class="sb-item" data-page="recon" onclick="goPage('recon')"><svg class="ic"><use href="#ic-bank"/></svg>Συμφωνία τράπεζας</button>
-    <button class="sb-item" data-page="till" onclick="goPage('till')"><svg class="ic"><use href="#ic-coins"/></svg>Ταμείο περιόδου</button>
+    <div class="sb-admin" id="sbAdmin">
+      <button class="sb-item" data-page="recon" onclick="goPage('recon')"><svg class="ic"><use href="#ic-bank"/></svg>Συμφωνία τράπεζας</button>
+      <button class="sb-item" data-page="till" onclick="goPage('till')"><svg class="ic"><use href="#ic-coins"/></svg>Ταμείο περιόδου</button>
+    </div>
+    <button class="sb-item" data-page="suppliers" onclick="goPage('suppliers')"><svg class="ic"><use href="#ic-truck"/></svg>Προμηθευτές</button>
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18r</div>
+    <div class="sb-ver">έκδοση 2026.06.18t</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1103,7 +1156,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18r</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18t</div>
       </div>
     </div>
 
@@ -1344,6 +1397,11 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   <div class="page" id="page-till">
     <div class="view-label"><h2>Ταμείο ελαιοκομικής περιόδου</h2></div>
     <div id="tillBody"></div>
+  </div>
+  <!-- ── SUPPLIERS PAGE ─── -->
+  <div class="page" id="page-suppliers">
+    <div class="view-label"><h2 id="supTitle">Προμηθευτές</h2></div>
+    <div id="supBody"></div>
   </div>
 </div>
 
@@ -1607,12 +1665,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
     <textarea class="backup-ta" id="backupIn" placeholder="Επικολλήστε εδώ..."></textarea>
     <div style="margin-top:8px"><button class="btn btn-exp" onclick="restoreBackup()">⬆ Επαναφορά</button></div>
   </div>
-  <div class="backup-section" style="border-top:2px dashed var(--border2);padding-top:14px">
-    <p>🔧 Εργαλείο επιδιόρθωσης βάσης</p>
-    <div style="font-size:11.5px;color:var(--text3);margin-bottom:8px">ΜΟΝΟ ΓΙΑ ΕΚΤΑΚΤΗ ΑΝΑΓΚΗ: ξαναγράφει όλα τα δεδομένα από αυτή τη συσκευή στους πίνακες. Μη το χρησιμοποιείς αν δεν σου το ζητηθεί.</div>
-    <button class="btn btn-gold" id="migBtn" onclick="migrateToNewTables()">Έλεγχος &amp; μεταφορά</button>
-    <pre id="migOut" style="display:none;margin-top:10px;font-size:11px;background:var(--surface2);border-radius:8px;padding:10px;max-height:220px;overflow:auto;white-space:pre-wrap"></pre>
-  </div>
+
   <div style="display:flex;justify-content:flex-end;margin-top:8px">
     <button class="btn btn-ghost" onclick="closeBackup()">Κλείσιμο</button>
   </div>
@@ -1832,9 +1885,6 @@ function migratePayments(){
   safeSet('agiasos_payments_migrated','1');
   if(changed) save();
 }
-function getContacts(){return data['__contacts__']||[];}
-function setContacts(arr){data['__contacts__']=arr;save();}
-function genContactId(){return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 function setEnts(y,m,d){data[mk(y,m)]=d;save();}
 
 const sortS={exp:{col:'date',dir:1},inc:{col:'date',dir:1}};
@@ -1916,7 +1966,7 @@ function goPage(p){
   });
   window.scrollTo({top:0,behavior:'instant'});
   // Hide search & add buttons on annual/contacts/calendar pages
-  const isAnnual=p==='annual'||p==='contacts'||p==='calendar'||p==='recon'||p==='till';
+  const isAnnual=p==='annual'||p==='contacts'||p==='calendar'||p==='recon'||p==='till'||p==='suppliers';
   document.getElementById('searchWrap').style.display=isAnnual?'none':'';
   document.getElementById('btnAddExp').style.display=isAnnual?'none':'';
   document.getElementById('btnAddInc').style.display=isAnnual?'none':'';
@@ -2287,6 +2337,248 @@ function renderTill(){
   body.innerHTML=html;
 }
 
+// ══════════════════════════════════════════════════════
+//  SUPPLIERS — purchase diary + bills + payments
+//  data['__suppliers__'] = { list:[ {id,name,note,items:[],bills:[]} ] }
+//    item : {id, date, name, qty, billId|null}
+//    bill : {id, date, amount, itemIds:[], payments:[{amount,date,note}], note}
+// ══════════════════════════════════════════════════════
+let _supOpen=null;              // id of the supplier whose page is open (null = list)
+let _supSel=new Set();          // selected item ids (bulk billing)
+
+function supData(){
+  if(!data['__suppliers__'] || typeof data['__suppliers__']!=='object') data['__suppliers__']={list:[]};
+  if(!Array.isArray(data['__suppliers__'].list)) data['__suppliers__'].list=[];
+  return data['__suppliers__'];
+}
+function supList(){ return supData().list; }
+function supFind(id){ return supList().find(s=>String(s.id)===String(id))||null; }
+function _supId(){ return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function supItems(s){ return Array.isArray(s.items)?s.items:(s.items=[]); }
+function supBills(s){ return Array.isArray(s.bills)?s.bills:(s.bills=[]); }
+function supBillPaid(b){ return (b.payments||[]).reduce((t,p)=>t+(+p.amount||0),0); }
+function supBillRemaining(b){ return Math.max(0,(+b.amount||0)-supBillPaid(b)); }
+function supBalance(s){ return supBills(s).reduce((t,b)=>t+supBillRemaining(b),0); }
+function supPending(s){ return supItems(s).filter(i=>!i.billId); }
+function supBillItems(s,b){ const ids=new Set(b.itemIds||[]); return supItems(s).filter(i=>ids.has(i.id)); }
+
+// ── actions ──
+function supAddSupplier(){
+  if(isViewer()) return;
+  const nm=(prompt('Όνομα προμηθευτή:')||'').trim();
+  if(!nm) return;
+  supList().push({id:_supId(), name:nm, note:'', items:[], bills:[]});
+  save(); renderSuppliers();
+}
+function supRename(id){
+  if(isViewer()) return;
+  const s=supFind(id); if(!s) return;
+  const nm=(prompt('Όνομα προμηθευτή:',s.name)||'').trim();
+  if(!nm) return;
+  s.name=nm; save(); renderSuppliers();
+}
+function supDeleteSupplier(id){
+  if(isViewer()) return;
+  const s=supFind(id); if(!s) return;
+  if(supBalance(s)>0.005 && !confirm('Ο προμηθευτής έχει ανεξόφλητο υπόλοιπο '+fmt(supBalance(s))+'.\nΝα διαγραφεί οριστικά μαζί με όλο το ιστορικό του;')) return;
+  if(supBalance(s)<=0.005 && !confirm('Διαγραφή του προμηθευτή «'+s.name+'» και όλου του ιστορικού του;')) return;
+  const i=supList().findIndex(x=>String(x.id)===String(id));
+  if(i>=0) supList().splice(i,1);
+  _supOpen=null; _supSel.clear(); save(); renderSuppliers();
+}
+function supOpenPage(id){ _supOpen=id; _supSel.clear(); renderSuppliers(); }
+function supBack(){ _supOpen=null; _supSel.clear(); renderSuppliers(); }
+
+function supAddItem(){
+  if(isViewer()) return;
+  const s=supFind(_supOpen); if(!s) return;
+  const d=document.getElementById('supItemDate').value||new Date().toISOString().slice(0,10);
+  const nm=(document.getElementById('supItemName').value||'').trim();
+  const qty=(document.getElementById('supItemQty').value||'').trim();
+  if(!nm){ showToast('⚠ Γράψε το προϊόν'); return; }
+  supItems(s).push({id:_supId(), date:d, name:nm, qty:qty, billId:null});
+  save(); renderSuppliers();
+  const f=document.getElementById('supItemName'); if(f) f.focus();
+}
+function supDelItem(itemId){
+  if(isViewer()) return;
+  const s=supFind(_supOpen); if(!s) return;
+  const i=supItems(s).findIndex(x=>x.id===itemId);
+  if(i<0) return;
+  if(supItems(s)[i].billId){ showToast('⚠ Ανήκει σε λογαριασμό — διάγραψε πρώτα τον λογαριασμό'); return; }
+  supItems(s).splice(i,1); _supSel.delete(itemId);
+  save(); renderSuppliers();
+}
+function supToggleSel(itemId){
+  if(_supSel.has(itemId)) _supSel.delete(itemId); else _supSel.add(itemId);
+  renderSuppliers();
+}
+function supSelAll(){
+  const s=supFind(_supOpen); if(!s) return;
+  const pend=supPending(s);
+  if(_supSel.size===pend.length) _supSel.clear();
+  else { _supSel.clear(); pend.forEach(i=>_supSel.add(i.id)); }
+  renderSuppliers();
+}
+function supCreateBill(){
+  if(isViewer()) return;
+  const s=supFind(_supOpen); if(!s) return;
+  const amt=parseFloat(document.getElementById('supBillAmt').value)||0;
+  if(amt<=0){ showToast('⚠ Βάλε το ποσό του λογαριασμού'); return; }
+  if(!_supSel.size){ showToast('⚠ Διάλεξε προϊόντα'); return; }
+  const payNow=document.getElementById('supBillPaid').checked;
+  const today=new Date().toISOString().slice(0,10);
+  const ids=Array.from(_supSel);
+  const bill={id:_supId(), date:today, amount:+amt.toFixed(2), itemIds:ids,
+    payments: payNow?[{amount:+amt.toFixed(2), date:today, note:'εξόφληση με την έκδοση'}]:[], note:''};
+  supBills(s).push(bill);
+  supItems(s).forEach(i=>{ if(_supSel.has(i.id)) i.billId=bill.id; });
+  _supSel.clear();
+  save(); renderSuppliers();
+  showToast(payNow?'✓ Λογαριασμός εκδόθηκε και εξοφλήθηκε':'✓ Λογαριασμός '+fmt(amt));
+}
+function supPayBill(billId){
+  if(isViewer()) return;
+  const s=supFind(_supOpen); if(!s) return;
+  const b=supBills(s).find(x=>x.id===billId); if(!b) return;
+  const rem=supBillRemaining(b);
+  const v=prompt('Ποσό πληρωμής (απομένουν '+fmt(rem)+'):', rem.toFixed(2));
+  if(v===null) return;
+  const amt=parseFloat(String(v).replace(',','.'))||0;
+  if(amt<=0){ showToast('⚠ Άκυρο ποσό'); return; }
+  if(amt>rem+0.005 && !confirm('Το ποσό ξεπερνά το υπόλοιπο. Συνέχεια;')) return;
+  (b.payments=b.payments||[]).push({amount:+amt.toFixed(2), date:new Date().toISOString().slice(0,10), note:''});
+  save(); renderSuppliers();
+  showToast('✓ Πληρωμή '+fmt(amt));
+}
+function supDelBill(billId){
+  if(isViewer()) return;
+  const s=supFind(_supOpen); if(!s) return;
+  const b=supBills(s).find(x=>x.id===billId); if(!b) return;
+  if(!confirm('Διαγραφή του λογαριασμού '+fmt(b.amount)+';\nΤα προϊόντα του θα επιστρέψουν στα «χωρίς λογαριασμό».')) return;
+  supItems(s).forEach(i=>{ if(i.billId===billId) i.billId=null; });
+  const i=supBills(s).findIndex(x=>x.id===billId);
+  if(i>=0) supBills(s).splice(i,1);
+  save(); renderSuppliers();
+}
+
+// ── render ──
+function renderSuppliers(){
+  const body=document.getElementById('supBody'); if(!body) return;
+  const ttl=document.getElementById('supTitle');
+  const ro=isViewer();
+  if(_supOpen && !supFind(_supOpen)) _supOpen=null;
+  if(!_supOpen){
+    if(ttl) ttl.textContent='Προμηθευτές';
+    const list=supList();
+    const totalDebt=list.reduce((t,s)=>t+supBalance(s),0);
+    const totalPend=list.reduce((t,s)=>t+supPending(s).length,0);
+    let h='';
+    h+=`<div class="sup-top">
+      <div class="sup-cards">
+        <div class="sup-card"><div class="sup-card-l">Συνολικό χρέος</div><div class="sup-card-v mono ${totalDebt>0.005?'neg':'pos'}">${fmt(totalDebt)}</div></div>
+        <div class="sup-card"><div class="sup-card-l">Προϊόντα χωρίς λογαριασμό</div><div class="sup-card-v">${totalPend}</div></div>
+      </div>
+      ${ro?'':`<button class="btn btn-inc" onclick="supAddSupplier()"><svg class="ic"><use href="#ic-plus"/></svg> Νέος προμηθευτής</button>`}
+    </div>`;
+    if(!list.length){
+      h+='<div class="sup-empty">Δεν υπάρχουν προμηθευτές ακόμα.'+(ro?'':' Πάτα «Νέος προμηθευτής» για να ξεκινήσεις.')+'</div>';
+    } else {
+      h+=list.map(s=>{
+        const bal=supBalance(s), pend=supPending(s).length;
+        return `<div class="sup-row" onclick="supOpenPage('${s.id}')">
+          <div class="sup-row-l">
+            <div class="sup-nm">${esc(s.name)}</div>
+            ${pend?`<span class="sup-pill warn">${pend} χωρίς λογαριασμό</span>`:`<span class="sup-pill ok">τακτοποιημένο</span>`}
+          </div>
+          <div class="sup-row-r">
+            <div class="sup-bal mono ${bal>0.005?'neg':'pos'}">${fmt(bal)}</div>
+            <div class="sup-sub">${bal>0.005?'χρωστάω':'εξοφλημένο'}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    body.innerHTML=h;
+    return;
+  }
+  // ── detail ──
+  const s=supFind(_supOpen);
+  if(ttl) ttl.textContent=s.name;
+  const bal=supBalance(s);
+  const billsTotal=supBills(s).reduce((t,b)=>t+(+b.amount||0),0);
+  const paidTotal=supBills(s).reduce((t,b)=>t+supBillPaid(b),0);
+  const pend=supPending(s).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  let h='';
+  h+=`<div class="sup-head">
+    <div>
+      <button class="sup-back" onclick="supBack()"><svg class="ic"><use href="#ic-undo"/></svg> Προμηθευτές</button>
+      <div class="sup-head-nm">${esc(s.name)}
+        ${ro?'':`<button class="sup-mini" onclick="supRename('${s.id}')" title="Μετονομασία">✎</button>
+        <button class="sup-mini" onclick="supDeleteSupplier('${s.id}')" title="Διαγραφή">✕</button>`}
+      </div>
+    </div>
+    <div class="sup-head-r">
+      <div class="sup-card-l">Υπόλοιπο</div>
+      <div class="sup-head-bal mono ${bal>0.005?'neg':'pos'}">${fmt(bal)}</div>
+      <div class="sup-sub">λογαριασμοί ${fmt(billsTotal)} · πληρωμές ${fmt(paidTotal)}</div>
+    </div>
+  </div>`;
+  if(!ro){
+    h+=`<div class="sup-add">
+      <input type="date" id="supItemDate" class="sup-in" value="${new Date().toISOString().slice(0,10)}">
+      <input id="supItemName" class="sup-in" placeholder="Προϊόν" onkeydown="if(event.key==='Enter')supAddItem()">
+      <input id="supItemQty" class="sup-in sup-qty" placeholder="Ποσότητα" onkeydown="if(event.key==='Enter')supAddItem()">
+      <button class="btn btn-inc" onclick="supAddItem()"><svg class="ic"><use href="#ic-plus"/></svg> Προσθήκη</button>
+    </div>`;
+  }
+  h+=`<div class="sup-sec">Χωρίς λογαριασμό${pend.length?' ('+pend.length+')':''}
+    ${(!ro&&pend.length)?`<button class="sup-mini2" onclick="supSelAll()">${_supSel.size===pend.length?'Καμία':'Όλα'}</button>`:''}</div>`;
+  h+= pend.length ? pend.map(i=>`<div class="sup-item">
+      ${ro?'':`<input type="checkbox" ${_supSel.has(i.id)?'checked':''} onchange="supToggleSel('${i.id}')">`}
+      <span class="sup-date mono">${fmtD(i.date)}</span>
+      <span class="sup-item-nm">${esc(i.name)}</span>
+      <span class="sup-qty-t">${esc(i.qty||'')}</span>
+      ${ro?'':`<button class="sup-x" onclick="supDelItem('${i.id}')" title="Αφαίρεση">✕</button>`}
+    </div>`).join('')
+    : '<div class="sup-empty2">Όλα τα προϊόντα έχουν χρεωθεί.</div>';
+  if(!ro && _supSel.size){
+    h+=`<div class="sup-selbar">
+      <span class="sup-selc">${_supSel.size} επιλεγμένα</span>
+      <span class="sup-selr">
+        <input id="supBillAmt" class="sup-in sup-amt" type="number" step="0.01" placeholder="Ποσό λογαριασμού €" onkeydown="if(event.key==='Enter')supCreateBill()">
+        <label class="sup-chk"><input type="checkbox" id="supBillPaid"> πληρώθηκε</label>
+        <button class="btn btn-gold" onclick="supCreateBill()">Έκδοση λογαριασμού</button>
+      </span>
+    </div>`;
+  }
+  const bills=supBills(s).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  h+=`<div class="sup-sec">Λογαριασμοί${bills.length?' ('+bills.length+')':''}</div>`;
+  h+= bills.length ? bills.map(b=>{
+      const rem=supBillRemaining(b), paid=supBillPaid(b), items=supBillItems(s,b);
+      const done=rem<=0.005;
+      return `<div class="sup-bill ${done?'done':''}">
+        <div class="sup-bill-top">
+          <div>
+            <span class="sup-bill-nm">Λογαριασμός ${fmtD(b.date)}</span>
+            <span class="sup-sub"> · ${items.length} προϊόντα</span>
+            <div class="sup-bill-st ${done?'pos':'neg'}">${done?'✓ Εξοφλήθηκε':'Απομένουν '+fmt(rem)}</div>
+          </div>
+          <div class="sup-bill-r">
+            <div>
+              <div class="sup-bill-amt mono">${fmt(b.amount)}</div>
+              ${paid>0.005&&!done?`<div class="sup-sub pos">πληρώθηκαν ${fmt(paid)}</div>`:''}
+            </div>
+            ${(!ro&&!done)?`<button class="sup-pay" onclick="supPayBill('${b.id}')">Πληρωμή</button>`:''}
+            ${ro?'':`<button class="sup-x" onclick="supDelBill('${b.id}')" title="Διαγραφή λογαριασμού">✕</button>`}
+          </div>
+        </div>
+        ${items.length?`<div class="sup-bill-items">${items.map(i=>esc(i.name)+(i.qty?' <span class="sup-sub">('+esc(i.qty)+')</span>':'')).join(' · ')}</div>`:''}
+      </div>`;
+    }).join('')
+    : '<div class="sup-empty2">Δεν έχει εκδοθεί λογαριασμός ακόμα.</div>';
+  body.innerHTML=h;
+}
+
 function renderCurrentPage(){
   if(CPage==='home')renderHome();
   else if(CPage==='exp')renderExpPage();
@@ -2296,6 +2588,7 @@ function renderCurrentPage(){
   else if(CPage==='contacts')renderContactsPage();
   else if(CPage==='recon')renderRecon();
   else if(CPage==='till')renderTill();
+  else if(CPage==='suppliers')renderSuppliers();
 }
 
 // ── HELPERS ───────────────────────────────────────────
@@ -2405,14 +2698,6 @@ function renderProfit(id,pr,lbl){
   const p=pr>=0;const el=document.getElementById(id);
   el.className='profit-bar'+(p?'':' neg');
   el.innerHTML=`<span class="pbadge ${p?'pos':'neg'}">${p?'Κέρδος':'Ζημία'}</span><span class="plabel">${lbl}</span><span class="pval ${p?'pos':'neg'}">${fmt(Math.abs(pr))}</span>`;
-}
-
-// Status pill — clicking it toggles paid state
-function ptHtml(paid,type,ri,oy,om){
-  const cl=paid==='ΝΑΙ'?'y':paid==='ΟΧΙ'?'n':'e';
-  const t=paid==='ΝΑΙ'?'Πληρωμένο':paid==='ΟΧΙ'?'Ανεξόφλητο':'Έναντι';
-  const oyp=(oy!==undefined&&oy!==-1)?`,${oy},${om}`:'';
-  return`<button class="pt ${cl}" onclick="togglePaid('${type}',${ri}${oyp})" title="Κλικ για αλλαγή">${t}</button>`;
 }
 
 // Plain-text status (used in the mobile meta line)
@@ -2610,7 +2895,6 @@ function makeChart(canvasId,labels,incD,expD,inst){
   ]},options:{plugins:{legend:{labels:{font:{family:"'DM Sans',sans-serif",size:11},color:'#6b6456',boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{family:"'DM Sans',sans-serif",size:11},color:'#a09a8e'}},y:{grid:{color:'#e8e4dc'},ticks:{font:{family:"'DM Mono',monospace",size:10},color:'#a09a8e',callback:v=>v.toLocaleString('el-GR')+'€'}}},animation:{duration:800,easing:"easeInOutQuart"}}});
 }
 
-
 // ── CARRYOVER — unpaid entries from previous months ───
 function getCarryover(y, m, type){
   // Collect all unpaid entries from months before (y,m)
@@ -2760,7 +3044,6 @@ function renderHome(){
     :expSlice.filter(r=>isAdmin()||!r.hidden).map(r=>expDenseRow(r)).join('');
   updateExpSelectBar();
 
-
   // exp pager
   const ep=document.getElementById('expPagerInfo');
   if(ep){ep.textContent=fExp.length===0?'':('Σελ. '+(homeExpPage+1)+' / '+expPages);
@@ -2786,7 +3069,6 @@ function renderHome(){
         : fmt(r.amount)}</td>
       <td class="no-print c-act">${actHtml('inc',r._i,false,r._carryover?r._origY:-1,r._carryover?r._origM:-1,r.paid)}</td>
     </tr>`).join('');
-
 
   // inc pager
   const ip=document.getElementById('incPagerInfo');
@@ -2888,20 +3170,7 @@ function globalSearch(q,type){
   return results;
 }
 
-// Legacy: payment-edit button (now lives inside the row menu)
-function payEditBtn(r){
-  if(r.paid!=='ΝΑΙ') return '';
-  const oy=r._carryover?r._origY:-1, om=r._carryover?r._origM:-1;
-  return`<button class="btn btn-ghost btn-sm" onclick="openPayEdit('exp',${r._i},${oy},${om})" title="Επεξεργασία πληρωμής (τράπεζα/ημ.)" style="color:var(--olive-mid)">💳</button>`;
-}
-
 // Open the pay-source picker for an ALREADY paid entry (to fix bank/date)
-function openPayEdit(type,i,oy,om){
-  if(isViewer()) return;
-  // Payments are edited inside the entry form now.
-  editEntry(type,i,oy,om);
-}
-
 // Empty state row
 function emptyRow(cols, type){
   const msgs={
@@ -3200,16 +3469,6 @@ function toggleHide(type,i,oy,om){
 }
 
 // Legacy toggle — kept for safety. Routes to the payments flow; never wipes history.
-function togglePaid(type,i,oy,om){ if(isViewer()) return;
-  const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
-  const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
-  const d=ents(y,m); const r=d[type][i]; if(!r) return;
-  if(remaining(r)<=0.005){ editEntry(type,i,oy,om); return; } // already paid → view/edit
-  if(type==='exp'){ openPaySourcePicker(type,i,y,m); return; }
-  addPayment(r, remaining(r), new Date().toISOString().slice(0,10), '');
-  setEnts(y,m,d); renderCurrentPage();
-}
-
 // Quick payment source picker (when marking an expense as paid)
 let _paySrcCtx=null;
 let _bulkPayMode=false;
@@ -3542,31 +3801,6 @@ function saveEntry(){
   closeModal();renderCurrentPage();
 }
 
-function createInstallment(groupId, name, amt, total, num, originY, originM, cat, code, notes){
-  // Place installment in NEXT month after origin
-  let nm=originM+1, ny=originY;
-  // For subsequent installments (num>1), place in month num-1 after origin+1
-  // Actually we always place the next installment in next month relative to current
-  if(nm>11){nm=0;ny++;}
-  // For num>1 we already pass the right year/month from payCurrentInst
-  const nd=ents(ny,nm);
-  const dateStr=ny+'-'+String(nm+1).padStart(2,'0')+'-01';
-  nd.exp.push({
-    date:dateStr,
-    name:name+' — Δόση '+num+'/'+total,
-    amount:amt,
-    code:code||'',
-    cat:cat||'',
-    notes:notes||'',
-    paid:'ΔΟΣΕΙΣ',
-    instAmt:amt,
-    instTotalCount:total,
-    instNum:num,
-    instGroupId:groupId,
-    instPlan:null
-  });
-  setEnts(ny,nm,nd);
-}
 function editEntry(type,i,oy,om){
   const y=(oy!==undefined&&oy!=='undefined'&&oy!==null&&oy!==-1)?+oy:CY;
   const m=(om!==undefined&&om!=='undefined'&&om!==null&&om!==-1)?+om:CM;
@@ -3887,19 +4121,25 @@ function _contactCore(o){
   const extra={}; Object.keys(o).forEach(k=>{ if(['name','afm','code','_id'].indexOf(k)<0) extra[k]=o[k]; });
   return { name:o.name||null, afm:o.afm||null, code:o.code||null, extra:extra };
 }
+function _supCore(s){
+  return { name:s.name||'', note:s.note||'',
+    items:Array.isArray(s.items)?s.items:[], bills:Array.isArray(s.bills)?s.bills:[],
+    extra:{lid:s.id} };
+}
 function _tillCore(d){
   return { date:d.date||null, opening:+d.opening||0, cash:d.cash||[], pos:d.pos||[], closed:!!d.closed, closed_at:d.closedAt||null };
 }
 
 // Build the snapshot from the current in-memory data (called right after a load)
 function buildSnapshot(){
-  const snap={entries:{},contacts:{},till:{},cats:{exp:[],inc:[]},settings:{}};
+  const snap={entries:{},contacts:{},till:{},suppliers:{},cats:{exp:[],inc:[]},settings:{}};
   Object.keys(data).forEach(key=>{
     const km=key.match(/^y(\d+)m(\d+)$/); if(!km) return;
     ['exp','inc'].forEach(kind=>{ (data[key][kind]||[]).forEach(e=>{ if(e._id) snap.entries[e._id]=_sig(_entryCore(e,kind,key)); }); });
   });
   (data['__contacts__']||[]).forEach(o=>{ if(o._id) snap.contacts[o._id]=_sig(_contactCore(o)); });
   (((data['__till__']||{}).days)||[]).forEach(d=>{ if(d._id) snap.till[d._id]=_sig(_tillCore(d)); });
+  (((data['__suppliers__']||{}).list)||[]).forEach(s=>{ if(s._id) snap.suppliers[s._id]=_sig(_supCore(s)); });
   snap.cats.exp=(data['__cats__']||[]).slice();
   snap.cats.inc=(data['__incats__']||[]).slice();
   const handled=new Set(['__contacts__','__cats__','__incats__','__till__']);
@@ -3912,7 +4152,8 @@ function computeSyncDiff(){
   const org=sessionStorage.getItem('agiasos_org_id');
   const uid=sessionStorage.getItem('agiasos_sb_uid')||null;
   const d={ entriesIns:[], entriesUpd:[], entriesDel:[], contactsIns:[], contactsUpd:[], contactsDel:[],
-    tillIns:[], tillUpd:[], tillDel:[], catsIns:[], catsDel:[], settingsUp:[], settingsDel:[] };
+    tillIns:[], tillUpd:[], tillDel:[], supIns:[], supUpd:[], supDel:[],
+    catsIns:[], catsDel:[], settingsUp:[], settingsDel:[] };
   // ENTRIES
   const seenE=new Set();
   Object.keys(data).forEach(key=>{
@@ -3940,6 +4181,14 @@ function computeSyncDiff(){
     else { seenT.add(dd._id); if(_snap.till[dd._id]!==s) d.tillUpd.push({id:dd._id,row:core,sig:s}); }
   });
   Object.keys(_snap.till).forEach(id=>{ if(!seenT.has(id)) d.tillDel.push(id); });
+  // SUPPLIERS
+  const seenS=new Set();
+  (((data['__suppliers__']||{}).list)||[]).forEach(sp=>{
+    const core=_supCore(sp); const s=_sig(core);
+    if(!sp._id){ d.supIns.push({ref:sp, row:Object.assign({org_id:org,created_by:uid},core), sig:s}); }
+    else { seenS.add(sp._id); if(_snap.suppliers[sp._id]!==s) d.supUpd.push({id:sp._id,row:core,sig:s}); }
+  });
+  Object.keys(_snap.suppliers||{}).forEach(id=>{ if(!seenS.has(id)) d.supDel.push(id); });
   // CATEGORIES (match by name)
   [['exp','__cats__'],['inc','__incats__']].forEach(pair=>{
     const kind=pair[0], cur=(data[pair[1]]||[]), prev=_snap.cats[kind]||[];
@@ -3973,8 +4222,9 @@ async function loadFromNewTables(){
     }
     return all;
   };
-  const results=await Promise.all([getAll('entries'),getAll('contacts'),getAll('categories'),getAll('till_days'),getAll('settings'),getAll('members')]);
+  const results=await Promise.all([getAll('entries'),getAll('contacts'),getAll('categories'),getAll('till_days'),getAll('settings'),getAll('members'),getAll('suppliers').catch(()=>null)]);
   const ents=results[0], cts=results[1], cats=results[2], tds=results[3], sets=results[4], mem=results[5];
+  const sups=results[6];   // null = ο πίνακας δεν υπάρχει ακόμα (δεν έχει τρέξει το SQL)
   _memberNames={}; (mem||[]).forEach(m=>{ if(m.user_id) _memberNames[m.user_id]=m.name||''; });
   const nd={};
   let _lostCount=0;
@@ -4008,26 +4258,17 @@ async function loadFromNewTables(){
       cash:d.cash||[], pos:d.pos||[], closed:!!d.closed, closedAt:d.closed_at||'' };
     if(d.id) Object.defineProperty(o,'_id',{value:d.id,enumerable:false,writable:true,configurable:true});
     return o; })};
+  if(sups!==null){
+    nd['__suppliers__']={list:sups.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'el')).map(row=>{
+      const ex=row.extra||{};
+      const o={ id:ex.lid||row.id, name:row.name||'', note:row.note||'',
+        items:Array.isArray(row.items)?row.items:[], bills:Array.isArray(row.bills)?row.bills:[] };
+      Object.defineProperty(o,'_id',{value:row.id,enumerable:false,writable:true,configurable:true});
+      return o;
+    })};
+  }
   sets.forEach(s=>{ nd[s.key]=s.value; });
   return nd;
-}
-
-// Dry-run: load from new tables into memory (does NOT save) for visual verification
-async function testLoadNewBackend(){
-  if(!isAdmin()){ showToast('⚠ Μόνο διαχειριστής'); return; }
-  const btn=document.getElementById('testNewBtn');
-  if(btn){ btn.disabled=true; btn.textContent='Φόρτωση…'; }
-  try{
-    const nd=await loadFromNewTables();
-    data=nd;
-    closeBackup();
-    goPage('home'); renderHome();
-    showToast('✓ Φορτώθηκε από νέα δομή (ΔΟΚΙΜΑΣΤΙΚΑ — μη σώσεις, κάνε refresh για επιστροφή)');
-  }catch(err){
-    showToast('⚠ '+((err&&err.message)||err));
-  }finally{
-    if(btn){ btn.disabled=false; btn.textContent='👁 Δοκιμή: ανάγνωση από νέα δομή'; }
-  }
 }
 
 let _syncing=false, _syncAgain=false;
@@ -4088,6 +4329,9 @@ async function applySyncDiff(diff){
   await doIns('till_days', diff.tillIns, _snap.till);
   await doUpd('till_days', diff.tillUpd, _snap.till);
   await doDel('till_days', diff.tillDel, _snap.till);
+  await doIns('suppliers', diff.supIns, _snap.suppliers);
+  await doUpd('suppliers', diff.supUpd, _snap.suppliers);
+  await doDel('suppliers', diff.supDel, _snap.suppliers);
   // categories (match by name)
   if(diff.catsIns.length) await chk(await fetch(base+'categories',{method:'POST',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(diff.catsIns)}),'categories insert');
   for(const cd of diff.catsDel){ await chk(await fetch(base+'categories?org_id=eq.'+org+'&kind=eq.'+cd.kind+'&name=eq.'+encodeURIComponent(cd.name),{method:'DELETE',headers:H}),'categories delete'); }
@@ -4100,7 +4344,6 @@ async function applySyncDiff(diff){
 // ── Stage 5: live sync (lightweight polling) ─────────
 let _pollTimer=null, _pollSig=null;
 function _uiBusy(){ return !!document.querySelector('.overlay.open'); }
-function _countEntries(d){ let n=0; Object.keys(d).forEach(k=>{ if(/^y\d+m\d+$/.test(k)){ n+=(d[k].exp||[]).length+(d[k].inc||[]).length; } }); return n; }
 async function computePollSig(){
   const token=sessionStorage.getItem('agiasos_sb_token');
   const org=sessionStorage.getItem('agiasos_org_id');
@@ -4114,7 +4357,8 @@ async function computePollSig(){
     const mx=(Array.isArray(rows)&&rows[0]&&rows[0].updated_at)||'';
     return cnt+'|'+mx;
   };
-  return (await sigOf('entries'))+' '+(await sigOf('contacts'))+' '+(await sigOf('till_days'));
+  const supSig=await sigOf('suppliers').catch(()=>'-');
+  return (await sigOf('entries'))+' '+(await sigOf('contacts'))+' '+(await sigOf('till_days'))+' '+supSig;
 }
 let _lastPollAt=0;
 async function pollRemote(){
@@ -4145,87 +4389,6 @@ function startLiveSync(){
     document.addEventListener('visibilitychange',()=>{ if(!document.hidden) pollRemote(); });
     window.addEventListener('focus',()=>pollRemote());
   }
-}
-
-// Activate the new backend for THIS session (per-record writes). Refresh resets.
-async function activateNewBackendSession(){
-  if(!isAdmin()){ showToast('⚠ Μόνο διαχειριστής'); return; }
-  const btn=document.getElementById('activateNewBtn');
-  if(btn){ btn.disabled=true; btn.textContent='Ενεργοποίηση…'; }
-  try{
-    const nd=await loadFromNewTables();
-    data=nd; buildSnapshot(); newBackendActive=true;
-    _pollSig=await computePollSig().catch(()=>null); startLiveSync();
-    closeBackup(); goPage('home'); renderHome();
-    showToast('⚡ Νέα δομή ΕΝΕΡΓΗ (δοκιμή συνεδρίας). Οι αλλαγές γράφονται ανά εγγραφή. Refresh για επιστροφή στο παλιό.');
-  }catch(err){
-    showToast('⚠ '+((err&&err.message)||err));
-  }finally{
-    if(btn){ btn.disabled=false; btn.textContent='⚡ Ενεργοποίηση νέας δομής (δοκιμή)'; }
-  }
-}
-
-async function migrateToNewTables(){
-  if(!isAdmin()){ showToast('⚠ Μόνο διαχειριστής'); return; }
-  const token=sessionStorage.getItem('agiasos_sb_token');
-  const org=sessionStorage.getItem('agiasos_org_id');
-  const uid=sessionStorage.getItem('agiasos_sb_uid');
-  const out=document.getElementById('migOut');
-  const btn=document.getElementById('migBtn');
-  const log=m=>{ out.style.display='block'; out.textContent+=m+'\n'; out.scrollTop=out.scrollHeight; };
-  if(!token||!org){ showToast('⚠ Συνδέσου με email/κωδικό (όχι εφεδρικό) για τη μεταφορά'); return; }
-  if(!confirm('Μεταφορά δεδομένων στους νέους πίνακες;\nΘα καθαριστούν τυχόν προηγούμενες δοκιμές στη νέα δομή.\nΗ app_data ΔΕΝ αλλάζει.')) return;
-  btn.disabled=true; out.style.display='block'; out.textContent='';
-  const H={'apikey':SB_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json'};
-  const base=SB_URL+'/rest/v1/';
-  const delAll=t=>fetch(base+t+'?org_id=eq.'+org,{method:'DELETE',headers:H});
-  const insChunk=async(t,rows)=>{ let n=0; for(let i=0;i<rows.length;i+=200){ const ch=rows.slice(i,i+200); const r=await fetch(base+t,{method:'POST',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(ch)}); if(!r.ok){ throw new Error(t+': '+(await r.text()).slice(0,180)); } n+=ch.length; } return n; };
-  const countRows=async t=>{ const r=await fetch(base+t+'?org_id=eq.'+org+'&select=id',{headers:Object.assign({},H,{'Prefer':'count=exact','Range':'0-0'})}); return (r.headers.get('content-range')||'?/?').split('/')[1]; };
-  try{
-    const entries=[], contacts=[], categories=[], tillDays=[], settings=[];
-    const ECOLS=new Set(['date','name','amount','code','invoice','paid','cat','incCat','notes','attachment','hidden','afm','payments']);
-    let srcExp=0, srcInc=0;
-    Object.keys(data).forEach(key=>{
-      const km=key.match(/^y(\d+)m(\d+)$/); if(!km) return;
-      const b=data[key]||{};
-      ['exp','inc'].forEach(kind=>{
-        (b[kind]||[]).forEach(r=>{
-          if(kind==='exp') srcExp++; else srcInc++;
-          const extra={_bucket:key};
-          Object.keys(r).forEach(k=>{ if(!ECOLS.has(k)) extra[k]=r[k]; });
-          entries.push({org_id:org, kind:kind, date:r.date||null, name:r.name||null, amount:+r.amount||0,
-            code:r.code||null, invoice:r.invoice||null, paid:r.paid||null, cat:r.cat||null, inc_cat:r.incCat||null,
-            notes:r.notes||null, attachment:r.attachment||null, hidden:!!r.hidden, afm:r.afm||null,
-            payments:Array.isArray(r.payments)?r.payments:entryPayments(r), extra:extra, created_by:uid||null});
-        });
-      });
-    });
-    (data['__contacts__']||[]).forEach(ct=>{ const extra={}; Object.keys(ct).forEach(k=>{ if(['name','afm','code'].indexOf(k)<0) extra[k]=ct[k]; }); contacts.push({org_id:org, name:ct.name||null, afm:ct.afm||null, code:ct.code||null, extra:extra}); });
-    const addCats=(arr,kind)=>{ (arr||[]).forEach((ct,i)=>{ const name=(typeof ct==='string')?ct:(ct&&ct.name); if(name) categories.push({org_id:org, kind:kind, name:name, sort:i}); }); };
-    addCats(data['__cats__'],'exp'); addCats(data['__incats__'],'inc');
-    (((data['__till__']||{}).days)||[]).forEach(d=>{ tillDays.push({org_id:org, date:d.date||null, opening:+d.opening||0, cash:d.cash||[], pos:d.pos||[], closed:!!d.closed, closed_at:d.closedAt||null, created_by:uid||null}); });
-    const handled=new Set(['__contacts__','__cats__','__incats__','__till__']);
-    Object.keys(data).forEach(key=>{ if(/^__.+__$/.test(key) && !handled.has(key)) settings.push({org_id:org, key:key, value:data[key]}); });
-
-    log('Πηγή: '+srcExp+' έξοδα · '+srcInc+' έσοδα · '+contacts.length+' επαφές · '+categories.length+' κατηγορίες · '+tillDays.length+' μέρες ταμείου · '+settings.length+' λοιπά.');
-    log('Καθαρισμός προηγούμενων δοκιμών…');
-    await delAll('entries'); await delAll('contacts'); await delAll('categories'); await delAll('till_days'); await delAll('settings');
-    log('Μεταφορά…');
-    log('  ✓ entries: '+await insChunk('entries',entries));
-    log('  ✓ contacts: '+await insChunk('contacts',contacts));
-    log('  ✓ categories: '+await insChunk('categories',categories));
-    log('  ✓ till_days: '+await insChunk('till_days',tillDays));
-    log('  ✓ settings: '+await insChunk('settings',settings));
-    log('Επαλήθευση από τη βάση…');
-    log('  entries στη βάση: '+await countRows('entries')+' (αναμενόμενα '+entries.length+')');
-    log('  contacts στη βάση: '+await countRows('contacts')+' (αναμενόμενα '+contacts.length+')');
-    log('  till_days στη βάση: '+await countRows('till_days')+' (αναμενόμενα '+tillDays.length+')');
-    log('✅ Ολοκληρώθηκε. Αν τα νούμερα ταιριάζουν, η μεταφορά πέτυχε.');
-    showToast('✓ Μεταφορά ολοκληρώθηκε');
-  }catch(err){
-    log('❌ ΣΦΑΛΜΑ: '+((err&&err.message)||err));
-    showToast('⚠ Σφάλμα μεταφοράς — δες το log');
-  }finally{ btn.disabled=false; }
 }
 
 function openBackup(){ if(isViewer()) return;document.getElementById('backupOut').value=JSON.stringify(data,null,2);document.getElementById('backupIn').value='';document.getElementById('backupOverlay').classList.add('open');}
@@ -4342,7 +4505,6 @@ function doPrint(){
   window.print();
 }
 
-
 // ── INSTALLMENTS ──────────────────────────────────────
 // Model: each installment entry carries:
 //   paid='ΔΟΣΕΙΣ', instAmt=amount per installment, instTotalCount=total installments,
@@ -4353,14 +4515,6 @@ function doPrint(){
 //   - if not the last: create next installment in next month
 //
 let instCtx = null;
-
-function instGroupRemain(r){
-  // remaining = total debt - (instNum-1)*instAmt - instAmt (this one, now paid)
-  const tot=(+r.instTotalCount||1)*(+r.instAmt||0);
-  const alreadyPaid=(+r.instNum-1)*(+r.instAmt||0);
-  return Math.max(0,tot-alreadyPaid-(+r.instAmt||0));
-}
-
 
 function updateEnantiPreview(){ /* replaced by the payments editor */ recomputePaySummary(); }
 
@@ -4525,7 +4679,6 @@ function payCurrentInst(){
 
 
 
-
 // ── NOTIFICATIONS / LOGIN LOG ─────────────────────────
 async function logLogin(role){
   try{
@@ -4611,7 +4764,6 @@ document.addEventListener('click',e=>{
 });
 
 
-
 // ── HEADER DROPDOWNS ──────────────────────────────────
 function toggleDropdown(id){
   const menu=document.getElementById(id);
@@ -4651,7 +4803,6 @@ function changePassword(role){
   else window._viewerPass=np;
   alert('✓ Ο κωδικός '+label+' άλλαξε επιτυχώς!');
 }
-
 
 // ── BACKGROUND PICKER ─────────────────────────────────
 const BG_THEMES = [
@@ -4819,7 +4970,6 @@ let contactsPage=0;
 const CONTACTS_PER_PAGE=30;
 let contactsSort={col:'name',dir:1};
 
-function openContacts(){ goPage('contacts'); }
 function closeContacts(){ goPage('home'); }
 
 function sortContacts(col){
@@ -5046,7 +5196,6 @@ function newContact(){
   selectContact(n);
 }
 
-
 function copyCode(code){
   navigator.clipboard.writeText(code).then(()=>{
     showToast('✓ Αντιγράφηκε: '+code);
@@ -5187,8 +5336,10 @@ async function checkForUpdate(){
   // 1. Force-save any pending data first (only if logged in & data exists)
   try{
     if(typeof data==='object' && data && Object.keys(data).length>0){
-      save();  // saves to localStorage (STORE key) immediately + triggers Supabase
-      if(typeof saveToSupabase==='function') await saveToSupabase();
+      save();                                   // local copy immediately
+      clearTimeout(_saveTimer);                 // don't wait for the debounce
+      if(newBackendActive) await runSync();     // finish syncing before we reload
+      else await saveToSupabase();
     }
   }catch(e){ console.warn('Save before update failed:', e); }
   // 2. Clear all caches (HTML/CSS/JS only — NOT localStorage where data lives)
@@ -5245,7 +5396,6 @@ function updateDarkLabel(){
   if(icon) icon.textContent=dark?'☀️':'🌙';
 }
 window.addEventListener('DOMContentLoaded',updateDarkLabel);
-
 
 
 // ── FALLING LEAVES (login) ────────────────────────────
@@ -5307,7 +5457,6 @@ function initHeaderOlives(){
   }
 }
 initHeaderOlives();
-
 
 function exportMonthPDF(){
   const mn=MN[CM];
@@ -5585,40 +5734,6 @@ function quickBackup(){
   showToast('✓ Backup αποθηκεύτηκε: agiasos_backup_'+stamp+'.json');
 }
 
-
-function exportContactCard(name){
-  const txns=getTxnsForContact(name);
-  const afm=getContactAfm(name);
-  const wb=XLSX.utils.book_new();
-  const rows=[
-    ['Καρτέλα Πελάτη — '+name],
-    afm?['ΑΦΜ: '+afm]:[''],
-    ['Εκτυπώθηκε: '+new Date().toLocaleDateString('el-GR')],
-    [],
-    ['Ημερομηνία','Κατηγορία','Περιγραφή','Ποσό (€)','Έναντι (€)','Υπόλοιπο (€)','Πληρώθηκε','Παραστατικό','Σχόλια']
-  ];
-  txns.forEach(r=>{
-    const type=r.type==='exp'?'Έξοδο':'Έσοδο';
-    const remain=remaining(r);
-    rows.push([r.date||'',type,r.name||'',+r.amount||0,paidSum(r),remain,statusText(r),r.invoice||'',r.notes||'']);
-  });
-  rows.push([]);
-  const totalInc=txns.filter(r=>r.type==='inc').reduce((s,r)=>s+(+r.amount||0),0);
-  const totalExp=txns.filter(r=>r.type==='exp').reduce((s,r)=>s+(+r.amount||0),0);
-  rows.push(['','','Σύνολο Εσόδων',totalInc,'','','','','']);
-  rows.push(['','','Σύνολο Εξόδων',totalExp,'','','','','']);
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:14},{wch:10},{wch:28},{wch:12},{wch:12},{wch:12},{wch:12},{wch:16},{wch:28}];
-  XLSX.utils.book_append_sheet(wb,ws,'Καρτέλα');
-  XLSX.writeFile(wb,'kartela_'+name.replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
-}
-
-function printContactCard(name){
-  // Render detail and print
-  renderContactDetail(name);
-  setTimeout(()=>window.print(),300);
-}
-
 function openIncCats(){
   // Reuse cats modal but for income categories
   const cats=getIncCats();
@@ -5631,7 +5746,6 @@ function openIncCats(){
   const newCats=input.split('\n').map(s=>s.trim()).filter(Boolean);
   if(newCats.length>0){setIncCats(newCats);showToast('✓ Κατηγορίες εσόδων αποθηκεύτηκαν');}
 }
-
 
 // ── INVOICE SCANNER (Claude AI) ───────────────────────
 let _scanData = null;
@@ -5841,14 +5955,10 @@ function applyScanResult(){
   showToast('✓ Στοιχεία εφαρμόστηκαν!'+(_scanDataAttachment?' · PDF συνημμένο 📎':''));
 }
 
-function saveInstSettings(){}
-function addInstCount(delta){}
-
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeModal();cancelDel();closeBackup();closeCats();closePending();closeInst();closeContacts();closeBgPicker();}
   if((e.ctrlKey||e.metaKey)&&e.key==='f'&&CPage!=='annual'){e.preventDefault();document.getElementById('searchBox').focus();}
 });
-
 
 // ── LOGIN ─────────────────────────────────────────────
 // Load passwords safely (Tracking Prevention may block localStorage)
@@ -5864,8 +5974,6 @@ let currentMemberRole = sessionStorage.getItem('agiasos_member_role') || null;  
 // Full admin = the real 'admin' member role; falls back to the old binary role for the legacy password login
 function isAdmin(){ return currentMemberRole ? (currentMemberRole === 'admin') : (currentRole === 'admin'); }
 function isViewer(){ return currentRole === 'viewer'; }
-function canWrite(){ return !isViewer(); }
-
 function checkAuth(){
   return sessionStorage.getItem(AUTH_KEY) === '1';
 }
@@ -6116,13 +6224,11 @@ function safeReload(){
       <button class="login-btn" onclick="doLogin()">Είσοδος (παλιό) &nbsp;→</button>
     </div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18r</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18t</div>
   </div>
 </div>
 
-
 <!-- contacts page is now inline -->
-
 
 <!-- BG PICKER -->
 <div class="bg-picker-overlay" id="bgPickerOverlay" onclick="if(event.target===this)closeBgPicker()">
