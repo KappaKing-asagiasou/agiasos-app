@@ -1035,6 +1035,20 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
 [data-theme="dark"] .sup-pill.warn{background:#3a3018;color:#e8cf8a;}
 [data-theme="dark"] .sup-card-v.neg,[data-theme="dark"] .sup-bal.neg,[data-theme="dark"] .sup-head-bal.neg,[data-theme="dark"] .sup-bill-st.neg{color:#f0a89a;}
 [data-theme="dark"] .sup-x:hover{border-color:#f0a89a;color:#f0a89a;}
+
+/* ── SYNC / OFFLINE BANNER ─────────────────────────── */
+.sync-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:9998;display:flex;align-items:center;gap:9px;
+  background:#7a5e14;color:#fff5da;font-size:12.5px;padding:9px 16px;border-radius:22px;box-shadow:0 3px 14px rgba(0,0,0,.22);
+  font-family:'DM Sans',sans-serif;max-width:90vw;}
+.sync-banner.off{background:#6a3b30;color:#ffe4dd;}
+.sb-dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:sbPulse 1.4s ease-in-out infinite;flex:none;}
+@keyframes sbPulse{0%,100%{opacity:.35}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.sb-dot{animation:none;opacity:.8}}
+.notif-item.al-warn .ni-icon,.notif-item.al-danger .ni-icon,.notif-item.al-info .ni-icon{font-size:15px;}
+.notif-item.al-warn{border-left:3px solid var(--gold-mid,#c8a030);}
+.notif-item.al-danger{border-left:3px solid #a3402d;}
+.notif-item.al-info{border-left:3px solid var(--olive);}
+.notif-item[onclick]:hover{background:var(--surface2);}
 </style>
 </head>
 <body>
@@ -1091,7 +1105,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18t</div>
+    <div class="sb-ver">έκδοση 2026.06.18u</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1122,7 +1136,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
       <div class="notif-panel" id="notifPanel">
         <div class="notif-panel-hdr">
           <span>Συνδέσεις</span>
-          <button class="notif-clear" onclick="clearNotifs()">Εκκαθάριση</button>
+          <button class="notif-clear" onclick="loadNotifs()">Ανανέωση</button>
         </div>
         <div class="notif-list" id="notifList"><div class="notif-empty">Δεν υπάρχουν ειδοποιήσεις</div></div>
       </div>
@@ -1147,29 +1161,31 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
       <button class="hdr-drop-btn" onclick="toggleDropdown('toolsDrop')" id="toolsDropBtn">⚙ Εργαλεία <span class="arrow">▾</span></button>
       <div class="hdr-drop-menu" id="toolsDrop">
         <button class="hdr-drop-item" onclick="openPending();closeDropdowns()"><span class="di-icon">⏳</span>Εκκρεμείς πληρωμές</button>
+        <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="openCats();closeDropdowns()"><span class="di-icon">🏷</span>Κατηγορίες εξόδων</button>
         <button class="hdr-drop-item" onclick="openIncCats();closeDropdowns()"><span class="di-icon">🏷</span>Κατηγορίες εσόδων</button>
+        <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="quickBackup();closeDropdowns()"><span class="di-icon">💾</span>Γρήγορο Backup (JSON)</button>
         <button class="hdr-drop-item" onclick="openBackup();closeDropdowns()"><span class="di-icon">🔄</span>Backup / Restore</button>
-        <div class="hdr-drop-sep"></div>
-        <button class="hdr-drop-item" id="darkMenuItem" onclick="toggleDark()"><span class="di-icon">🌙</span><span id="darkMenuLabel">Dark mode</span></button>
-        <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
-        <div class="hdr-drop-sep"></div>
-        <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18t</div>
       </div>
     </div>
 
     <!-- Ρυθμίσεις dropdown (admin only) -->
-    <div class="hdr-dropdown no-print" id="settingsWrap" style="display:none">
+    <div class="hdr-dropdown no-print" id="settingsWrap">
       <button class="hdr-drop-btn" onclick="toggleDropdown('settingsDrop')" id="settingsDropBtn">🔧 Ρυθμίσεις <span class="arrow">▾</span></button>
       <div class="hdr-drop-menu" id="settingsDrop">
+        <button class="hdr-drop-item" id="darkMenuItem" onclick="toggleDark()"><span class="di-icon">🌙</span><span id="darkMenuLabel">Dark mode</span></button>
         <button class="hdr-drop-item" onclick="openBgPicker();closeDropdowns()"><span class="di-icon">🎨</span>Χρώμα φόντου</button>
+        <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
+        <div id="settingsAdmin">
+          <div class="hdr-drop-sep"></div>
+          <button class="hdr-drop-item" onclick="changePassword('admin');closeDropdowns()"><span class="di-icon">👨‍💼</span>Αλλαγή κωδικού Admin</button>
+          <button class="hdr-drop-item" onclick="changePassword('viewer');closeDropdowns()"><span class="di-icon">👁</span>Αλλαγή κωδικού Θεατή</button>
+          <button class="hdr-drop-item" onclick="openAccountantSettings();closeDropdowns()"><span class="di-icon">📧</span>Email Λογιστή</button>
+        </div>
         <div class="hdr-drop-sep"></div>
-        <button class="hdr-drop-item" onclick="changePassword('admin');closeDropdowns()"><span class="di-icon">👨‍💼</span>Αλλαγή κωδικού Admin</button>
-        <button class="hdr-drop-item" onclick="changePassword('viewer');closeDropdowns()"><span class="di-icon">👁</span>Αλλαγή κωδικού Θεατή</button>
-        <div class="hdr-drop-sep"></div>
-        <button class="hdr-drop-item" onclick="openAccountantSettings();closeDropdowns()"><span class="di-icon">📧</span>Email Λογιστή</button>
+        <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
+        <div style="padding:6px 14px 9px;font-size:10.5px;color:var(--text3);letter-spacing:.4px">έκδοση 2026.06.18u</div>
       </div>
     </div>
 
@@ -2589,6 +2605,7 @@ function renderCurrentPage(){
   else if(CPage==='recon')renderRecon();
   else if(CPage==='till')renderTill();
   else if(CPage==='suppliers')renderSuppliers();
+  try{ loadNotifs(); }catch(e){}
 }
 
 // ── HELPERS ───────────────────────────────────────────
@@ -4272,19 +4289,74 @@ async function loadFromNewTables(){
 }
 
 let _syncing=false, _syncAgain=false;
+// ── Offline safety: a change is never silently lost ──
+let _syncRetryTimer=null, _syncFails=0, _unsynced=0, _offlineWired=false;
+
+function _pendingCount(){
+  if(!_snap) return 0;
+  try{
+    const d=computeSyncDiff();
+    return d.entriesIns.length+d.entriesUpd.length+d.entriesDel.length
+      +d.contactsIns.length+d.contactsUpd.length+d.contactsDel.length
+      +d.tillIns.length+d.tillUpd.length+d.tillDel.length
+      +d.supIns.length+d.supUpd.length+d.supDel.length
+      +d.catsIns.length+d.catsDel.length+d.settingsUp.length+d.settingsDel.length;
+  }catch(e){ return 0; }
+}
+function showSyncBanner(n){
+  let el=document.getElementById('syncBanner');
+  if(!n){ if(el) el.remove(); return; }
+  if(!el){
+    el=document.createElement('div');
+    el.id='syncBanner'; el.className='sync-banner no-print';
+    document.body.appendChild(el);
+  }
+  const word = n===1 ? '1 αλλαγή' : n+' αλλαγές';
+  el.className='sync-banner no-print'+(navigator.onLine?'':' off');
+  el.innerHTML = navigator.onLine
+    ? '<span class="sb-dot"></span> '+word+' σε αναμονή — προσπαθώ ξανά…'
+    : '<span class="sb-dot"></span> Εκτός σύνδεσης · '+word+' θα σταλούν μόλις επανέλθει';
+}
+function scheduleSyncRetry(){
+  clearTimeout(_syncRetryTimer);
+  const wait=Math.min(30000, 5000*Math.pow(2, Math.min(_syncFails-1, 3)));
+  _syncRetryTimer=setTimeout(()=>{ if(newBackendActive) runSync(); }, wait);
+}
+function wireOfflineSafety(){
+  if(_offlineWired) return;
+  _offlineWired=true;
+  window.addEventListener('online', ()=>{ if(newBackendActive && _unsynced){ _syncFails=0; runSync(); } });
+  window.addEventListener('offline', ()=>{ if(_unsynced) showSyncBanner(_unsynced); });
+  window.addEventListener('beforeunload', e=>{
+    if(_unsynced>0){ e.preventDefault(); e.returnValue=''; return ''; }
+  });
+}
+
 async function runSync(){
   if(_syncing){ _syncAgain=true; return; }
-  _syncing=true;
   const si=document.getElementById('saveIndicator');
+  if(!navigator.onLine){                      // don't even try — queue it
+    _unsynced=_pendingCount();
+    if(si){ si.textContent='⏳'; si.style.color='#e0b060'; }
+    showSyncBanner(_unsynced); _syncFails++; scheduleSyncRetry();
+    return;
+  }
+  _syncing=true;
   try{
     await syncToNewTables();
     if(si){ si.textContent='✓'; si.style.color='rgba(255,255,255,.5)'; }
     _pendingSave=false;
     _pollSig=null;   // re-baseline: don't treat our own write as a remote change
+    if(_syncFails){ showToast('✓ Οι αλλαγές συγχρονίστηκαν'); }
+    _syncFails=0; _unsynced=0; showSyncBanner(0); clearTimeout(_syncRetryTimer);
   }catch(e){
     console.error('sync error',e);
-    if(si){ si.textContent='⚠'; si.style.color='#e08080'; }
-    showToast('⚠ Σφάλμα συγχρονισμού: '+((e&&e.message)||e));
+    _syncFails++;
+    _unsynced=_pendingCount();
+    if(si){ si.textContent='⏳'; si.style.color='#e0b060'; }
+    showSyncBanner(_unsynced);
+    if(_syncFails===1) showToast('⚠ Δεν στάλθηκε — θα ξαναπροσπαθήσω αυτόματα');
+    scheduleSyncRetry();
   }finally{
     _syncing=false;
     if(_syncAgain){ _syncAgain=false; runSync(); }
@@ -4383,6 +4455,7 @@ async function pollRemote(){
 let _liveSyncWired=false;
 function startLiveSync(){
   if(!_pollTimer) _pollTimer=setInterval(pollRemote, 12000);
+  wireOfflineSafety();
   if(!_liveSyncWired){
     _liveSyncWired=true;
     // Poll immediately when the tab/window regains focus (feels instant on switch)
@@ -4690,48 +4763,65 @@ async function logLogin(role){
   }catch(e){console.log('Log error:',e);}
 }
 
-async function loadNotifs(){
-  if(!isAdmin()) return;
-  try{
-    const res=await fetch(SB_URL+'/rest/v1/login_log?select=role,logged_at&order=logged_at.desc&limit=50',{
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+function buildAlerts(){
+  const out=[];
+  const todayIso=new Date().toISOString().slice(0,10);
+  const nowIdx=CY*12+CM;
+  // 1) Ληξιπρόθεσμα: έξοδα προηγούμενων μηνών που χρωστάς ακόμα
+  let odN=0, odSum=0;
+  Object.keys(data).forEach(k=>{
+    const m=k.match(/^y(\d+)m(\d+)$/); if(!m) return;
+    if((+m[1])*12+(+m[2]) >= nowIdx) return;
+    ((data[k]||{}).exp||[]).forEach(r=>{
+      if(r.hidden) return;
+      const rem=(typeof remaining==='function')?remaining(r):0;
+      if(rem>0.005){ odN++; odSum+=rem; }
     });
-    if(!res.ok) return;
-    const rows=await res.json();
-    renderNotifs(rows);
-  }catch(e){console.log('Notif load error:',e);}
+  });
+  if(odN) out.push({cls:'warn', icon:'⏳', title:odN+(odN===1?' ληξιπρόθεσμη πληρωμή':' ληξιπρόθεσμες πληρωμές'),
+    sub:'Σύνολο '+fmt(odSum), act:'openPending()'});
+  // 2) Μέρα ταμείου που έμεινε ανοιχτή (μόνο διαχειριστής)
+  if(isAdmin() && typeof tillActiveDay==='function'){
+    const ad=tillActiveDay();
+    if(ad && ad.date && ad.date<todayIso)
+      out.push({cls:'warn', icon:'🪙', title:'Ανοιχτή μέρα ταμείου', sub:_tillDMY(ad.date)+' — δεν έκλεισε', act:"goPage('till')"});
+  }
+  // 3) Προμηθευτές με χρέος
+  const sl=((data['__suppliers__']||{}).list)||[];
+  if(sl.length && typeof supBalance==='function'){
+    const debt=sl.filter(s=>supBalance(s)>0.005);
+    if(debt.length){
+      const tot=debt.reduce((t,s)=>t+supBalance(s),0);
+      out.push({cls:'info', icon:'🚚', title:debt.length+(debt.length===1?' προμηθευτής με χρέος':' προμηθευτές με χρέος'),
+        sub:'Σύνολο '+fmt(tot), act:"goPage('suppliers')"});
+    }
+    // 4) Προϊόντα που περιμένουν λογαριασμό πάνω από 30 μέρες
+    const cut=new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+    let old=0;
+    sl.forEach(s=>{ supPending(s).forEach(i=>{ if(i.date && i.date<cut) old++; }); });
+    if(old) out.push({cls:'info', icon:'📦', title:old+' προϊόντα χωρίς λογαριασμό',
+      sub:'πάνω από 30 μέρες', act:"goPage('suppliers')"});
+  }
+  // 5) Αλλαγές που δεν στάλθηκαν
+  if(_unsynced>0) out.push({cls:'danger', icon:'📴', title:_unsynced+(_unsynced===1?' αλλαγή σε αναμονή':' αλλαγές σε αναμονή'),
+    sub:navigator.onLine?'προσπαθώ ξανά…':'εκτός σύνδεσης'});
+  return out;
 }
 
-function renderNotifs(rows){
+function loadNotifs(){
   const list=document.getElementById('notifList');
   const badge=document.getElementById('notifBadge');
   if(!list||!badge) return;
-  // Count viewer logins (unread = viewer logins in last 30 days)
-  const viewerCount=rows.filter(r=>r.role==='viewer').length;
-  if(viewerCount>0){
-    badge.textContent=viewerCount>9?'9+':viewerCount;
-    badge.classList.add('show');
-  } else {
-    badge.classList.remove('show');
-  }
-  if(rows.length===0){
-    list.innerHTML='<div class="notif-empty">Δεν υπάρχουν ειδοποιήσεις</div>';
-    return;
-  }
-  list.innerHTML=rows.map(r=>{
-    const dt=new Date(r.logged_at);
-    const dateStr=dt.toLocaleDateString('el-GR',{day:'2-digit',month:'2-digit',year:'numeric'});
-    const timeStr=dt.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
-    const isViewer=r.role==='viewer';
-    const label=isViewer?'Θεατής (tamias1)':'Administrator';
-    return`<div class="notif-item ${r.role}">
-      <span class="ni-icon"></span>
-      <div class="ni-body">
-        <div class="ni-title">${label} συνδέθηκε</div>
-        <div class="ni-time">${dateStr} · ${timeStr}</div>
-      </div>
-    </div>`;
-  }).join('');
+  let alerts=[];
+  try{ alerts=buildAlerts(); }catch(e){ console.warn('alerts',e); }
+  if(alerts.length){ badge.textContent=alerts.length>9?'9+':alerts.length; badge.classList.add('show'); }
+  else badge.classList.remove('show');
+  list.innerHTML = alerts.length
+    ? alerts.map(a=>`<div class="notif-item al-${a.cls}"${a.act?` onclick="closeDropdowns();${a.act}" style="cursor:pointer"`:''}>
+        <span class="ni-icon">${a.icon}</span>
+        <div class="ni-body"><div class="ni-title">${esc(a.title)}</div><div class="ni-time">${esc(a.sub||'')}</div></div>
+      </div>`).join('')
+    : '<div class="notif-empty">Όλα εντάξει — καμία εκκρεμότητα</div>';
 }
 
 function toggleNotifPanel(){
@@ -4740,18 +4830,6 @@ function toggleNotifPanel(){
   const isOpen=panel.classList.contains('open');
   panel.classList.toggle('open');
   if(!isOpen) loadNotifs(); // refresh on open
-}
-
-async function clearNotifs(){
-  try{
-    await fetch(SB_URL+'/rest/v1/login_log',{
-      method:'DELETE',
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
-    });
-    document.getElementById('notifList').innerHTML='<div class="notif-empty">Δεν υπάρχουν ειδοποιήσεις</div>';
-    const badge=document.getElementById('notifBadge');
-    if(badge) badge.classList.remove('show');
-  }catch(e){console.log('Clear error:',e);}
 }
 
 // Close panel on outside click
@@ -5301,15 +5379,14 @@ function applyRole(){
     const w=document.getElementById('notifWrap');
     if(w) w.style.display='';
     loadNotifs();
-    // Settings dropdown visible for admin only
-    const sw=document.getElementById('settingsWrap');
-    if(sw) sw.style.display='';
+    const sa2=document.getElementById('settingsAdmin');
+    if(sa2) sa2.style.display='';
   } else {
     ['btnNewContact','btnNewContact2'].forEach(id=>{
       const b=document.getElementById(id);if(b)b.style.display='none';
     });
-    const sw=document.getElementById('settingsWrap');
-    if(sw) sw.style.display='none';
+    const sa2=document.getElementById('settingsAdmin');
+    if(sa2) sa2.style.display='none';
   }
   if(!isAdmin()){
     const sa=document.getElementById('sbAdmin');
@@ -6224,7 +6301,7 @@ function safeReload(){
       <button class="login-btn" onclick="doLogin()">Είσοδος (παλιό) &nbsp;→</button>
     </div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18t</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18u</div>
   </div>
 </div>
 
