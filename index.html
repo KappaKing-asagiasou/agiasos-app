@@ -1038,7 +1038,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18q</div>
+    <div class="sb-ver">έκδοση 2026.06.18r</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1103,7 +1103,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         <button class="hdr-drop-item" id="carryoverMenuItem" onclick="toggleCarryover()"><span class="di-icon" id="carryoverIcon">↩</span><span id="carryoverLabel">Εμφάνιση εκκρεμών προηγ. μηνών: ΟΧΙ</span></button>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18q</div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);padding:4px 0 2px;opacity:.7">έκδοση 2026.06.18r</div>
       </div>
     </div>
 
@@ -1608,11 +1608,9 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
     <div style="margin-top:8px"><button class="btn btn-exp" onclick="restoreBackup()">⬆ Επαναφορά</button></div>
   </div>
   <div class="backup-section" style="border-top:2px dashed var(--border2);padding-top:14px">
-    <p>🔧 Μετάβαση σε νέα δομή (Στάδιο 2)</p>
-    <div style="font-size:11.5px;color:var(--text3);margin-bottom:8px">Αντιγράφει τα δεδομένα στους νέους πίνακες. Η app_data ΔΕΝ αλλάζει. Ασφαλές να ξανατρέξει.</div>
+    <p>🔧 Εργαλείο επιδιόρθωσης βάσης</p>
+    <div style="font-size:11.5px;color:var(--text3);margin-bottom:8px">ΜΟΝΟ ΓΙΑ ΕΚΤΑΚΤΗ ΑΝΑΓΚΗ: ξαναγράφει όλα τα δεδομένα από αυτή τη συσκευή στους πίνακες. Μη το χρησιμοποιείς αν δεν σου το ζητηθεί.</div>
     <button class="btn btn-gold" id="migBtn" onclick="migrateToNewTables()">Έλεγχος &amp; μεταφορά</button>
-    <button class="btn btn-inc" id="testNewBtn" onclick="testLoadNewBackend()" style="margin-left:6px">👁 Δοκιμή: ανάγνωση από νέα δομή</button>
-    <button class="btn btn-exp" id="activateNewBtn" onclick="activateNewBackendSession()" style="margin-top:8px">⚡ Ενεργοποίηση νέας δομής (δοκιμή)</button>
     <pre id="migOut" style="display:none;margin-top:10px;font-size:11px;background:var(--surface2);border-radius:8px;padding:10px;max-height:220px;overflow:auto;white-space:pre-wrap"></pre>
   </div>
   <div style="display:flex;justify-content:flex-end;margin-top:8px">
@@ -1637,6 +1635,31 @@ let data={};
 let _saveTimer=null;
 
 // Load from Supabase on startup, fallback to localStorage
+// Stage 7 — the new relational backend is now the DEFAULT path.
+// Falls back to the old blob only if there is no Auth session (legacy password login).
+async function bootLoad(){
+  const tok=sessionStorage.getItem('agiasos_sb_token');
+  const org=sessionStorage.getItem('agiasos_org_id');
+  if(tok && org){
+    try{
+      const nd=await loadFromNewTables();
+      data=nd;
+      buildSnapshot();
+      newBackendActive=true;
+      try{ _pollSig=await computePollSig(); }catch(e){ _pollSig=null; }
+      startLiveSync();
+      safeSet(STORE,JSON.stringify(data));   // local copy for offline
+      return true;
+    }catch(err){
+      console.error('[boot] αποτυχία φόρτωσης νέας δομής → προσωρινή χρήση παλιάς',err);
+      showToast('⚠ Πρόβλημα σύνδεσης με τη βάση — προσωρινή χρήση τοπικών δεδομένων');
+    }
+  } else {
+    setTimeout(()=>showToast('⚠ Παλιά σύνδεση: τα δεδομένα μπορεί να μην είναι ενημερωμένα. Συνδέσου με email/κωδικό.'),1200);
+  }
+  return await loadFromSupabase();
+}
+
 async function loadFromSupabase(){
   try{
     const res=await fetch(SB_URL+'/rest/v1/app_data?id=eq.singleton&select=data',{
@@ -3953,7 +3976,6 @@ async function loadFromNewTables(){
   const results=await Promise.all([getAll('entries'),getAll('contacts'),getAll('categories'),getAll('till_days'),getAll('settings'),getAll('members')]);
   const ents=results[0], cts=results[1], cats=results[2], tds=results[3], sets=results[4], mem=results[5];
   _memberNames={}; (mem||[]).forEach(m=>{ if(m.user_id) _memberNames[m.user_id]=m.name||''; });
-  console.log('[recon] entries fetched from DB:', ents.length);
   const nd={};
   let _lostCount=0;
   ents.forEach(row=>{
@@ -4014,10 +4036,7 @@ async function runSync(){
   _syncing=true;
   const si=document.getElementById('saveIndicator');
   try{
-    const _diff=(_snap?computeSyncDiff():null);
-    if(_diff) console.log('[sync] ins/upd/del entries:', _diff.entriesIns.length, _diff.entriesUpd.length, _diff.entriesDel.length, '| contacts:', _diff.contactsIns.length, _diff.contactsUpd.length, _diff.contactsDel.length);
     await syncToNewTables();
-    console.log('[sync] ✓ ολοκληρώθηκε');
     if(si){ si.textContent='✓'; si.style.color='rgba(255,255,255,.5)'; }
     _pendingSave=false;
     _pollSig=null;   // re-baseline: don't treat our own write as a remote change
@@ -4097,21 +4116,24 @@ async function computePollSig(){
   };
   return (await sigOf('entries'))+' '+(await sigOf('contacts'))+' '+(await sigOf('till_days'));
 }
+let _lastPollAt=0;
 async function pollRemote(){
   if(!newBackendActive || document.hidden || _uiBusy() || _syncing || _pendingSave) return;
+  if(Date.now()-_lastPollAt < 3000) return;   // don't spam when switching windows
+  _lastPollAt=Date.now();
   try{
     const sig=await computePollSig();
     if(sig===null) return;
     if(_pollSig===null){ _pollSig=sig; return; }         // baseline (fallback)
     if(sig===_pollSig) return;                            // nothing changed
     if(_uiBusy()||_syncing||_pendingSave) return;         // re-check before reloading
-    const _before=_countEntries(data);
     const nd=await loadFromNewTables();
-    const _after=_countEntries(nd);
-    console.log('[poll] reload: entries', _before, '→', _after, '| sig', _pollSig, '→', sig);
+    const sy=window.scrollY;
     data=nd; buildSnapshot(); _pollSig=sig;
+    safeSet(STORE,JSON.stringify(data));
     renderCurrentPage();
-    showToast('🔄 Ενημερώθηκε ('+_after+' εγγραφές)');
+    window.scrollTo(0,sy);                    // keep the user where they were
+    showToast('🔄 Ενημερώθηκε από άλλον χρήστη');
   }catch(e){ /* silent; retry next cycle */ }
 }
 let _liveSyncWired=false;
@@ -5930,7 +5952,7 @@ function bootApp(){
     '<div id="loadingBar" style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#5a8040,#c8a030,#5a8040);background-size:200%;animation:shimmer 1s linear infinite;z-index:9999"></div>'
   );
   showHomeSkeleton();
-  loadFromSupabase().then(()=>{
+  bootLoad().then(()=>{
     const lb=document.getElementById('loadingBar');
     if(lb) lb.remove();
     migratePaySource();  // migrate old expenses after data loaded
@@ -6094,7 +6116,7 @@ function safeReload(){
       <button class="login-btn" onclick="doLogin()">Είσοδος (παλιό) &nbsp;→</button>
     </div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18q</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18r</div>
   </div>
 </div>
 

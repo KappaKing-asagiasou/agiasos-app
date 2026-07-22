@@ -1,4 +1,4 @@
-const CACHE = 'agiasos-v19';
+const CACHE = 'agiasos-v20';
 const ASSETS = ['./index.html', './manifest.json'];
 const CDN = [
   'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap',
@@ -18,38 +18,58 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then(clients => clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' })))
   );
-  self.clients.claim(); // take control immediately
 });
 
+// Anything that talks to the database/auth must NEVER be cached.
+// (This was the cause of the "one step behind" stale-data bug.)
+function isLiveData(url) {
+  return url.hostname.endsWith('supabase.co');
+}
+
 self.addEventListener('fetch', e => {
-  // For navigation requests (opening the app): always try network first
-  // If network succeeds AND response differs from cache → tell page to reload
+  let url;
+  try { url = new URL(e.request.url); } catch (_) { return; }
+
+  // 1) Live data (Supabase REST / Auth / Functions): network only, no cache, ever.
+  if (isLiveData(url)) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
+
+  // 2) Non-GET: straight to network.
+  if (e.request.method !== 'GET') {
+    e.respondWith(fetch(e.request));
+    return;
+  }
+
+  // 3) Navigation (opening the app): network first, cache as offline fallback.
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request, { cache: 'no-cache' })
         .then(async networkRes => {
           if (networkRes.ok) {
-            // Update cache with fresh version
             const cache = await caches.open(CACHE);
             cache.put(e.request, networkRes.clone());
           }
           return networkRes;
         })
-        .catch(() => caches.match(e.request)) // offline fallback
+        .catch(() => caches.match(e.request))
     );
     return;
   }
 
-  // For other assets: cache first, network fallback
+  // 4) Static assets (fonts, libraries, icons): cache first, network fallback.
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(response => {
-        if (response && response.status === 200 && e.request.method === 'GET') {
+        if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE).then(cache => cache.put(e.request, clone));
         }
@@ -57,11 +77,4 @@ self.addEventListener('fetch', e => {
       }).catch(() => cached);
     })
   );
-});
-
-// Notify all open pages to reload when a new SW activates
-self.addEventListener('activate', () => {
-  self.clients.matchAll({ type: 'window' }).then(clients => {
-    clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
-  });
 });
