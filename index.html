@@ -1105,7 +1105,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
   </div>
   <div class="sb-foot">
     <div class="sb-save"><span id="saveIndicator"></span></div>
-    <div class="sb-ver">έκδοση 2026.06.18u</div>
+    <div class="sb-ver">έκδοση 2026.06.18v</div>
   </div>
 </aside>
 <div class="app-body">
@@ -1185,7 +1185,7 @@ tr.carry-row td:first-child::before{content:'↩ ';color:#c08020;font-size:11px;
         </div>
         <div class="hdr-drop-sep"></div>
         <button class="hdr-drop-item" onclick="checkForUpdate()"><span class="di-icon">⬇️</span>Έλεγχος για ενημέρωση</button>
-        <div style="padding:6px 14px 9px;font-size:10.5px;color:var(--text3);letter-spacing:.4px">έκδοση 2026.06.18u</div>
+        <div style="padding:6px 14px 9px;font-size:10.5px;color:var(--text3);letter-spacing:.4px">έκδοση 2026.06.18v</div>
       </div>
     </div>
 
@@ -1720,8 +1720,24 @@ async function bootLoad(){
       safeSet(STORE,JSON.stringify(data));   // local copy for offline
       return true;
     }catch(err){
-      console.error('[boot] αποτυχία φόρτωσης νέας δομής → προσωρινή χρήση παλιάς',err);
-      showToast('⚠ Πρόβλημα σύνδεσης με τη βάση — προσωρινή χρήση τοπικών δεδομένων');
+      const msg=String((err&&err.message)||err);
+      const authProblem=/AUTH:|JWT|401|403|expired|PGRST301|PGRST303/i.test(msg);
+      console.error('[boot] αποτυχία φόρτωσης νέας δομής',msg);
+      if(authProblem){
+        // Η σύνδεση έληξε και δεν ανανεώθηκε → ΠΟΤΕ δεν δείχνουμε παλιά δεδομένα.
+        showToast('⚠ Η σύνδεση έληξε — συνδέσου ξανά');
+        ['agiasos_sb_token','agiasos_sb_refresh','agiasos_sb_exp'].forEach(k=>sessionStorage.removeItem(k));
+        sessionStorage.removeItem(AUTH_KEY);
+        setTimeout(()=>location.reload(),1500);
+        return false;
+      }
+      // Πρόβλημα δικτύου → τοπικό αντίγραφο, ΜΟΝΟ ΓΙΑ ΠΡΟΒΟΛΗ.
+      // (Τα κρυφά id χάνονται στο localStorage, οπότε το γράψιμο θα δημιουργούσε διπλοεγγραφές.)
+      try{ data=JSON.parse(safeGet(STORE)||'{}'); }catch(e){ data={}; }
+      currentRole='viewer'; applyRole();
+      showOfflineNotice();
+      window.addEventListener('online',()=>location.reload(),{once:true});
+      return false;
     }
   } else {
     setTimeout(()=>showToast('⚠ Παλιά σύνδεση: τα δεδομένα μπορεί να μην είναι ενημερωμένα. Συνδέσου με email/κωδικό.'),1200);
@@ -4220,6 +4236,56 @@ function computeSyncDiff(){
   return d;
 }
 
+// ── Auth token lifecycle: keep the session alive ─────
+// Ο access token του Supabase λήγει (~1 ώρα). Ανανεώνεται αυτόματα
+// με το refresh token, ώστε να μη "πέφτει" η σύνδεση στη μέση.
+let _refreshing=null;
+async function sbRefreshToken(){
+  if(_refreshing) return _refreshing;
+  const rt=sessionStorage.getItem('agiasos_sb_refresh');
+  if(!rt) return null;
+  _refreshing=(async()=>{
+    try{
+      const r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{
+        method:'POST', cache:'no-store',
+        headers:{'Content-Type':'application/json','apikey':SB_KEY},
+        body:JSON.stringify({refresh_token:rt})
+      });
+      const d=await r.json();
+      if(!r.ok || !d.access_token) throw new Error(d.error_description||d.msg||'refresh failed');
+      sessionStorage.setItem('agiasos_sb_token', d.access_token);
+      if(d.refresh_token) sessionStorage.setItem('agiasos_sb_refresh', d.refresh_token);
+      sessionStorage.setItem('agiasos_sb_exp', String(Date.now()+((+d.expires_in||3600)*1000)));
+      console.log('[auth] token ανανεώθηκε');
+      return d.access_token;
+    }catch(e){ console.warn('[auth] αποτυχία ανανέωσης:', e && e.message); return null; }
+    finally{ _refreshing=null; }
+  })();
+  return _refreshing;
+}
+async function sbToken(){
+  const tok=sessionStorage.getItem('agiasos_sb_token');
+  const exp=+sessionStorage.getItem('agiasos_sb_exp')||0;
+  if(tok && exp && Date.now() > exp-120000){      // ανανέωση 2 λεπτά πριν τη λήξη
+    const nt=await sbRefreshToken();
+    return nt||tok;
+  }
+  return tok;
+}
+// Wrapper: πάντα φρέσκο token· αν πάρει 401, ανανεώνει και ξαναδοκιμάζει μία φορά.
+async function sbFetch(url, opts){
+  opts=opts||{};
+  const mk=t=>Object.assign({},opts,{headers:Object.assign({},opts.headers||{},{'apikey':SB_KEY,'Authorization':'Bearer '+t})});
+  const t=await sbToken();
+  if(!t) throw new Error('AUTH: δεν υπάρχει ενεργή σύνδεση');
+  let r=await fetch(url, mk(t));
+  if(r.status===401 || r.status===403){
+    const nt=await sbRefreshToken();
+    if(nt) r=await fetch(url, mk(nt));
+  }
+  return r;
+}
+
 // Stage 3 — read the new tables and rebuild the SAME internal `data` shape
 async function loadFromNewTables(){
   const token=sessionStorage.getItem('agiasos_sb_token');
@@ -4230,7 +4296,7 @@ async function loadFromNewTables(){
   const getAll=async(t)=>{
     let all=[], from=0, step=1000;
     while(true){
-      const r=await fetch(base+t+'?org_id=eq.'+org+'&select=*',{cache:'no-store',headers:Object.assign({},H,{'Range':from+'-'+(from+step-1),'Cache-Control':'no-cache'})});
+      const r=await sbFetch(base+t+'?org_id=eq.'+org+'&select=*',{cache:'no-store',headers:Object.assign({},H,{'Range':from+'-'+(from+step-1),'Cache-Control':'no-cache'})});
       const rows=await r.json();
       if(!Array.isArray(rows)) throw new Error(t+': '+JSON.stringify(rows).slice(0,150));
       all=all.concat(rows);
@@ -4317,6 +4383,12 @@ function showSyncBanner(n){
     ? '<span class="sb-dot"></span> '+word+' σε αναμονή — προσπαθώ ξανά…'
     : '<span class="sb-dot"></span> Εκτός σύνδεσης · '+word+' θα σταλούν μόλις επανέλθει';
 }
+function showOfflineNotice(){
+  let el=document.getElementById('syncBanner');
+  if(!el){ el=document.createElement('div'); el.id='syncBanner'; document.body.appendChild(el); }
+  el.className='sync-banner no-print off';
+  el.innerHTML='<span class="sb-dot"></span> Χωρίς σύνδεση · προβολή μόνο — ξαναφόρτωσε όταν επανέλθει';
+}
 function scheduleSyncRetry(){
   clearTimeout(_syncRetryTimer);
   const wait=Math.min(30000, 5000*Math.pow(2, Math.min(_syncFails-1, 3)));
@@ -4355,7 +4427,10 @@ async function runSync(){
     _unsynced=_pendingCount();
     if(si){ si.textContent='⏳'; si.style.color='#e0b060'; }
     showSyncBanner(_unsynced);
-    if(_syncFails===1) showToast('⚠ Δεν στάλθηκε — θα ξαναπροσπαθήσω αυτόματα');
+    const am=String((e&&e.message)||e);
+    if(/AUTH:|JWT|401|403|expired|PGRST301|PGRST303/i.test(am) && _syncFails>=3)
+      showToast('⚠ Η σύνδεση έληξε — κάνε ανανέωση σελίδας και συνδέσου ξανά');
+    else if(_syncFails===1) showToast('⚠ Δεν στάλθηκε — θα ξαναπροσπαθήσω αυτόματα');
     scheduleSyncRetry();
   }finally{
     _syncing=false;
@@ -4380,16 +4455,16 @@ async function applySyncDiff(diff){
   const doIns=async(table,items,snapMap)=>{
     if(!items.length) return;
     items.forEach(x=>{ x.row.updated_at=nowIso; x.row.updated_by=uid; });
-    const r=await chk(await fetch(base+table,{method:'POST',headers:Object.assign({},H,{'Prefer':'return=representation'}),body:JSON.stringify(items.map(x=>x.row))}), table+' insert');
+    const r=await chk(await sbFetch(base+table,{method:'POST',headers:Object.assign({},H,{'Prefer':'return=representation'}),body:JSON.stringify(items.map(x=>x.row))}), table+' insert');
     const rows=await r.json();
     rows.forEach((row,i)=>{ const it=items[i]; Object.defineProperty(it.ref,'_id',{value:row.id,enumerable:false,writable:true,configurable:true}); snapMap[row.id]=it.sig; });
   };
   const doUpd=async(table,items,snapMap)=>{
-    for(const u of items){ await chk(await fetch(base+table+'?id=eq.'+u.id,{method:'PATCH',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(Object.assign({},u.row,{updated_at:nowIso,updated_by:uid}))}), table+' update'); snapMap[u.id]=u.sig; }
+    for(const u of items){ await chk(await sbFetch(base+table+'?id=eq.'+u.id,{method:'PATCH',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(Object.assign({},u.row,{updated_at:nowIso,updated_by:uid}))}), table+' update'); snapMap[u.id]=u.sig; }
   };
   const doDel=async(table,ids,snapMap)=>{
     if(!ids.length) return;
-    await chk(await fetch(base+table+'?id=in.('+ids.join(',')+')',{method:'DELETE',headers:H}), table+' delete');
+    await chk(await sbFetch(base+table+'?id=in.('+ids.join(',')+')',{method:'DELETE',headers:H}), table+' delete');
     ids.forEach(id=>{ delete snapMap[id]; });
   };
   await doIns('entries', diff.entriesIns, _snap.entries);
@@ -4405,12 +4480,12 @@ async function applySyncDiff(diff){
   await doUpd('suppliers', diff.supUpd, _snap.suppliers);
   await doDel('suppliers', diff.supDel, _snap.suppliers);
   // categories (match by name)
-  if(diff.catsIns.length) await chk(await fetch(base+'categories',{method:'POST',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(diff.catsIns)}),'categories insert');
-  for(const cd of diff.catsDel){ await chk(await fetch(base+'categories?org_id=eq.'+org+'&kind=eq.'+cd.kind+'&name=eq.'+encodeURIComponent(cd.name),{method:'DELETE',headers:H}),'categories delete'); }
+  if(diff.catsIns.length) await chk(await sbFetch(base+'categories',{method:'POST',headers:Object.assign({},H,{'Prefer':'return=minimal'}),body:JSON.stringify(diff.catsIns)}),'categories insert');
+  for(const cd of diff.catsDel){ await chk(await sbFetch(base+'categories?org_id=eq.'+org+'&kind=eq.'+cd.kind+'&name=eq.'+encodeURIComponent(cd.name),{method:'DELETE',headers:H}),'categories delete'); }
   _snap.cats.exp=(data['__cats__']||[]).slice(); _snap.cats.inc=(data['__incats__']||[]).slice();
   // settings (upsert / delete)
-  for(const su of diff.settingsUp){ await chk(await fetch(base+'settings?on_conflict=org_id,key',{method:'POST',headers:Object.assign({},H,{'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({org_id:org,key:su.key,value:su.value})}),'settings upsert'); _snap.settings[su.key]=su.sig; }
-  for(const sk of diff.settingsDel){ await chk(await fetch(base+'settings?org_id=eq.'+org+'&key=eq.'+encodeURIComponent(sk),{method:'DELETE',headers:H}),'settings delete'); delete _snap.settings[sk]; }
+  for(const su of diff.settingsUp){ await chk(await sbFetch(base+'settings?on_conflict=org_id,key',{method:'POST',headers:Object.assign({},H,{'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({org_id:org,key:su.key,value:su.value})}),'settings upsert'); _snap.settings[su.key]=su.sig; }
+  for(const sk of diff.settingsDel){ await chk(await sbFetch(base+'settings?org_id=eq.'+org+'&key=eq.'+encodeURIComponent(sk),{method:'DELETE',headers:H}),'settings delete'); delete _snap.settings[sk]; }
 }
 
 // ── Stage 5: live sync (lightweight polling) ─────────
@@ -4423,7 +4498,7 @@ async function computePollSig(){
   const H={'apikey':SB_KEY,'Authorization':'Bearer '+token};
   const base=SB_URL+'/rest/v1/';
   const sigOf=async(t)=>{
-    const r=await fetch(base+t+'?org_id=eq.'+org+'&select=updated_at&order=updated_at.desc&limit=1',{cache:'no-store',headers:Object.assign({},H,{'Prefer':'count=exact','Range':'0-0','Cache-Control':'no-cache'})});
+    const r=await sbFetch(base+t+'?org_id=eq.'+org+'&select=updated_at&order=updated_at.desc&limit=1',{cache:'no-store',headers:Object.assign({},H,{'Prefer':'count=exact','Range':'0-0','Cache-Control':'no-cache'})});
     const cnt=(r.headers.get('content-range')||'/0').split('/')[1];
     const rows=await r.json().catch(()=>[]);
     const mx=(Array.isArray(rows)&&rows[0]&&rows[0].updated_at)||'';
@@ -6085,6 +6160,8 @@ async function doAuthLogin(){
     sessionStorage.setItem(AUTH_KEY,'1');
     sessionStorage.setItem(ROLE_KEY,appRole);
     sessionStorage.setItem('agiasos_sb_token',token);
+    if(d.refresh_token) sessionStorage.setItem('agiasos_sb_refresh',d.refresh_token);
+    sessionStorage.setItem('agiasos_sb_exp', String(Date.now()+((+d.expires_in||3600)*1000)));
     sessionStorage.setItem('agiasos_sb_uid',uid||'');
     sessionStorage.setItem('agiasos_member_role',memberRole);
     currentMemberRole=memberRole;
@@ -6301,7 +6378,7 @@ function safeReload(){
       <button class="login-btn" onclick="doLogin()">Είσοδος (παλιό) &nbsp;→</button>
     </div>
     <button onclick="checkForUpdate()" style="margin-top:18px;background:none;border:none;color:rgba(200,160,48,.5);font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;letter-spacing:.3px;">⬇️ Έλεγχος για ενημέρωση</button>
-    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18u</div>
+    <div style="margin-top:8px;font-size:10px;color:rgba(200,160,48,.35);letter-spacing:.5px">έκδοση 2026.06.18v</div>
   </div>
 </div>
 
